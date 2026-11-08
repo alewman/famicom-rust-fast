@@ -1,11 +1,11 @@
 [package]
-name = "famicom-rust"
+name = "famicom-rust-fast"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.85"
-description = "A Rust Famicom/NES board transcribed from, and proven equivalent to, famicom-python"
+description = "A speed fork of famicom-rust, held in lockstep with it"
 license = "MIT"
-repository = "https://github.com/alewman/famicom-rust"
+repository = "https://github.com/alewman/famicom-rust-fast"
 publish = false
 
 [lib]
