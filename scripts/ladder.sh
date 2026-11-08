@@ -30,8 +30,8 @@ failed=0
 step() { echo "== $1 ($((SECONDS - began)) s)"; }
 
 step "cargo test"
-nice cargo build --release -q --manifest-path "$ROOT/Cargo.toml"
-if ! nice cargo test --release -q --manifest-path "$ROOT/Cargo.toml" >"$EXT/ladder-test.log" 2>&1; then
+nice cargo build -j 4 --release -q --manifest-path "$ROOT/Cargo.toml"
+if ! nice cargo test -j 4 --release -q --manifest-path "$ROOT/Cargo.toml" >"$EXT/ladder-test.log" 2>&1; then
     grep -E "test result|FAILED|panicked" "$EXT/ladder-test.log" || tail -20 "$EXT/ladder-test.log"
     failed=1
 fi

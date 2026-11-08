@@ -663,6 +663,11 @@ pub struct Apu {
     phase: i64,
     samples: Vec<f64>,
     history: Vec<f64>,
+    /// A run of frame-counter cycles with no step in them, for one mode:
+    /// (mode5, first, end), cycles first..end (fork cache: the step tables
+    /// never change, so a run found once stays true; empty until found).
+    #[serde(skip)]
+    quiet: (bool, u32, u32),
 }
 
 impl Apu {
@@ -716,6 +721,7 @@ impl Apu {
             phase: 0,
             samples: Vec::new(),
             history: vec![0.0; TAPS - 1],
+            quiet: (false, 0, 0),
         };
         apu.set_sample_rate(sample_rate);
         apu
@@ -864,12 +870,24 @@ impl Apu {
         }
         let cycle = self.frame_cycle + 1;
         self.frame_cycle = cycle;
+        let (mode5, first, end) = self.quiet;
+        if mode5 == self.mode5 && first <= cycle && cycle < end {
+            return;
+        }
         let steps = if self.mode5 {
             self.tables.steps_5
         } else {
             self.tables.steps_4
         };
         let event = step_event(steps, cycle);
+        // The next step after this cycle (the tables are in order): none
+        // falls in cycle + 1 .. next.
+        let next = steps
+            .iter()
+            .map(|&(at, _)| at)
+            .find(|&at| at > cycle)
+            .unwrap_or(u32::MAX);
+        self.quiet = (self.mode5, cycle + 1, next);
         if event != 0 {
             if event & IRQ != 0 {
                 self.frame_irq = !(event & WRAP != 0 && self.inhibit);
