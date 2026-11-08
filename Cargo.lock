@@ -115,6 +115,7 @@ dependencies = [
  "bincode",
  "crc32fast",
  "flate2",
+ "libc",
  "serde",
  "serde-big-array",
  "serde_json",
