@@ -316,6 +316,19 @@ impl Ppu {
         while self.time < time {
             let dot = self.dot;
             let line = self.line;
+            // Fork: step's pixel dot here, when no register effect is due
+            // before its work.
+            if self.pixel_dot_ready(line, dot + 1)
+                && self
+                    .events
+                    .first()
+                    .is_none_or(|&(due, _)| due > self.time + ticks)
+            {
+                self.time += ticks;
+                self.dot = dot + 1;
+                self.pixel_dot(line, dot + 1);
+                continue;
+            }
             if (1..DOTS - 4).contains(&dot)
                 && (!(self.on || self.mask & 0x18 != 0 || self.fading != 0)
                     || (self.timing.vblank_line - 1 <= line && line < self.prerender_line))
@@ -428,31 +441,10 @@ impl Ppu {
         let mut line = self.line;
         let rendering = self.on;
         // Fork: the common dot, a visible line's pixel dot (2-256) with
-        // rendering on and settled. dot_work would take the same path:
-        // dot is neither 1 nor DOTS - 3, nor the line's end; no wake, fade,
-        // OAM corruption, darkness or OAM refresh (`render`'s dot >= 2 arm).
-        if (2..=WIDTH as i32).contains(&dot)
-            && (line as usize) < HEIGHT
-            && rendering
-            && !self.waking
-            && self.fading == 0
-            && !self.dark
-            && self.oam_corrupt.is_none()
-            && self.timing.oam_refresh.is_none()
-        {
+        // rendering on and settled (`pixel_dot`).
+        if self.pixel_dot_ready(line, dot) {
             self.dot = dot;
-            if self.mask & 0x18 != 0 {
-                self.evaluate(line, dot);
-            }
-            self.pixel(line, (dot - 2) as usize);
-            self.shift();
-            if dot == 63 || dot == 255 {
-                self.oam2_frozen = false;
-            }
-            self.background_fetch(dot);
-            if dot == WIDTH as i32 {
-                self.increment_y();
-            }
+            self.pixel_dot(line, dot);
             return;
         }
         if dot == DOTS {
@@ -475,6 +467,40 @@ impl Ppu {
         }
         self.dot = dot;
         self.dot_work(line, dot, rendering);
+    }
+
+    /// Fork: whether `dot` of `line` is a pixel dot (2-256) of a visible
+    /// line with rendering on and settled, on which dot_work would do just
+    /// what `pixel_dot` does: dot is neither 1 nor DOTS - 3, nor the line's
+    /// end; no wake, fade, OAM corruption, darkness or OAM refresh
+    /// (`render`'s dot >= 2 arm).
+    #[inline(always)]
+    fn pixel_dot_ready(&self, line: i32, dot: i32) -> bool {
+        (2..=WIDTH as i32).contains(&dot)
+            && (line as usize) < HEIGHT
+            && self.on
+            && !self.waking
+            && self.fading == 0
+            && !self.dark
+            && self.oam_corrupt.is_none()
+            && self.timing.oam_refresh.is_none()
+    }
+
+    /// Fork: dot_work's work on a dot `pixel_dot_ready` passed.
+    #[inline(always)]
+    fn pixel_dot(&mut self, line: i32, dot: i32) {
+        if self.mask & 0x18 != 0 {
+            self.evaluate(line, dot);
+        }
+        self.pixel(line, (dot - 2) as usize);
+        self.shift();
+        if dot == 63 || dot == 255 {
+            self.oam2_frozen = false;
+        }
+        self.background_fetch(dot);
+        if dot == WIDTH as i32 {
+            self.increment_y();
+        }
     }
 
     /// The rest of `_step` once the dot and line are known.
