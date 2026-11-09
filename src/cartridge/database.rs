@@ -2,7 +2,8 @@
 //!
 //! The pinned 7z (`reference/docs/nes20db-2026-09-26.7z` under the
 //! reference checkout, or the file `FAMICOM_NES20DB` names) is read at run
-//! time through the `7z` program, as the reference does. The XML is NewRisingSun's
+//! time through the `7z` program, as the reference does, or, named by
+//! `FAMICOM_NES20DB`, as the `nes20db.xml` unpacked from it. The XML is NewRisingSun's
 //! regular layout, read with a small scanner (no XML crate): `<game>` blocks
 //! whose children are empty elements with attributes. MAME's software list
 //! (the reference's second, informing-only lookup) is not read: it
@@ -147,6 +148,16 @@ pub fn load_nes20db() -> Option<&'static Nes20Db> {
         let path = nes20db_path();
         if !path.exists() {
             return None;
+        }
+        // The XML itself, unpacked from the pinned 7z (where no 7z program
+        // runs: a handheld's libretro core).
+        if path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("xml"))
+        {
+            return std::fs::read_to_string(&path)
+                .ok()
+                .map(|xml| parse_nes20db(&xml));
         }
         for program in ["7z", "7za", "7zr"] {
             let output = std::process::Command::new(program)
