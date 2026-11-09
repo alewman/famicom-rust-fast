@@ -55,7 +55,10 @@ fn main() {
             _ => roms.push(arg),
         }
     }
-    assert!(!roms.is_empty(), "usage: famicom-profile ROM... [--frames N] [--out FILE]");
+    assert!(
+        !roms.is_empty(),
+        "usage: famicom-profile ROM... [--frames N] [--out FILE]"
+    );
     let mut systems: Vec<System> = roms
         .iter()
         .map(|rom| {
@@ -79,7 +82,11 @@ fn main() {
     for system in systems.iter_mut() {
         for frame in 0..frames {
             // Start now and then, as the benchmark presses it.
-            let buttons = if frame % 120 < 6 && frame >= 120 { 0x08 } else { 0 };
+            let buttons = if frame % 120 < 6 && frame >= 120 {
+                0x08
+            } else {
+                0
+            };
             if let Some(pad) = system.board().pads[0]
                 .as_any_mut()
                 .downcast_mut::<StandardController>()

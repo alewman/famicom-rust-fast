@@ -59,7 +59,8 @@ fn cases(table: &Path) -> Vec<Case> {
         vars.iter()
             .fold(text.to_owned(), |t, (k, v)| t.replace(k.as_str(), v))
     };
-    let text = std::fs::read_to_string(table).unwrap_or_else(|e| panic!("{}: {e}", table.display()));
+    let text =
+        std::fs::read_to_string(table).unwrap_or_else(|e| panic!("{}: {e}", table.display()));
     text.lines()
         .filter(|l| !l.is_empty() && !l.starts_with('#'))
         .map(|line| {
@@ -72,7 +73,12 @@ fn cases(table: &Path) -> Vec<Case> {
                 .split_whitespace()
                 .map(str::to_owned)
                 .collect();
-            Case { name, slices, rom, args }
+            Case {
+                name,
+                slices,
+                rom,
+                args,
+            }
         })
         .collect()
 }
@@ -97,7 +103,10 @@ fn one(case: &Case, trace: &Path, cache: &Path, scratch: &Path) -> Result<String
         .map_err(|e| format!("{}: {e}", trace.display()))?;
     if !run.status.success() {
         let err = String::from_utf8_lossy(&run.stderr);
-        return Err(format!("rust failed: {}", &err[err.len().saturating_sub(300)..]));
+        return Err(format!(
+            "rust failed: {}",
+            &err[err.len().saturating_sub(300)..]
+        ));
     }
     let seconds = began.elapsed().as_secs_f64();
     let a = std::fs::read_to_string(&reference).map_err(|e| e.to_string())?;
@@ -113,7 +122,10 @@ fn one(case: &Case, trace: &Path, cache: &Path, scratch: &Path) -> Result<String
         return Err("one trace is longer".to_owned());
     }
     std::fs::remove_file(&ours).ok();
-    Ok(format!("identical, {} slices ({seconds:.0} s)", case.slices))
+    Ok(format!(
+        "identical, {} slices ({seconds:.0} s)",
+        case.slices
+    ))
 }
 
 fn main() {

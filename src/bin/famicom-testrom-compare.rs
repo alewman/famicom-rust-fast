@@ -29,8 +29,13 @@ fn main() {
         .collect();
     let mut tally: BTreeMap<String, (usize, usize, usize)> = BTreeMap::new();
     for row in &reference {
-        let (suite, label) = (row["suite"].as_str().unwrap(), row["label"].as_str().unwrap());
-        let Some(want) = row.get("outcome") else { continue };
+        let (suite, label) = (
+            row["suite"].as_str().unwrap(),
+            row["label"].as_str().unwrap(),
+        );
+        let Some(want) = row.get("outcome") else {
+            continue;
+        };
         let entry = tally.entry(suite.to_owned()).or_default();
         entry.1 += 1;
         entry.2 += usize::from(want["passed"] == Value::Bool(true));

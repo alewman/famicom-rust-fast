@@ -24,7 +24,10 @@ fn cpu_ns() -> u64 {
 
 fn main() {
     let mut frames = 600u64;
-    let mut input = format!("{}/scripts/inputs/start-mash.txt", env!("CARGO_MANIFEST_DIR"));
+    let mut input = format!(
+        "{}/scripts/inputs/start-mash.txt",
+        env!("CARGO_MANIFEST_DIR")
+    );
     let mut roms = Vec::new();
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -38,7 +41,10 @@ fn main() {
     for line in std::fs::read_to_string(&input).unwrap().lines() {
         let parts: Vec<&str> = line.split_whitespace().collect();
         if parts.len() == 3 && !line.starts_with('#') && parts[1] == "0" {
-            presses.insert(parts[0].parse().unwrap(), u8::from_str_radix(parts[2], 16).unwrap());
+            presses.insert(
+                parts[0].parse().unwrap(),
+                u8::from_str_radix(parts[2], 16).unwrap(),
+            );
         }
     }
     for rom in &roms {
