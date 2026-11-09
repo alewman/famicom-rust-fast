@@ -62,6 +62,8 @@ step "lockstep: rung 6, machine rows"
 lockstep "$ROOT/scripts/cases-machines.tsv" "$EXT/refcache"
 step "lockstep: rung 6, peripherals"
 lockstep "$ROOT/scripts/cases-peripherals.tsv" "$EXT/refcache-devices"
+step "lockstep: rung 6, host input (frontend.py's input half)"
+lockstep "$ROOT/scripts/cases-host.tsv" "$EXT/refcache-host"
 
 step "rung 3: test ROM tables"
 nice "$BIN/famicom-testrom" "$EXT/testrom-reference.jsonl" --roms "$NES_TEST_ROMS/nes-test-roms" \
