@@ -1,0 +1,1616 @@
+# make_host_inputs.py --slices 900 --seed 2026
+0 gamepads 4
+0 mouse 128 120
+1 key K_2 1
+2 move 24 25
+3 mouse 40 102
+4 pad 0 start 0
+4 key K_s 1
+4 move 33 30
+5 pad 3 back 0
+6 mouse -11 29
+6 move -26 -4
+7 key K_BACKSPACE 1
+7 key K_r 0
+8 move 22 0
+9 mouse 95 191
+10 pad 2 east 1
+10 key K_e 0
+10 move 3 -29
+11 click right 1
+12 mouse 222 60
+12 move 33 -1
+13 key K_1 1
+14 key K_KP_MULTIPLY 1
+14 move 19 14
+15 pad 0 north 1
+15 mouse 47 205
+16 key K_a 1
+16 move 10 27
+18 mouse 120 203
+18 move 32 21
+19 key K_a 0
+20 pad 1 left 0
+20 move 26 -27
+21 key K_t 1
+21 mouse 207 228
+22 key K_3 1
+22 move -11 -25
+22 click right 1
+24 mouse 267 116
+24 move 31 11
+25 pad 2 back 1
+25 key K_e 0
+26 move -3 -6
+27 mouse -8 4
+28 key K_F1 1
+28 key K_t 0
+28 key K_a 1
+28 move 6 -15
+29 stick 2 16384 16384
+30 pad 3 north 0
+30 mouse 136 150
+30 move 18 -28
+31 key K_r 1
+32 move 17 -17
+33 mouse 205 233
+33 click left 1
+34 key K_r 1
+34 move -28 -16
+35 key K_x 1
+35 key K_x 0
+35 pad 1 back 0
+36 mouse 35 -12
+36 move 17 34
+37 key K_a 0
+38 move 38 -15
+39 mouse 114 49
+40 pad 0 lshoulder 1
+40 key K_d 1
+40 move -21 -40
+42 key K_KP7 1
+42 key K_KP_MULTIPLY 0
+42 mouse 57 102
+42 move 20 35
+43 key K_3 1
+44 move -30 13
+44 click left 0
+45 pad 2 north 1
+45 mouse 64 88
+46 key K_e 0
+46 move -27 9
+48 mouse 25 14
+48 move 4 5
+49 key K_3 1
+49 key K_3 0
+49 key K_a 1
+50 pad 2 south 1
+50 move 1 -25
+51 mouse 242 226
+52 key K_s 0
+52 move -21 35
+54 mouse 254 93
+54 move 15 39
+55 pad 2 back 0
+55 key K_d 0
+55 click right 0
+56 key K_F4 1
+56 key K_F1 0
+56 move -35 29
+57 mouse 12 219
+58 stick 1 16384 -32768
+58 key K_3 0
+58 move 26 -23
+60 pad 1 left 1
+60 mouse 127 205
+60 move 28 13
+61 key K_2 1
+62 move -1 -17
+63 key K_KP_ENTER 1
+63 key K_F4 0
+63 mouse 122 225
+64 key K_r 1
+64 move -4 19
+65 pad 1 east 1
+66 mouse 215 49
+66 move 27 27
+66 click right 0
+67 key K_4 0
+68 move -40 -29
+69 mouse 220 157
+70 key K_LEFTBRACKET 1
+70 key K_KP7 0
+70 pad 0 east 0
+70 key K_w 0
+70 move -26 39
+72 mouse 131 97
+72 move 32 -3
+73 key K_s 1
+74 move 31 -24
+75 pad 0 south 0
+75 mouse 211 75
+76 key K_2 0
+76 move 5 -17
+77 key K_k 1
+77 key K_BACKSPACE 0
+77 click right 1
+78 mouse 20 137
+78 move 0 -20
+79 key K_q 1
+80 pad 0 up 1
+80 move -8 13
+81 mouse -5 17
+82 key K_2 0
+82 move -38 -1
+84 key K_DELETE 1
+84 key K_DELETE 0
+84 mouse 167 149
+84 move 18 37
+85 pad 0 north 1
+85 key K_s 0
+86 move 36 19
+87 stick 3 -20000 0
+87 mouse 244 116
+88 key K_e 1
+88 move 5 -33
+88 click right 0
+90 pad 2 east 1
+90 mouse 50 140
+90 move 13 0
+91 key K_c 1
+91 key K_KP_ENTER 0
+91 key K_a 1
+92 move -15 31
+93 mouse 16 45
+94 key K_3 0
+94 move -25 -36
+95 pad 1 east 1
+96 mouse 2 205
+96 move 34 -24
+97 key K_w 1
+97 focus 1
+98 key K_F9 1
+98 key K_k 0
+98 move -12 -24
+99 mouse 81 2
+99 click right 1
+100 pad 1 right 0
+100 key K_1 1
+100 move 29 21
+102 mouse 201 123
+102 move 0 -23
+103 key K_d 0
+104 move -18 30
+105 key K_4 1
+105 key K_LEFTBRACKET 0
+105 pad 2 east 0
+105 mouse -7 112
+106 key K_r 0
+106 move -12 25
+108 mouse 65 192
+108 move 6 -11
+109 key K_a 1
+110 pad 2 right 1
+110 move 5 18
+110 click right 1
+111 mouse 147 84
+112 key K_F10 1
+112 key K_c 0
+112 key K_3 1
+112 move -40 5
+114 mouse 255 197
+114 move -36 -18
+115 pad 0 south 1
+115 key K_a 1
+116 stick 1 -20000 -32768
+116 move 28 -13
+117 mouse 145 10
+118 key K_e 1
+118 move 28 26
+119 key K_k 1
+119 key K_F10 0
+120 pad 0 start 1
+120 pad 0 down 0
+120 mouse 187 158
+120 move 30 -7
+121 key K_q 0
+121 click left 0
+122 move -3 -3
+123 mouse 265 134
+124 pad 0 start 0
+124 key K_w 0
+124 move 9 -16
+125 pad 0 rshoulder 1
+126 key K_MINUS 1
+126 key K_MINUS 0
+126 mouse 263 75
+126 move 26 -37
+127 key K_3 1
+128 move 29 -22
+129 mouse 71 2
+130 pad 0 lshoulder 0
+130 key K_w 0
+130 move 7 -2
+132 mouse 98 66
+132 move 36 38
+132 click left 0
+133 key K_CAPSLOCK 1
+133 key K_F9 0
+133 key K_r 0
+134 move -31 8
+135 pad 2 south 0
+135 mouse 166 230
+136 key K_r 0
+136 move 31 26
+138 mouse 114 171
+138 move 18 34
+139 key K_w 0
+140 key K_8 1
+140 key K_4 0
+140 pad 3 south 1
+140 move -12 -19
+141 mouse 154 209
+142 key K_a 1
+142 move 1 23
+143 click right 1
+144 mouse 78 88
+144 move 19 -12
+145 pad 2 east 1
+145 stick 3 -16384 -16385
+145 key K_r 0
+146 move 15 -6
+147 key K_KP9 1
+147 key K_8 0
+147 mouse 151 124
+148 key K_r 1
+148 move -22 29
+150 pad 2 right 1
+150 mouse 61 51
+150 move -6 -3
+151 key K_s 1
+152 move 11 11
+153 mouse -1 156
+154 key K_o 1
+154 key K_o 0
+154 key K_w 0
+154 move 23 29
+154 click left 1
+155 pad 2 east 0
+156 mouse 192 76
+156 move -39 -6
+157 key K_a 1
+158 move -24 2
+159 mouse 200 231
+160 pad 3 east 0
+160 key K_1 0
+160 move -25 -6
+161 key K_KP8 1
+161 key K_CAPSLOCK 0
+162 mouse 95 222
+162 move 25 -5
+163 key K_s 1
+164 move -30 31
+165 pad 1 up 0
+165 mouse 67 156
+165 click left 1
+166 key K_4 0
+166 move -1 -30
+168 key K_a 1
+168 key K_k 0
+168 mouse 255 56
+168 move -27 -37
+169 key K_q 1
+170 pad 0 left 0
+170 move 20 3
+171 mouse 163 165
+172 key K_w 1
+172 move -8 22
+174 stick 2 -16000 -32768
+174 mouse 238 56
+174 move -38 21
+175 key K_KP_MULTIPLY 1
+175 key K_KP_MULTIPLY 0
+175 pad 3 right 1
+175 key K_q 1
+176 move -2 -13
+176 click left 1
+177 mouse 21 248
+178 key K_d 1
+178 move 21 38
+180 pad 0 lshoulder 1
+180 mouse 238 150
+180 move 3 6
+181 key K_3 0
+182 key K_UP 1
+182 key K_KP9 0
+182 move -8 27
+183 mouse 254 184
+184 key K_d 0
+184 move 37 -13
+185 pad 0 back 0
+186 mouse 95 207
+186 move 25 27
+187 key K_3 0
+187 click right 1
+188 move -23 31
+189 key K_o 1
+189 key K_a 0
+189 mouse 174 188
+190 pad 1 left 0
+190 key K_f 0
+190 move -24 33
+192 mouse 19 5
+192 move -5 -2
+193 key K_3 0
+194 move -6 29
+194 focus 1
+195 pad 1 back 0
+195 mouse 83 15
+196 key K_y 1
+196 key K_UP 0
+196 key K_d 0
+196 move 12 39
+198 mouse 238 2
+198 move -2 -12
+198 click right 0
+199 key K_r 1
+200 pad 1 east 0
+200 move 25 -35
+201 mouse 229 -9
+202 key K_1 0
+202 move 5 35
+203 key K_s 1
+203 key K_s 0
+203 stick 2 -32768 -16385
+204 mouse 245 85
+204 move -29 14
+205 pad 3 right 0
+205 key K_4 0
+206 move 23 -13
+207 mouse 178 69
+208 key K_a 1
+208 move 14 18
+209 click right 0
+210 key K_KP6 1
+210 key K_y 0
+210 pad 3 down 0
+210 mouse 88 47
+210 move -30 5
+211 key K_f 0
+212 move -26 -18
+213 mouse 92 209
+214 key K_4 1
+214 move -37 30
+215 pad 1 south 1
+216 mouse 174 191
+216 move -39 21
+217 key K_RSHIFT 1
+217 key K_o 0
+217 key K_q 1
+218 move 22 -23
+219 mouse 43 61
+220 pad 1 east 1
+220 key K_e 0
+220 move 31 1
+220 click right 0
+222 mouse 224 227
+222 move 4 29
+223 key K_a 0
+224 key K_KP2 1
+224 key K_KP8 0
+224 move -36 -30
+225 pad 0 down 1
+225 mouse 43 185
+226 key K_d 1
+226 move 38 21
+228 mouse 264 -1
+228 move -21 0
+229 key K_3 0
+230 pad 0 north 0
+230 move -19 28
+231 key K_INSERT 1
+231 key K_INSERT 0
+231 mouse 11 24
+231 click left 1
+232 stick 1 -16000 16384
+232 key K_4 1
+232 move 19 -9
+234 mouse 192 110
+234 move 25 0
+235 pad 3 up 1
+235 key K_4 0
+236 move 16 -16
+237 mouse 46 231
+238 key K_d 1
+238 key K_d 0
+238 key K_r 0
+238 move 23 -13
+240 pad 0 start 1
+240 pad 3 up 1
+240 mouse 59 138
+240 move -10 26
+241 key K_w 1
+242 move 15 34
+242 click left 1
+243 mouse 254 73
+244 pad 0 start 0
+244 key K_a 0
+244 move 32 7
+245 key K_F6 1
+245 key K_F6 0
+245 pad 1 back 1
+246 mouse 44 42
+246 move 13 11
+247 key K_1 0
+248 move -15 -34
+249 mouse 122 74
+250 pad 2 east 0
+250 key K_q 0
+250 move -36 -13
+252 key K_s 1
+252 key K_KP2 0
+252 mouse 217 6
+252 move 5 19
+253 key K_a 0
+253 click left 1
+254 move -34 -3
+255 pad 0 left 0
+255 mouse 130 92
+256 key K_1 1
+256 move 39 -35
+258 mouse 229 120
+258 move -31 29
+259 key K_F11 1
+259 key K_KP6 0
+259 key K_r 0
+260 pad 2 right 1
+260 move 19 -29
+261 stick 1 -32768 -32768
+261 mouse 199 185
+262 key K_a 0
+262 move 16 39
+264 mouse 79 75
+264 move -10 -19
+264 click left 1
+265 pad 3 south 0
+265 key K_r 0
+266 key K_2 1
+266 key K_RSHIFT 0
+266 move -31 -24
+267 mouse 252 112
+268 key K_r 0
+268 move 1 -18
+270 pad 3 down 0
+270 mouse -12 182
+270 move -29 23
+271 key K_d 1
+272 move 32 3
+273 key K_RIGHTBRACKET 1
+273 key K_RIGHTBRACKET 0
+273 mouse 30 -2
+274 key K_d 1
+274 move -10 -26
+275 pad 3 right 1
+275 click left 1
+276 mouse 260 -7
+276 move -37 3
+277 key K_f 0
+278 move 18 35
+279 mouse 37 112
+280 key K_n 1
+280 key K_s 0
+280 pad 1 back 0
+280 key K_2 0
+280 move -40 38
+282 mouse 258 147
+282 move -22 12
+283 key K_q 0
+284 move 16 37
+285 pad 2 left 1
+285 mouse -10 215
+286 key K_s 0
+286 move -28 -11
+286 click right 1
+287 key K_8 1
+287 key K_n 0
+288 mouse 128 212
+288 move 16 -2
+289 key K_q 1
+290 pad 3 back 1
+290 stick 2 -16385 -20000
+290 move 38 30
+291 mouse 3 92
+291 focus 1
+292 key K_f 1
+292 move 11 -12
+294 key K_q 1
+294 key K_F11 0
+294 mouse 72 39
+294 move -11 9
+295 pad 1 east 1
+295 key K_4 1
+296 move 29 28
+297 mouse 181 122
+297 click right 1
+298 key K_4 0
+298 move 25 -2
+300 pad 0 rshoulder 0
+300 mouse 141 74
+300 move 15 34
+301 key K_DOWN 1
+301 key K_q 0
+301 key K_e 1
+302 move -33 38
+303 mouse 145 6
+304 key K_s 1
+304 move 31 -2
+305 pad 3 right 1
+306 mouse 247 167
+306 move 4 9
+307 key K_a 0
+308 key K_1 1
+308 key K_DOWN 0
+308 move 27 14
+308 click right 1
+309 mouse 112 181
+310 pad 2 up 0
+310 key K_4 0
+310 move -18 22
+312 mouse 189 230
+312 move -20 15
+313 key K_a 0
+314 move 7 -37
+315 key K_SPACE 1
+315 key K_1 0
+315 pad 0 down 0
+315 mouse 191 51
+316 key K_r 1
+316 move 26 40
+318 mouse 38 201
+318 move -10 1
+319 stick 2 -32768 -20000
+319 key K_2 1
+319 click left 1
+320 pad 3 down 0
+320 move -16 30
+321 mouse 236 162
+322 key K_e 1
+322 key K_8 0
+322 key K_2 0
+322 move 4 -10
+324 mouse 64 215
+324 move 19 -28
+325 pad 3 left 0
+325 key K_1 1
+326 move 14 -32
+327 mouse 214 242
+328 key K_1 1
+328 move 20 4
+329 key K_x 1
+329 key K_2 0
+330 pad 0 north 0
+330 mouse 207 23
+330 move -8 29
+330 click left 1
+331 key K_2 1
+332 move -19 -39
+333 mouse 60 145
+334 key K_q 1
+334 move -27 -12
+335 pad 2 down 1
+336 key K_j 1
+336 key K_SPACE 0
+336 mouse 123 151
+336 move 14 38
+337 key K_s 1
+338 move -11 37
+339 mouse 256 80
+340 pad 3 south 0
+340 key K_a 1
+340 move 27 18
+341 click right 1
+342 mouse 121 94
+342 move 35 16
+343 key K_F10 1
+343 key K_j 0
+343 key K_a 1
+344 move -7 -1
+345 pad 0 rshoulder 0
+345 mouse -12 89
+346 key K_s 1
+346 move 0 -25
+348 stick 2 16000 16000
+348 mouse 224 180
+348 move -27 7
+349 key K_e 1
+350 key K_c 1
+350 key K_e 0
+350 pad 3 east 0
+350 move 5 9
+351 mouse 167 116
+352 key K_r 0
+352 move 6 12
+352 click right 0
+354 mouse -1 138
+354 move 29 29
+355 pad 0 down 1
+355 key K_e 1
+356 move 9 -2
+357 key K_s 1
+357 key K_s 0
+357 mouse -11 93
+358 key K_4 0
+358 move -31 -11
+360 pad 0 start 1
+360 pad 1 up 1
+360 mouse 264 221
+360 move -27 38
+361 key K_a 0
+362 move -3 -24
+363 mouse 43 202
+363 click left 0
+364 pad 0 start 0
+364 key K_q 1
+364 key K_F10 0
+364 key K_2 0
+364 move 35 9
+365 pad 0 left 1
+366 mouse 0 134
+366 move 12 7
+367 key K_a 1
+368 move -16 -34
+369 mouse 200 147
+370 pad 1 south 0
+370 key K_s 1
+370 move -34 -32
+371 key K_PAUSE 1
+371 key K_x 0
+372 mouse 232 213
+372 move -22 -40
+373 key K_q 0
+374 move -24 15
+374 click left 1
+375 pad 3 left 0
+375 mouse 152 69
+376 key K_f 1
+376 move -37 -27
+377 stick 1 16384 16000
+378 key K_9 1
+378 key K_c 0
+378 mouse 188 26
+378 move -39 6
+379 key K_s 0
+380 pad 2 right 0
+380 move 3 -8
+381 mouse 35 143
+382 key K_a 0
+382 move 29 -31
+384 mouse 103 225
+384 move 31 4
+385 key K_END 1
+385 key K_END 0
+385 pad 1 right 1
+385 key K_d 0
+385 click right 1
+386 move 35 20
+387 mouse 173 85
+388 key K_4 0
+388 move 6 20
+388 focus 1
+390 pad 1 south 0
+390 mouse 164 103
+390 move -5 20
+391 key K_d 0
+392 key K_KP6 1
+392 key K_KP6 0
+392 move -6 18
+393 mouse 189 40
+394 key K_4 1
+394 move -25 -7
+395 pad 3 down 1
+396 mouse 149 133
+396 move -2 -24
+396 click left 0
+397 key K_q 1
+398 move -29 -15
+399 key K_l 1
+399 key K_PAUSE 0
+399 mouse 264 -7
+400 pad 0 east 0
+400 key K_1 1
+400 move -28 -8
+402 mouse 243 198
+402 move 2 29
+403 key K_f 0
+404 move -35 5
+405 pad 3 back 1
+405 mouse 19 163
+406 key K_KP_MULTIPLY 1
+406 key K_KP_MULTIPLY 0
+406 stick 2 16385 16385
+406 key K_w 1
+406 move 28 -30
+407 click left 1
+408 mouse 226 14
+408 move 36 -35
+409 key K_r 0
+410 pad 3 north 0
+410 move 5 -25
+411 mouse 123 48
+412 key K_4 1
+412 move -12 -14
+413 key K_KP2 1
+413 key K_KP2 0
+414 mouse 223 -8
+414 move -25 -36
+415 pad 3 east 0
+415 key K_e 0
+416 move -15 37
+417 mouse 142 79
+418 key K_q 1
+418 move -4 14
+418 click right 1
+420 key K_F4 1
+420 key K_9 0
+420 pad 3 north 1
+420 mouse 98 238
+420 move -7 0
+421 key K_f 0
+422 move 2 30
+423 mouse 33 87
+424 key K_f 1
+424 move -17 -30
+425 pad 3 left 0
+426 mouse 103 146
+426 move 39 12
+427 key K_PERIOD 1
+427 key K_q 0
+427 key K_1 1
+428 move -3 -29
+429 mouse 11 129
+429 click right 1
+430 pad 0 north 1
+430 key K_f 1
+430 move 13 -29
+432 mouse 49 131
+432 move -25 -33
+433 key K_a 0
+434 key K_HOME 1
+434 key K_PERIOD 0
+434 move 33 0
+435 pad 1 south 1
+435 stick 0 -16000 -16385
+435 mouse 128 234
+436 key K_q 1
+436 move 26 -31
+438 mouse 53 124
+438 move -6 10
+439 key K_1 0
+440 pad 3 down 1
+440 move 11 31
+440 click left 0
+441 key K_8 1
+441 key K_8 0
+441 mouse -4 9
+442 key K_d 1
+442 move -24 -38
+444 mouse -2 238
+444 move -34 -38
+445 pad 0 back 0
+445 key K_4 0
+446 move 23 -15
+447 mouse 100 7
+448 key K_KP_PERIOD 1
+448 key K_l 0
+448 key K_1 0
+448 move -36 -1
+450 pad 3 back 0
+450 mouse 203 192
+450 move -31 -27
+451 key K_q 1
+451 click left 1
+452 move -30 -30
+453 mouse -10 83
+454 key K_1 0
+454 move 25 -10
+455 key K_4 1
+455 key K_4 0
+455 pad 2 up 0
+456 mouse -11 -9
+456 move -1 -19
+457 key K_e 0
+458 move 16 -29
+459 mouse 208 240
+460 pad 0 east 1
+460 key K_3 0
+460 move -35 -30
+462 key K_END 1
+462 key K_KP_PERIOD 0
+462 mouse 213 9
+462 move 25 -29
+462 click left 1
+463 key K_r 0
+464 stick 2 16384 32767
+464 move -18 34
+465 pad 1 right 0
+465 mouse 85 88
+466 key K_r 0
+466 move -24 22
+468 mouse 39 250
+468 move 13 -25
+469 key K_KP_PERIOD 1
+469 key K_END 0
+469 key K_3 0
+470 pad 2 back 0
+470 move 11 20
+471 mouse 162 148
+472 key K_q 1
+472 move -33 14
+473 click right 0
+474 mouse 156 37
+474 move 10 23
+475 pad 3 left 1
+475 key K_s 1
+476 key K_F4 1
+476 move -8 30
+477 mouse 34 58
+478 key K_q 0
+478 move 18 -20
+480 pad 0 start 1
+480 pad 3 south 0
+480 mouse 196 190
+480 move -21 26
+481 key K_3 0
+482 move 38 -18
+483 key K_1 1
+483 key K_F4 0
+483 mouse 146 67
+484 pad 0 start 0
+484 key K_d 0
+484 move -37 -3
+484 click left 1
+485 pad 1 right 1
+485 focus 1
+486 mouse 0 174
+486 move -35 8
+487 key K_1 0
+488 move 29 26
+489 mouse 218 -7
+490 key K_KP5 1
+490 key K_1 0
+490 pad 2 down 1
+490 key K_a 0
+490 move -27 -11
+492 mouse 106 61
+492 move 3 -18
+493 stick 3 32767 0
+493 key K_f 1
+494 move -16 20
+495 pad 1 back 1
+495 mouse 4 249
+495 click left 0
+496 key K_f 1
+496 move 40 -27
+497 key K_F12 1
+497 key K_F12 0
+498 mouse 85 164
+498 move 11 -33
+499 key K_r 0
+500 pad 0 left 0
+500 move -13 29
+501 mouse 195 189
+502 key K_s 1
+502 move -14 -7
+504 key K_F7 1
+504 key K_HOME 0
+504 mouse 239 139
+504 move 10 0
+505 pad 2 up 0
+505 key K_4 1
+506 move -25 -34
+506 click left 1
+507 mouse 87 236
+508 key K_2 1
+508 move -31 -25
+510 pad 1 south 0
+510 mouse 108 175
+510 move -31 13
+511 key K_KP_DIVIDE 1
+511 key K_KP_DIVIDE 0
+511 key K_1 1
+512 move 29 -38
+513 mouse 41 154
+514 key K_q 0
+514 move -27 9
+515 pad 0 up 0
+516 mouse 0 62
+516 move -18 4
+517 key K_1 0
+517 click left 1
+518 key K_F10 1
+518 key K_F10 0
+518 move 7 -25
+519 mouse 31 127
+520 pad 1 south 0
+520 key K_a 0
+520 move -4 -26
+522 stick 0 16385 -16385
+522 mouse 97 248
+522 move 11 -32
+523 key K_4 1
+524 move -24 -26
+525 key K_u 1
+525 key K_KP5 0
+525 pad 1 left 0
+525 mouse 255 181
+526 key K_4 1
+526 move 28 19
+528 mouse 236 190
+528 move -35 -3
+528 click left 1
+529 key K_q 0
+530 pad 2 north 1
+530 move -4 -21
+531 mouse 119 59
+532 key K_y 1
+532 key K_y 0
+532 key K_e 1
+532 move -31 -20
+534 mouse 238 146
+534 move -8 40
+535 pad 3 north 1
+535 key K_1 1
+536 move 19 -29
+537 mouse 102 104
+538 key K_e 0
+538 move 6 3
+539 key K_2 1
+539 key K_KP_PERIOD 0
+539 click right 1
+540 pad 3 up 1
+540 mouse 12 160
+540 move 14 -7
+541 key K_f 0
+542 move -11 -14
+543 mouse 248 226
+544 key K_d 0
+544 move 9 29
+545 pad 3 back 0
+546 key K_1 1
+546 key K_u 0
+546 mouse 132 118
+546 move -4 11
+547 key K_s 1
+548 move -35 -9
+549 mouse 223 79
+550 pad 0 east 1
+550 key K_a 0
+550 move -24 13
+550 click right 0
+551 stick 3 0 16000
+552 mouse 245 183
+552 move 5 -30
+553 key K_LEFTBRACKET 1
+553 key K_F7 0
+553 key K_a 0
+554 move 23 31
+555 pad 1 up 0
+555 mouse 208 75
+556 key K_3 0
+556 move 34 40
+558 mouse 260 214
+558 move 12 33
+559 key K_w 0
+560 key K_u 1
+560 key K_u 0
+560 pad 0 down 0
+560 move -37 32
+561 mouse 253 243
+561 click right 0
+562 key K_1 0
+562 move 25 -24
+564 mouse 73 -6
+564 move 23 -38
+565 pad 0 north 0
+565 key K_s 1
+566 move -1 -17
+567 key K_RETURN 1
+567 key K_2 0
+567 mouse 14 182
+568 key K_f 0
+568 move -5 -6
+570 pad 1 down 1
+570 mouse 212 127
+570 move 14 9
+571 key K_q 0
+572 move -19 40
+572 click left 0
+573 mouse 209 230
+574 key K_PAGEDOWN 1
+574 key K_RETURN 0
+574 key K_s 0
+574 move -30 -4
+575 pad 0 east 0
+576 mouse 136 141
+576 move 16 37
+577 key K_d 1
+578 move 16 -23
+579 mouse 167 76
+580 pad 0 lshoulder 0
+580 stick 1 -16384 -16385
+580 key K_2 0
+580 move 15 10
+581 key K_RIGHTBRACKET 1
+581 key K_RIGHTBRACKET 0
+582 mouse 68 73
+582 move 19 -29
+582 focus 1
+583 key K_4 0
+583 click left 1
+584 move 22 -29
+585 pad 2 up 0
+585 mouse 179 64
+586 key K_s 0
+586 move -33 22
+588 key K_KP4 1
+588 key K_KP4 0
+588 mouse 160 185
+588 move 1 23
+589 key K_s 0
+590 pad 3 down 1
+590 move 11 -13
+591 mouse 139 155
+592 key K_3 1
+592 move -36 14
+594 mouse 120 149
+594 move -40 -31
+594 click left 1
+595 key K_KP_PERIOD 1
+595 key K_LEFTBRACKET 0
+595 pad 3 up 1
+595 key K_w 1
+596 move 2 -35
+597 mouse 2 222
+598 key K_d 1
+598 move 26 1
+600 pad 0 start 1
+600 pad 0 south 0
+600 mouse -12 45
+600 move -14 -10
+601 key K_2 1
+602 key K_MINUS 1
+602 key K_1 0
+602 move -7 -37
+603 mouse 89 225
+604 pad 0 start 0
+604 key K_a 0
+604 move 37 2
+605 pad 3 down 0
+605 click left 0
+606 mouse 46 160
+606 move -4 -7
+607 key K_q 1
+608 move -32 6
+609 key K_CAPSLOCK 1
+609 key K_MINUS 0
+609 stick 3 0 -16384
+609 mouse 56 23
+610 pad 0 left 1
+610 key K_q 0
+610 move 40 38
+612 mouse 72 21
+612 move 30 24
+613 key K_s 0
+614 move -4 34
+615 pad 2 right 0
+615 mouse 141 79
+616 key K_F7 1
+616 key K_PAGEDOWN 0
+616 key K_d 0
+616 move -13 8
+616 click right 1
+618 mouse 37 201
+618 move 27 1
+619 key K_q 0
+620 pad 2 back 1
+620 move -7 25
+621 mouse -7 158
+622 key K_s 1
+622 move 37 24
+623 key K_5 1
+623 key K_KP_PERIOD 0
+624 mouse 177 175
+624 move 26 5
+625 pad 3 left 1
+625 key K_3 1
+626 move 1 15
+627 mouse 26 203
+627 click left 1
+628 key K_1 1
+628 move 11 -30
+630 key K_F6 1
+630 key K_F6 0
+630 pad 3 east 0
+630 mouse 198 134
+630 move -20 13
+631 key K_d 1
+632 move 39 29
+633 mouse 49 145
+634 key K_d 0
+634 move -9 -31
+635 pad 3 down 1
+636 mouse 101 2
+636 move 22 -5
+637 key K_PAUSE 1
+637 key K_PAUSE 0
+637 key K_r 1
+638 stick 1 16385 16385
+638 move 11 32
+638 click left 0
+639 mouse 145 127
+640 pad 0 lshoulder 1
+640 key K_2 0
+640 move -8 -35
+642 mouse 206 148
+642 move 14 -11
+643 key K_2 1
+644 key K_F3 1
+644 key K_F3 0
+644 move -5 11
+645 pad 0 lshoulder 0
+645 mouse 216 167
+646 key K_e 1
+646 move 28 -26
+648 mouse 241 62
+648 move -5 9
+649 key K_e 1
+649 click left 0
+650 pad 1 up 0
+650 move 24 -6
+651 key K_TAB 1
+651 key K_F7 0
+651 mouse 53 158
+652 key K_a 0
+652 move -20 7
+654 mouse 226 215
+654 move 28 -32
+655 pad 3 north 1
+655 key K_a 1
+656 move 33 33
+657 mouse 194 49
+658 key K_RCTRL 1
+658 key K_TAB 0
+658 key K_a 1
+658 move 0 22
+660 pad 2 north 1
+660 mouse -7 178
+660 move 6 -3
+660 click left 1
+661 key K_r 0
+662 move 29 29
+663 mouse 240 245
+664 key K_w 0
+664 move -32 10
+665 key K_F2 1
+665 key K_F2 0
+665 pad 2 back 0
+666 mouse 238 219
+666 move -7 26
+667 stick 1 16000 -16000
+667 key K_1 0
+668 move -23 -39
+669 mouse 24 32
+670 pad 3 left 0
+670 key K_s 0
+670 move -14 1
+671 click right 1
+672 key K_4 1
+672 key K_CAPSLOCK 0
+672 mouse 259 9
+672 move 20 22
+673 key K_r 1
+674 move -2 5
+675 pad 3 down 0
+675 mouse 44 185
+676 key K_s 0
+676 move 38 -13
+678 mouse 259 85
+678 move -23 17
+679 key K_BACKSLASH 1
+679 key K_RCTRL 0
+679 key K_q 1
+679 focus 0
+680 pad 2 right 1
+680 move -25 -25
+681 mouse 154 94
+682 key K_r 1
+682 move -16 11
+682 click right 1
+684 mouse 144 235
+684 move -31 -1
+685 pad 3 right 0
+685 key K_4 0
+686 key K_F11 1
+686 key K_BACKSLASH 0
+686 move 7 -23
+687 mouse 237 233
+688 key K_2 0
+688 move -18 17
+690 pad 2 south 0
+690 mouse 139 102
+690 move -35 33
+691 key K_e 1
+692 move -18 26
+693 key K_F10 1
+693 key K_F10 0
+693 mouse 93 50
+693 click right 0
+694 key K_4 1
+694 move 33 -29
+695 pad 1 down 1
+696 stick 2 16384 -16000
+696 mouse 137 25
+696 move 1 28
+697 key K_e 1
+698 move -19 20
+699 mouse 26 57
+700 key K_KP_MULTIPLY 1
+700 key K_5 0
+700 pad 0 south 0
+700 key K_e 1
+700 move -32 -30
+702 mouse 186 80
+702 move 10 39
+703 key K_w 0
+704 move 5 38
+704 click left 0
+705 pad 3 down 0
+705 mouse 172 62
+706 key K_a 1
+706 move 5 34
+707 key K_KP6 1
+707 key K_KP_MULTIPLY 0
+708 mouse -2 153
+708 move 4 -29
+709 key K_d 0
+710 pad 0 up 0
+710 move 17 -32
+711 mouse 147 185
+712 key K_w 1
+712 move 2 17
+714 key K_F12 1
+714 key K_F11 0
+714 mouse 93 124
+714 move 26 28
+715 pad 1 up 0
+715 key K_3 1
+715 click right 1
+716 move 38 -36
+717 mouse 253 75
+718 key K_4 0
+718 move 24 -6
+720 pad 0 start 1
+720 pad 1 up 1
+720 mouse -11 205
+720 move -26 38
+721 key K_DOWN 1
+721 key K_DOWN 0
+721 key K_r 1
+722 move 1 -11
+723 mouse 156 147
+724 pad 0 start 0
+724 key K_a 0
+724 move -7 -4
+725 pad 3 south 1
+725 stick 2 -20000 32767
+726 mouse 151 172
+726 move 39 -16
+726 click left 0
+727 key K_r 0
+728 key K_z 1
+728 key K_F12 0
+728 move 12 -29
+729 mouse 85 214
+730 pad 1 up 0
+730 key K_r 1
+730 move -22 12
+732 mouse 249 -9
+732 move 0 23
+733 key K_a 1
+734 move -34 1
+735 key K_v 1
+735 key K_4 0
+735 pad 1 back 1
+735 mouse 46 62
+736 key K_w 0
+736 move 34 31
+737 click left 1
+738 mouse 230 154
+738 move -10 18
+739 key K_1 1
+740 pad 1 up 0
+740 move 32 -34
+741 mouse 263 184
+742 key K_F10 1
+742 key K_z 0
+742 key K_r 0
+742 move -24 13
+744 mouse 128 130
+744 move 1 -20
+745 pad 3 south 0
+745 key K_e 0
+746 move -6 -14
+747 mouse 49 11
+748 key K_q 0
+748 move 22 -20
+748 click right 0
+749 key K_KP2 1
+749 key K_KP2 0
+750 pad 1 east 0
+750 mouse 152 64
+750 move -31 10
+751 key K_d 1
+752 move 21 11
+753 mouse 216 171
+754 stick 1 16000 -32768
+754 key K_w 0
+754 move 27 25
+755 pad 2 right 0
+756 key K_F10 1
+756 mouse 2 216
+756 move 20 -36
+757 key K_s 0
+758 move -12 -29
+759 mouse 217 163
+759 click right 0
+760 pad 3 up 0
+760 key K_e 1
+760 move 21 9
+762 mouse 143 125
+762 move 17 36
+763 key K_PAGEUP 1
+763 key K_KP6 0
+763 key K_r 1
+764 move 24 34
+765 pad 0 back 1
+765 mouse 209 19
+766 key K_4 1
+766 move -24 -16
+768 mouse 187 148
+768 move 33 13
+769 key K_f 1
+770 key K_5 1
+770 key K_F10 0
+770 pad 3 right 1
+770 move 2 -6
+770 click right 1
+771 mouse 39 156
+772 key K_q 1
+772 move 20 -16
+774 mouse 99 84
+774 move 18 -4
+775 pad 1 north 1
+775 key K_d 0
+776 move -39 -1
+776 focus 1
+777 key K_BACKSPACE 1
+777 key K_5 0
+777 mouse 49 247
+778 key K_4 0
+778 move -28 20
+780 pad 1 up 1
+780 mouse 147 -9
+780 move -1 33
+781 key K_2 1
+781 click left 0
+782 move -27 13
+783 stick 3 -32768 16384
+783 mouse 245 135
+784 key K_KP0 1
+784 key K_KP0 0
+784 key K_d 0
+784 move 18 -11
+785 pad 3 back 1
+786 mouse 33 83
+786 move 23 -20
+787 key K_w 1
+788 move 40 1
+789 mouse 207 154
+790 pad 0 back 1
+790 key K_r 0
+790 move 13 -35
+791 key K_6 1
+791 key K_6 0
+792 mouse 59 18
+792 move -18 9
+792 click right 0
+793 key K_r 1
+794 move -14 13
+795 pad 3 north 1
+795 mouse 206 234
+796 key K_2 1
+796 move 35 21
+798 key K_z 1
+798 key K_PAGEUP 0
+798 mouse 24 207
+798 move -6 29
+799 key K_s 0
+800 pad 2 up 0
+800 move 20 32
+801 mouse 227 136
+802 key K_s 1
+802 move -20 -23
+803 click right 1
+804 mouse -7 11
+804 move -8 17
+805 key K_COMMA 1
+805 key K_v 0
+805 pad 0 back 0
+805 key K_e 1
+806 move 5 -36
+807 mouse 143 98
+808 key K_s 1
+808 move -8 -2
+810 pad 0 left 1
+810 mouse 73 39
+810 move 32 14
+811 key K_1 1
+812 key K_NUMLOCK 1
+812 key K_COMMA 0
+812 stick 3 0 -16384
+812 move 4 -26
+813 mouse 11 136
+814 key K_r 0
+814 move 27 17
+814 click right 0
+815 pad 1 back 1
+816 mouse 10 117
+816 move 36 33
+817 key K_r 0
+818 move 10 -19
+819 key K_m 1
+819 key K_NUMLOCK 0
+819 mouse 187 80
+820 pad 2 left 0
+820 key K_d 1
+820 move -37 17
+822 mouse 246 241
+822 move -2 3
+823 key K_f 1
+824 move 33 -24
+825 pad 2 east 0
+825 mouse 56 72
+825 click right 0
+826 key K_i 1
+826 key K_m 0
+826 key K_4 1
+826 move -30 33
+828 mouse 212 204
+828 move -35 -6
+829 key K_4 1
+830 pad 1 down 1
+830 move -21 -30
+831 mouse 195 86
+832 key K_s 1
+832 move 9 25
+833 key K_BACKSPACE 1
+834 mouse 210 78
+834 move -31 -38
+835 pad 2 down 0
+835 key K_4 1
+836 move -17 -4
+836 click right 1
+837 mouse 175 91
+838 key K_1 0
+838 move 5 -35
+840 pad 0 start 1
+840 key K_F2 1
+840 key K_z 0
+840 pad 3 east 1
+840 mouse 145 247
+840 move 28 21
+841 stick 0 -32768 -20000
+841 key K_1 0
+842 move -35 -23
+843 mouse 90 56
+844 pad 0 start 0
+844 key K_1 0
+844 move -33 15
+845 pad 2 south 1
+846 mouse 243 29
+846 move -24 -10
+847 key K_RETURN 1
+847 key K_i 0
+847 key K_3 1
+847 click left 0
+848 move -6 4
+849 mouse 115 91
+850 pad 0 north 0
+850 key K_a 0
+850 move -7 -1
+852 mouse 89 84
+852 move 16 10
+853 key K_1 0
+854 key K_BACKSLASH 1
+854 key K_BACKSPACE 0
+854 move -30 -17
+855 pad 0 north 1
+855 mouse 207 46
+856 key K_3 0
+856 move 1 2
+858 mouse 107 65
+858 move 30 -24
+858 click right 0
+859 key K_r 0
+860 pad 0 south 1
+860 move 6 17
+861 key K_LSHIFT 1
+861 key K_BACKSLASH 0
+861 mouse 53 205
+862 key K_w 0
+862 move -8 33
+864 mouse 33 91
+864 move 30 -28
+865 pad 0 south 1
+865 key K_d 0
+866 move -35 -14
+867 mouse 74 160
+868 key K_k 1
+868 key K_LSHIFT 0
+868 key K_d 0
+868 move 20 -28
+869 click right 0
+870 pad 1 left 1
+870 stick 0 -32768 -32768
+870 mouse 74 138
+870 move 38 -17
+871 key K_q 1
+872 move -20 -25
+873 mouse 130 114
+873 focus 1
+874 key K_4 1
+874 move 20 20
+875 key K_F1 1
+875 key K_F1 0
+875 pad 0 lshoulder 0
+876 mouse 158 218
+876 move 32 33
+877 key K_s 1
+878 move -25 38
+879 mouse 154 87
+880 pad 0 rshoulder 1
+880 key K_w 0
+880 move -25 -27
+880 click left 0
+882 key K_LEFTBRACKET 1
+882 key K_k 0
+882 mouse 59 155
+882 move -7 -36
+883 key K_2 1
+884 move 12 19
+885 pad 1 down 1
+885 mouse 44 25
+886 key K_3 0
+886 move -26 10
+888 mouse 123 133
+888 move 4 4
+889 key K_TAB 1
+889 key K_RETURN 0
+889 key K_d 0
+890 pad 2 back 0
+890 move 26 -16
+891 mouse 128 2
+891 click left 1
+892 key K_4 1
+892 move 39 -32
+894 mouse 40 -11
+894 move 22 -37
+895 pad 0 south 1
+895 key K_a 1
+896 key K_d 1
+896 key K_LEFTBRACKET 0
+896 move -36 -3
+897 mouse 3 133
+898 key K_f 0
+898 move 27 -38
+899 stick 2 -16384 0

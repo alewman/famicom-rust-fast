@@ -2,7 +2,13 @@
 //! writes for the reference (see there for the format).
 //!
 //!     famicom-trace ROM --slices N [--machine KEY] [--input FILE] [--device N]
-//!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk] --out FILE
+//!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk]
+//!                   [--host FILE [--host-device N]] --out FILE
+//!
+//! `--host FILE`: [`famicom_rust::host`] drives the console as the reference
+//! tracer's `--host` drives it through the reference's window (FILE's format
+//! is there, `read_host`); each line ends with ` host` and
+//! [`famicom_rust::host::describe`].
 //!
 //! `--auto-disk`: the FDS's disks change as the program asks (`fds_auto`),
 //! each change written to stderr with its slice.
@@ -13,6 +19,7 @@
 
 use famicom_rust::board::Board;
 use famicom_rust::fds_auto::AutoDisk;
+use famicom_rust::host::{self, Gamepad, HostInput};
 use famicom_rust::joypad::StandardController;
 use famicom_rust::peripherals::*;
 use famicom_rust::{Machine, System};
@@ -248,6 +255,84 @@ fn drive(target: &mut dyn Any, field: &str, values: &[&str], time: i64) {
     }
 }
 
+/// `--host FILE`'s lines by slice (the reference tracer's `read_host`).
+fn read_host(path: &str) -> HashMap<u64, Vec<Vec<String>>> {
+    let mut script: HashMap<u64, Vec<Vec<String>>> = HashMap::new();
+    for text in std::fs::read_to_string(path).unwrap().lines() {
+        let parts: Vec<String> = text.split_whitespace().map(str::to_owned).collect();
+        if !parts.is_empty() && !text.starts_with('#') {
+            script
+                .entry(parts[0].parse().unwrap())
+                .or_default()
+                .push(parts[1..].to_vec());
+        }
+    }
+    script
+}
+
+/// One slice's host lines into `input` (the reference tracer's `host_step`).
+fn host_step(input: &mut HostInput, lines: &[Vec<String>]) {
+    input.mouse_dx = 0;
+    input.mouse_dy = 0;
+    let on = |v: &str| v == "1";
+    for line in lines {
+        let v: Vec<&str> = line.iter().map(|s| s.as_str()).collect();
+        match v[0] {
+            "gamepads" => {
+                let n: usize = v[1].parse().unwrap();
+                if input.gamepads.len() < n {
+                    input.gamepads.resize(n, Gamepad::default());
+                }
+            }
+            "key" => {
+                if on(v[2]) {
+                    input.keys.insert(v[1].to_owned());
+                } else {
+                    input.keys.remove(v[1]);
+                }
+            }
+            "mouse" => {
+                input.mouse_x = v[1].parse().unwrap();
+                input.mouse_y = v[2].parse().unwrap();
+            }
+            "move" => {
+                input.mouse_dx = v[1].parse().unwrap();
+                input.mouse_dy = v[2].parse().unwrap();
+            }
+            "click" => match v[1] {
+                "left" => input.mouse_left = on(v[2]),
+                "right" => input.mouse_right = on(v[2]),
+                other => panic!("host: click {other}?"),
+            },
+            "focus" => input.mouse_focused = on(v[1]),
+            "pad" => {
+                let pad = &mut input.gamepads[v[1].parse::<usize>().unwrap()];
+                let held = on(v[3]);
+                match v[2] {
+                    "up" => pad.up = held,
+                    "down" => pad.down = held,
+                    "left" => pad.left = held,
+                    "right" => pad.right = held,
+                    "south" => pad.south = held,
+                    "east" => pad.east = held,
+                    "north" => pad.north = held,
+                    "back" => pad.back = held,
+                    "start" => pad.start = held,
+                    "lshoulder" => pad.left_shoulder = held,
+                    "rshoulder" => pad.right_shoulder = held,
+                    other => panic!("host: pad field {other}?"),
+                }
+            }
+            "stick" => {
+                let pad = &mut input.gamepads[v[1].parse::<usize>().unwrap()];
+                pad.stick_x = v[2].parse().unwrap();
+                pad.stick_y = v[3].parse().unwrap();
+            }
+            other => panic!("host: {other}?"),
+        }
+    }
+}
+
 fn main() {
     let mut args = std::env::args().skip(1);
     let mut rom = None;
@@ -259,6 +344,8 @@ fn main() {
     let mut device = None;
     let mut out = None;
     let mut auto_disk = false;
+    let mut host_file = None;
+    let mut host_device = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--slices" => slices = args.next().unwrap().parse().unwrap(),
@@ -269,6 +356,8 @@ fn main() {
             "--device" => device = args.next(),
             "--out" => out = args.next(),
             "--auto-disk" => auto_disk = true,
+            "--host" => host_file = args.next(),
+            "--host-device" => host_device = args.next(),
             _ => rom = Some(arg),
         }
     }
@@ -301,7 +390,20 @@ fn main() {
             std::process::exit(2);
         }
     };
+    let host_script = host_file.map(|path| read_host(&path));
+    let mut host_input = HostInput {
+        mouse_focused: true,
+        ..HostInput::default()
+    };
     let mut plugged = match device.as_deref() {
+        _ if host_script.is_some() => {
+            let device = match host_device.as_deref() {
+                Some(number) => int(number) as u8,
+                None => system.image.as_ref().map_or(0, |i| i.board.expansion),
+            };
+            let famicom = system.cpu.bus.machine.famicom_expansion_port;
+            host::plug_for_host(system.board(), device, famicom)
+        }
         None => Plugged::None,
         Some("auto") => system.plug(None),
         Some("hori-adapter") => {
@@ -337,6 +439,12 @@ fn main() {
             let time = system.cpu.bus.ppu.time;
             let target = resolve(&mut system.cpu.bus, &mut plugged, &line[0]);
             drive(target, &line[1], &values, time);
+        }
+        let mut summary = None;
+        if let Some(script) = &host_script {
+            host_step(&mut host_input, script.get(&frame).map_or(&[][..], |v| v));
+            host::apply(system.board(), &mut plugged, &host_input, host::VAUS_LOW);
+            summary = Some(host::describe(system.board(), &mut plugged));
         }
         if resets.contains(&frame) {
             system.reset();
@@ -399,6 +507,9 @@ fn main() {
                 rob.commands.len()
             )
             .unwrap();
+        }
+        if let Some(summary) = &summary {
+            write!(out, " host {summary}").unwrap();
         }
         writeln!(out).unwrap();
         if detail == Some(frame) {

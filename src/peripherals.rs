@@ -842,6 +842,11 @@ impl Pointer {
         self.dy += dy;
     }
 
+    /// The motion not yet reported (the reference's `_dx`, `_dy`).
+    pub fn pending(&self) -> (i64, i64) {
+        (self.dx, self.dy)
+    }
+
     fn take(&mut self, limit: i64) -> (i64, i64) {
         let dx = self.dx.clamp(-limit, limit);
         let dy = self.dy.clamp(-limit, limit);

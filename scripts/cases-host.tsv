@@ -1,0 +1,40 @@
+# The host gate: the reference's window (frontend.py, on a stand-in pygame) and
+# famicom_rust::host driving each device from one player script; one case a
+# device (rung 6's ROMs). Not here: the Hori adapter (no number to plug), the
+# Data Recorder and the Turbo File (the window's files), the port test.
+host-four-score/gauntlet-ii	900	/data/emu/roms/nes/Gauntlet II (USA).zip	--machine nes --host $INPUTS/host-all.txt --host-device 0x02
+host-famicom-four/bomberman-ii	900	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x03
+host-zapper-famicom/duck-hunt	900	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x08
+host-zapper-nes/duck-hunt	900	/data/emu/roms/nes/Duck Hunt (World).zip	--machine nes --host $INPUTS/host-all.txt --host-device 0x08
+host-two-zappers/duck-hunt	900	/data/emu/roms/nes/Duck Hunt (World).zip	--machine nes --host $INPUTS/host-all.txt --host-device 0x09
+host-zapper-4016/shark-pirate	900	/data/emu/roms/nes/Shark Pirate's Harpoon The Dolphin - Win a Prize! (World) (Demo) (Aftermarket) (Unl).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x49
+host-bandai-hyper-shot/duck-hunt	900	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x0A
+host-vaus-nes/vaus-test	900	$NES_TEST_ROMS/nes-test-roms/vaus-test/vaus-test.nes	--machine nes --host $INPUTS/host-all.txt --host-device 0x0F
+host-vaus-famicom/arkanoid-japan	900	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x10
+host-vaus-famicom-on-nes/chase-hq	900	/data/emu/roms/nes/Taito Chase H.Q. (Japan).zip	--machine nes --host $INPUTS/host-all.txt --host-device 0x10
+host-vaus-pair/arkanoid-japan	900	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x11
+host-power-pad/world-class-track-meet	900	/data/emu/roms/nes/World Class Track Meet (USA).zip	--machine nes --host $INPUTS/host-all.txt --host-device 0x0C
+host-family-trainer/athletic-world	900	/data/emu/roms/nes/Family Trainer 1 - Athletic World (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x0D
+host-taptap-mat/mogura-tataki	900	/data/emu/roms/nes/Super Mogura Tataki!! - Pokkun Mogurar (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x1A
+host-family-basic-keyboard/family-basic-v2.1	900	/data/emu/roms/nes/Family BASIC v2.1 (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x23
+host-subor-keyboard/text-editor	900	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x26
+host-subor-mouse-4016/text-editor	900	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x28
+host-subor-mouse-4017/text-editor	900	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x36
+host-macro-winners/text-editor	900	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x27
+host-mega-book/mega-book-4-in-1	900	/data/emu/roms/nes/Mega Book 4-in-1 (Italy) (Aftermarket) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x4F
+host-subor-yuxing/text-editor	900	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --host $INPUTS/host-all.txt --host-device 0x44
+host-yuxing-mouse/duck-hunt	900	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x43
+host-snes-mouse-4016/thwaite	900	/data/emu/roms/nes/Thwaite (World) (Proto 4) (Aftermarket) (Unl).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x29
+host-snes-mouse-4017/theremin	900	/data/emu/roms/nes/Theremin (World) (Aftermarket) (Unl).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x48
+host-snes-controllers/read_joy3-test_buttons	900	$NES_TEST_ROMS/nes-test-roms/read_joy3/test_buttons.nes	--machine nes --host $INPUTS/host-all.txt --host-device 0x2B
+host-hori-track/bomberman-ii	900	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x50
+host-pachinko/pachio-kun-4	900	/data/emu/roms/nes/Pachio-kun 4 (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x13
+host-konami-hyper-shot/hyper-olympic	900	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x12
+host-boxing-bag/hyper-olympic	900	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x14
+host-jissen-mahjong/jissen-mahjong	900	/data/emu/roms/nes/Ide Yousuke Meijin no Jissen Mahjong (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x15
+host-partytap/casino-derby	900	/data/emu/roms/nes/Casino Derby (Japan).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x16
+host-oeka-kids/hyper-olympic	900	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x17
+host-famicom-3d/highway-star	900	/data/emu/roms/nes/Highway Star (Japan) (En) (Famicom 3D System).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x1D
+host-rob/gyromite	900	/data/emu/roms/nes/Gyromite (World).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x1F
+host-auto/arkanoid-japan	900	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt
+host-pads/bomberman-ii-famicom	900	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --host $INPUTS/host-all.txt --host-device 0x01
