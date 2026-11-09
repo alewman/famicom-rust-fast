@@ -473,7 +473,9 @@ impl Ppu {
     /// line with rendering on and settled, on which dot_work would do just
     /// what `pixel_dot` does: dot is neither 1 nor DOTS - 3, nor the line's
     /// end; no wake, fade, OAM corruption, darkness or OAM refresh
-    /// (`render`'s dot >= 2 arm).
+    /// (`render`'s dot >= 2 arm). The fading and OAM-corruption tests are
+    /// guards: `fading` is only set with `on` cleared, and a corruption is
+    /// spent before a visible line's pixel dot (scripts/seeded_faults.py).
     #[inline(always)]
     fn pixel_dot_ready(&self, line: i32, dot: i32) -> bool {
         (2..=WIDTH as i32).contains(&dot)
