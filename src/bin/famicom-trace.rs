@@ -402,7 +402,7 @@ fn main() {
                 None => system.image.as_ref().map_or(0, |i| i.board.expansion),
             };
             let famicom = system.cpu.bus.machine.famicom_expansion_port;
-            host::plug_for_host(system.board(), device, famicom)
+            host::plug_for_host(system.board(), device, famicom, None)
         }
         None => Plugged::None,
         Some("auto") => system.plug(None),

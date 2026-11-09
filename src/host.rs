@@ -264,13 +264,20 @@ fn held(input: &HostInput, table: &[(String, String)]) -> HashSet<String> {
 /// number), else the cartridge's (`expansion`, from nes20db or the header);
 /// the NES Vaus becomes the Famicom's on a Famicom; and on a Famicom with
 /// the expansion port still empty, a four-player adapter's pads 3 and 4.
-pub fn plug_for_host(board: &mut Board, device: u8, famicom: bool) -> Plugged {
+/// `palette` is the light guns' (the picture's palette; None: the machine's
+/// pally palette from the reference's images, as `plug` reads it).
+pub fn plug_for_host(
+    board: &mut Board,
+    device: u8,
+    famicom: bool,
+    palette: Option<Vec<[u8; 3]>>,
+) -> Plugged {
     let device = if device == VAUS_NES && famicom {
         VAUS_FAMICOM
     } else {
         device
     };
-    let plugged = plug(board, device, famicom, None);
+    let plugged = plug(board, device, famicom, palette);
     if board.expansion.is_none() && famicom {
         board.expansion = Some(Box::new(ExpansionPads::default()));
     }
