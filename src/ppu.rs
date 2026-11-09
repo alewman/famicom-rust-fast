@@ -427,6 +427,34 @@ impl Ppu {
         let mut dot = self.dot + 1;
         let mut line = self.line;
         let rendering = self.on;
+        // Fork: the common dot, a visible line's pixel dot (2-256) with
+        // rendering on and settled. dot_work would take the same path:
+        // dot is neither 1 nor DOTS - 3, nor the line's end; no wake, fade,
+        // OAM corruption, darkness or OAM refresh (`render`'s dot >= 2 arm).
+        if (2..=WIDTH as i32).contains(&dot)
+            && (line as usize) < HEIGHT
+            && rendering
+            && !self.waking
+            && self.fading == 0
+            && !self.dark
+            && self.oam_corrupt.is_none()
+            && self.timing.oam_refresh.is_none()
+        {
+            self.dot = dot;
+            if self.mask & 0x18 != 0 {
+                self.evaluate(line, dot);
+            }
+            self.pixel(line, (dot - 2) as usize);
+            self.shift();
+            if dot == 63 || dot == 255 {
+                self.oam2_frozen = false;
+            }
+            self.background_fetch(dot);
+            if dot == WIDTH as i32 {
+                self.increment_y();
+            }
+            return;
+        }
         if dot == DOTS {
             line = self.next_line(line);
             self.dot = 0;
