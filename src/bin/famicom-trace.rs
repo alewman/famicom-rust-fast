@@ -2,13 +2,17 @@
 //! writes for the reference (see there for the format).
 //!
 //!     famicom-trace ROM --slices N [--machine KEY] [--input FILE] [--device N]
-//!                   [--reset FRAME ...] [--detail FRAME] --out FILE
+//!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk] --out FILE
+//!
+//! `--auto-disk`: the FDS's disks change as the program asks (`fds_auto`),
+//! each change written to stderr with its slice.
 //!
 //! `--device` and the `FRAME set PATH FIELD VALUE...` input lines are the
 //! reference tracer's: [`resolve`] walks PATH from what `plug` returned (a
 //! [`Plugged`]) and [`drive`] sets FIELD as the reference's `drive` does.
 
 use famicom_rust::board::Board;
+use famicom_rust::fds_auto::AutoDisk;
 use famicom_rust::joypad::StandardController;
 use famicom_rust::peripherals::*;
 use famicom_rust::{Machine, System};
@@ -254,6 +258,7 @@ fn main() {
     let mut detail = None;
     let mut device = None;
     let mut out = None;
+    let mut auto_disk = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--slices" => slices = args.next().unwrap().parse().unwrap(),
@@ -263,6 +268,7 @@ fn main() {
             "--detail" => detail = Some(args.next().unwrap().parse::<u64>().unwrap()),
             "--device" => device = args.next(),
             "--out" => out = args.next(),
+            "--auto-disk" => auto_disk = true,
             _ => rom = Some(arg),
         }
     }
@@ -305,6 +311,16 @@ fn main() {
         Some(number) => system.plug(Some(int(number) as u8)),
     };
     system.board().bus_log = Some(Vec::with_capacity(40_000));
+    if auto_disk {
+        let board = system.board();
+        let auto = board
+            .ppu
+            .cart
+            .fds()
+            .map(AutoDisk::new)
+            .expect("--auto-disk: not a disk system");
+        board.auto_disk = Some(Box::new(auto));
+    }
     let mut out = std::io::BufWriter::new(std::fs::File::create(out.expect("--out")).unwrap());
     let mut bytes = Vec::new();
     for frame in 0..slices {
@@ -327,6 +343,11 @@ fn main() {
         }
         system.board().bus_log.as_mut().unwrap().clear();
         system.run_frames(1);
+        if let Some(auto) = system.board().auto_disk.as_mut() {
+            for message in auto.messages.drain(..) {
+                eprintln!("slice {frame}: {message}");
+            }
+        }
         let samples = system.take_samples();
         let board = &system.cpu.bus;
         let log = board.bus_log.as_ref().unwrap();

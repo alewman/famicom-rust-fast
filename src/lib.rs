@@ -16,6 +16,7 @@
 pub mod apu;
 pub mod board;
 pub mod cartridge;
+pub mod fds_auto;
 pub mod joypad;
 pub mod machine;
 pub mod peripherals;

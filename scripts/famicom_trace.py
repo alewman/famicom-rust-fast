@@ -11,7 +11,7 @@ slice's audio (``take_samples``, little-endian f64). ``target/release/famicom-tr
 writes the same lines; ``scripts/lockstep.py`` compares them.
 
     famicom_trace.py ROM --slices N [--machine KEY] [--input FILE] [--device N]
-                     [--reset FRAME ...] [--detail FRAME] --out FILE
+                     [--reset FRAME ...] [--detail FRAME] [--auto-disk] --out FILE
 
 ``--input``: lines ``FRAME PAD BUTTONS`` (hex), applied before that slice to a
 standard pad, and lines ``FRAME set PATH FIELD [VALUE ...]`` that drive the
@@ -21,6 +21,9 @@ number, decimal or 0x hex); ``auto``, the cartridge's own (``System.plug()``);
 ``hori-adapter``, a ``peripherals.HoriAdapter`` on the expansion port (no number
 plugs it). With R.O.B., each line ends with ``rob HEIGHT TURN ARMS LED COMMANDS``
 after ``see(ppu.picture)``; every other line is unchanged.
+``--auto-disk``: the FDS's disks change as the program asks (``fds_auto.AutoDisk``,
+observing after the tracer, as the Rust board calls it after its log), each
+change written to stderr with its slice.
 ``--detail FRAME``: also write every bus cycle of that slice, one per line.
 """
 
@@ -74,6 +77,7 @@ def main() -> int:
     parser.add_argument("--device")
     parser.add_argument("--reset", type=int, action="append", default=[])
     parser.add_argument("--detail", type=int)
+    parser.add_argument("--auto-disk", action="store_true")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
@@ -107,6 +111,11 @@ def main() -> int:
         append(t << 25 | (kind == "write") << 24 | address << 8 | value)
 
     board.bus_observers.append(observe)
+    slice_now = [0]
+    if args.auto_disk:
+        from famicom_python.fds_auto import AutoDisk
+
+        AutoDisk(system, lambda message: print(f"slice {slice_now[0]}: {message}", file=sys.stderr))
     with open(args.out, "w") as out:
         for frame in range(args.slices):
             for pad, buttons in inputs.get(frame, ()):
@@ -116,6 +125,7 @@ def main() -> int:
             if frame in args.reset:
                 system.reset()
             del log[:]
+            slice_now[0] = frame
             system.run_frames(1)
             if sys.byteorder != "little":
                 log.byteswap()

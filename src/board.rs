@@ -15,6 +15,7 @@
 
 use crate::apu::{AnalogueStage, Apu};
 use crate::cartridge::Cartridge;
+use crate::fds_auto::AutoDisk;
 use crate::joypad::StandardController;
 use crate::machine::Machine;
 use crate::peripherals::{ExpansionDevice, PortDevice};
@@ -62,6 +63,9 @@ pub struct Board {
     route_audio: bool,
     /// Every CPU-bus cycle (not the DMA's), packed by [`pack_cycle`], while Some.
     pub bus_log: Option<Vec<u64>>,
+    /// Disk changes as the program asks for them, while Some (`fds_auto.py`'s
+    /// observer): called after each CPU-bus cycle, after `bus_log`.
+    pub auto_disk: Option<Box<AutoDisk>>,
 }
 
 impl Board {
@@ -127,6 +131,7 @@ impl Board {
             counts_m2,
             route_audio,
             bus_log: None,
+            auto_disk: None,
             machine,
         }
     }
@@ -256,6 +261,10 @@ impl Board {
         if let Some(log) = self.bus_log.as_mut() {
             log.push(pack_cycle(false, address, value, t));
         }
+        if let Some(mut auto) = self.auto_disk.take() {
+            auto.observe(self, false, address, value);
+            self.auto_disk = Some(auto);
+        }
         value
     }
 
@@ -282,6 +291,10 @@ impl Board {
         self.end_cycle(frame);
         if let Some(log) = self.bus_log.as_mut() {
             log.push(pack_cycle(true, address, value, t));
+        }
+        if let Some(mut auto) = self.auto_disk.take() {
+            auto.observe(self, true, address, value);
+            self.auto_disk = Some(auto);
         }
     }
 

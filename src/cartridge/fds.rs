@@ -296,6 +296,12 @@ impl Fds {
 
 impl Cartridge for Fds {
     banked_field!(b);
+    fn fds(&self) -> Option<&Fds> {
+        Some(self)
+    }
+    fn fds_mut(&mut self) -> Option<&mut Fds> {
+        Some(self)
+    }
 
     fn snoops_cpu_reads(&self) -> bool {
         true

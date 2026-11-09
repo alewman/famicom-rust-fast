@@ -42,6 +42,14 @@ pub trait Cartridge: crate::state::Snapshot {
     fn banked_mut(&mut self) -> Option<&mut Banked> {
         None
     }
+    /// The Disk System, for a host that changes its disks (the reference's
+    /// `isinstance(cartridge, FDS)`).
+    fn fds(&self) -> Option<&super::fds::Fds> {
+        None
+    }
+    fn fds_mut(&mut self) -> Option<&mut super::fds::Fds> {
+        None
+    }
 
     // -- what the cartridge asks to see ------------------------------------
 

@@ -1,0 +1,6 @@
+# FDS with AutoDisk (fds_auto): sides changed as the program asks. Two
+# games that ask for side B, one whose second-half disk waits for a disk the
+# dump lacks (eject, placeholder, again). The BIOS: FAMICOM_FDS_BIOS.
+fds-auto-chitei-tairiku-ordola	1500	/data/emu/roms/fds/Chitei Tairiku Ordola (Japan).zip	--input $INPUTS/start-mash.txt --auto-disk
+fds-auto-adian-no-tsue	1500	/data/emu/roms/fds/Adian no Tsue (Japan).zip	--input $INPUTS/start-mash.txt --auto-disk
+fds-auto-tantei-club-kouhen	900	/data/emu/roms/fds/Famicom Tantei Club - Kieta Koukeisha - Kouhen (Japan).zip	--input $INPUTS/start-mash.txt --auto-disk
