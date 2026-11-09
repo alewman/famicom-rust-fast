@@ -76,7 +76,12 @@ reference: it runs `famicom-trace` on each case and compares the trace with
 `<cache>/<name>.<slices>.ref`. The ladder needs `NES_TEST_ROMS` (default
 famicom-rust's reference checkout's test ROMs), `FAMICOM_FDS_BIOS` and
 nes20db at `external/nes20db-2026-09-26.7z` (`FAMICOM_NES20DB`; without it
-16 cases identify their boards differently and differ).
+16 cases identify their boards differently and differ), and pally's palettes
+under `external/reference/reference/nesdev-wiki/images` (`FAMICOM_REFERENCE`,
+copied from the reference's checkout; without them the Zapper judges light on
+a grey palette and three light-gun cases of the host gate differ, while the
+peripheral cases happened to pass: found 2026-11-08). The ladder refuses to
+run without either.
 
 **Seeded faults** (`scripts/seeded_faults.py`): one-line faults in the fork's
 own code, each built apart and run up the ladder until a rung fails. Six of

@@ -24,6 +24,15 @@ export FAMICOM_FDS_BIOS=${FAMICOM_FDS_BIOS:-"/data/emu/roms/fds/[BIOS] Family Co
 # dumps load as their headers say and the traces differ.
 export FAMICOM_NES20DB=${FAMICOM_NES20DB:-$EXT/nes20db-2026-09-26.7z}
 [ -s "$FAMICOM_NES20DB" ] || { echo "no nes20db at $FAMICOM_NES20DB"; exit 1; }
+# pally's palettes, read at run time from the reference's
+# reference/nesdev-wiki/images (copied into external/reference; never
+# committed): the Zapper's light thresholds come from them. Without them the
+# board falls back to a grey palette and the light-gun traces differ.
+export FAMICOM_REFERENCE=${FAMICOM_REFERENCE:-$EXT/reference}
+for pal in 2C02G_U_wiki.pal 2C07_wiki.pal; do
+    [ -s "$FAMICOM_REFERENCE/reference/nesdev-wiki/images/$pal" ] || {
+        echo "no $pal under $FAMICOM_REFERENCE/reference/nesdev-wiki/images"; exit 1; }
+done
 BIN=$ROOT/target/release
 began=$SECONDS
 failed=0
