@@ -50,6 +50,7 @@ fn main() {
         let machine = System::machine_for(&data).unwrap_or_else(|e| panic!("{e}"));
         let mut system = System::from_rom(&data, machine, None).unwrap_or_else(|e| panic!("{e}"));
         let mut check = crc32fast::Hasher::new();
+        let mut bytes: Vec<u8> = Vec::with_capacity(1 << 18);
         let began = cpu_ns();
         for frame in 0..frames {
             if let Some(&buttons) = presses.get(&frame) {
@@ -61,12 +62,16 @@ fn main() {
                 }
             }
             system.run_frames(1);
+            // The picture and the samples as bytes, one CRC update each (an
+            // update per value cost about a tenth of the run).
+            bytes.clear();
             for value in &system.cpu.bus.ppu.picture {
-                check.update(&value.to_le_bytes());
+                bytes.extend_from_slice(&value.to_le_bytes());
             }
             for sample in system.take_samples() {
-                check.update(&sample.to_le_bytes());
+                bytes.extend_from_slice(&sample.to_le_bytes());
             }
+            check.update(&bytes);
         }
         let seconds = (cpu_ns() - began) as f64 / 1e9;
         check.update(&system.cycles().to_le_bytes());
