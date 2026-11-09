@@ -324,18 +324,17 @@ impl Board {
         if self.snoop_reads {
             self.ppu.cart.cpu_read(address, t);
         }
-        let value;
-        if address < 0x2000 {
-            value = self.ram[address as usize & 0x7FF];
+        let value = if address < 0x2000 {
+            self.ram[address as usize & 0x7FF]
         } else if address == 0x4015 {
             return self.apu.read_status() | (self.internal_bus & 0x20);
         } else if address == 0x4016 || address == 0x4017 {
             let port = (address - 0x4016) as usize;
             self.pad_oe = port as i32;
-            value = (self.data_bus & self.open_lines[port]) | self.port_bits(port);
+            (self.data_bus & self.open_lines[port]) | self.port_bits(port)
         } else {
             return self.data_bus;
-        }
+        };
         self.data_bus = value;
         value
     }
