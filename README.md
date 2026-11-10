@@ -64,7 +64,7 @@ without a cached trace.
 | --- | --- | --- |
 | `cargo test` | incl. `tests/mapper_coverage.rs`: all 294 mappers build | |
 | rung 1 | nestest against nestest.log | 8,991 lines |
-| rung 2 | lockstep, every NROM test ROM (600 slices) and AccuracyCoin's run-all (3,000), `scripts/cases.tsv` | 200 cases |
+| rung 2 | lockstep, every NROM test ROM (600 slices) and AccuracyCoin's run-all (3,000), `scripts/cases.tsv`; the probes, famicom-rust's own test ROMs (`probes/*.s`, assembled with cc65's ca65 and ld65 at `CC65_DIR`), `scripts/cases-probes.tsv` | 200 + 1 cases |
 | rung 5 | lockstep, every board class on dumps (`external/cases-rung5.tsv`), the FDS on three disks (`cases-fds.tsv`), Lagrange Point's VRC7 FM (`cases-lagrange.tsv`, 3,000 slices) | 581 + 6 + 1 |
 | rung 6 | lockstep, the machine rows (`scripts/cases-machines.tsv`) and the peripherals (`scripts/cases-peripherals.tsv`) | 25 + 54 |
 | rung 3 | the reference's test ROM tables, outcome for outcome (`famicom-testrom`, `famicom-testrom-compare`) | 197 |
@@ -81,21 +81,27 @@ under `external/reference/reference/nesdev-wiki/images` (`FAMICOM_REFERENCE`,
 copied from the reference's checkout; without them the Zapper judges light on
 a grey palette and three light-gun cases of the host gate differ, while the
 peripheral cases happened to pass: found 2026-11-08). The ladder refuses to
-run without either.
+run without either. The probes need cc65 (`CC65_DIR`, default
+`~/.local/opt/cc65-2.19`).
 
 **Seeded faults** (`scripts/seeded_faults.py`): one-line faults in the fork's
-own code, each built apart and run up the ladder until a rung fails. Six of
-seven are caught (the frame counter's quiet run over the next step and from
-before its start; the pixel dot while waking, while dark, without dot 256's
-fine-Y increment, and taken by `run_to` over a due event), all by rung 2. One
-is **missed by the whole ladder**: the pixel dot evaluating sprites in the one
-dot between a $2001 write of rendering off and rendering's turning off. No
-case turns rendering off mid-evaluation and then shows that one step's effect
-(OAMADDR, the corruption's row); it is a gap in famicom-rust's gate as well,
-noted here rather than taken as equivalent. Two other candidates were
-equivalent and are left out (the pixel dot's fading and OAM-corruption tests
-are guards: `fading` is only set with rendering off, and a corruption is
-spent before any visible pixel dot).
+own code, each built apart and run up the ladder until a rung fails. All six
+are caught (the frame counter's quiet run over the next step and from before
+its start; the pixel dot while waking, while dark, without dot 256's fine-Y
+increment, and taken by `run_to` over a due event), all by rung 2. Three
+candidates are equivalent and left out, the pixel dot's tests that are
+guards: `fading` is only set with rendering off; a corruption is spent before
+any visible pixel dot; and the mask test before sprite evaluation. That last
+one was first reported here as missed by the whole ladder, a gap in the gate
+(2026-11-08). It is not (shown 2026-11-09): the one way to have rendering on with the mask clear
+is a $2001 write of both bits off while rendering, which also arms the OAM
+corruption, and the pixel dot is refused until a write turns rendering back
+on. famicom-rust's rung 2 now has a probe written for it
+(`probes/eval_turn_off.s`), which turns rendering off mid-evaluation 329 times
+in 600 frames (dots 66-255, both parities) and reads OAM back where
+evaluation left OAMADDR. With a panic in place of the skipped evaluation,
+no case in any of the ladder's tables fired it, the probe included. The probe
+stays as the gate's direct case for that region.
 
 ## Measuring
 

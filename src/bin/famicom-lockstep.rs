@@ -7,7 +7,7 @@
 //!     famicom-lockstep --cases TSV --cache DIR [--jobs N] [--trace BIN] [--only TEXT]
 //!
 //! A case is `name<TAB>slices<TAB>rom<TAB>arguments`; `$NES_TEST_ROMS`,
-//! `$NES_DUMPS` and `$INPUTS` are taken from the environment, with
+//! `$NES_DUMPS`, `$INPUTS` and `$PROBES` are taken from the environment, with
 //! lockstep.py's defaults (the test ROMs at famicom-rust's reference
 //! checkout). The cached trace is `DIR/<name>.<slices>.ref`, the name with
 //! every run of other characters than `A-Za-z0-9._-` made one `_`, as
@@ -51,6 +51,7 @@ fn cases(table: &Path) -> Vec<Case> {
         ),
         ("NES_DUMPS", "/data/emu/roms/nes".to_owned()),
         ("INPUTS", format!("{ROOT}/scripts/inputs")),
+        ("PROBES", format!("{ROOT}/external/probes")),
     ]
     .into_iter()
     .map(|(k, d)| (format!("${k}"), std::env::var(k).unwrap_or(d)))

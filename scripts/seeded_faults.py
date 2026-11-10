@@ -5,8 +5,9 @@ time and check that some rung of scripts/ladder.sh catches each.
 Each fault is one exact text replacement in a copy of ``src/``, built into its
 own target directory (external/faults); then the ladder's rungs run against
 it in order, cheapest first, until one fails: rung 1 (nestest), the lockstep
-tables against the cached reference traces (rung 2, rung 5's board classes,
-the FDS, Lagrange Point, the machine rows, the peripherals), rung 4
+tables against the cached reference traces (rung 2 and its probes, rung 5's
+board classes, the FDS, Lagrange Point, AutoDisk, the machine rows, the
+peripherals, the host input), rung 4
 (AccuracyCoin on the reference's counts) and rung 3 (the test ROM tables).
 A fault no rung catches is reported as MISSED.
 
@@ -64,16 +65,14 @@ FAULTS = {
         ".is_none_or(|&(due, _)| due > self.time + ticks)",
         ".is_none_or(|&(due, _)| due > self.time)",
     ),
-    # The pixel dot evaluating sprites in the dot between $2001's write of
-    # sprites and background off and rendering's turning off. MISSED by the
-    # whole ladder (2026-11-08): no case turns rendering off mid-evaluation
-    # and then shows OAMADDR's or the corruption's effect of that one step.
-    # A gap in the gate (famicom-rust's too), not taken as equivalent.
-    "pixel-dot-evaluates-with-rendering-masked": (
-        "ppu.rs",
-        "    fn pixel_dot(&mut self, line: i32, dot: i32) {\n        if self.mask & 0x18 != 0 {\n            self.evaluate(line, dot);\n        }",
-        "    fn pixel_dot(&mut self, line: i32, dot: i32) {\n        self.evaluate(line, dot);",
-    ),
+    # (Not a fault: the pixel dot evaluating sprites with rendering masked.
+    # The one way to `on` with the mask clear is a $2001 write of both bits
+    # off while rendering, which also sets `oam_corrupt`, and
+    # `pixel_dot_ready` refuses until a write turns rendering back on, so
+    # `pixel_dot`'s mask test is a guard. Missed on 2026-11-08 and taken for a
+    # gap; then shown: the probe probes/eval_turn_off.s turns rendering off
+    # mid-evaluation 329 times, and a panic in place of the skipped
+    # evaluation fired on no case of the ladder's tables, the probe included.)
     # The frame counter's quiet run taken from before its first cycle.
     "apu-quiet-run-without-its-start": (
         "apu.rs",
@@ -88,14 +87,18 @@ ENV = {
     "FAMICOM_NES20DB": str(EXT / "nes20db-2026-09-26.7z"),
     # The case tables' inputs (the binaries' default is beside their source).
     "INPUTS": str(ROOT / "scripts" / "inputs"),
+    "PROBES": str(EXT / "probes"),
 }
 TABLES = [
     ("rung 2", ROOT / "scripts" / "cases.tsv", EXT / "refcache"),
+    ("rung 2 probes", ROOT / "scripts" / "cases-probes.tsv", EXT / "refcache-probes"),
     ("rung 5", EXT / "cases-rung5.tsv", EXT / "refcache-mappers"),
     ("rung 5 FDS", EXT / "cases-fds.tsv", EXT / "refcache-mappers"),
     ("rung 5 VRC7", EXT / "cases-lagrange.tsv", EXT / "refcache-mappers"),
     ("rung 6 machines", ROOT / "scripts" / "cases-machines.tsv", EXT / "refcache"),
+    ("rung 5 AutoDisk", ROOT / "scripts" / "cases-fds-auto.tsv", EXT / "refcache-mappers"),
     ("rung 6 peripherals", ROOT / "scripts" / "cases-peripherals.tsv", EXT / "refcache-devices"),
+    ("rung 6 host", ROOT / "scripts" / "cases-host.tsv", EXT / "refcache-host"),
 ]
 
 

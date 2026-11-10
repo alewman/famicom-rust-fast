@@ -1,0 +1,2 @@
+# name	slices	rom	arguments (shell words); $PROBES: probes/build.sh assembles them
+probes/eval-turn-off	600	$PROBES/eval-turn-off.nes	

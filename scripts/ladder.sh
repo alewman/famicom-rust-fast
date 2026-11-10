@@ -59,6 +59,9 @@ lockstep() {
 }
 step "lockstep: rung 2"
 lockstep "$ROOT/scripts/cases.tsv" "$EXT/refcache"
+step "lockstep: rung 2, the probes (probes/*.s, assembled with cc65)"
+PROBES="$EXT/probes" "$ROOT/probes/build.sh"
+lockstep "$ROOT/scripts/cases-probes.tsv" "$EXT/refcache-probes"
 step "lockstep: rung 5, every board class"
 lockstep "$EXT/cases-rung5.tsv" "$EXT/refcache-mappers"
 step "lockstep: rung 5, the FDS"

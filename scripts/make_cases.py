@@ -24,6 +24,7 @@ DEFAULTS = {
     "NES_TEST_ROMS": str(REFERENCE / "tests" / "test_roms"),
     "NES_DUMPS": "/data/emu/roms/nes",
     "INPUTS": str(HERE / "inputs"),
+    "PROBES": str(ROOT / "external" / "probes"),
 }
 # The mappers built so far (cartridge::build).
 BUILT = {0}
