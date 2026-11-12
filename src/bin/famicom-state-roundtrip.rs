@@ -7,7 +7,7 @@
 //!     famicom-state-roundtrip ROM... [--machine KEY] [--at A] [--to B] [--input FILE] [--seed S]
 
 use famicom_rust::joypad::StandardController;
-use famicom_rust::state::{load_state, save_state};
+use famicom_rust::state::{load_snapshot, load_state, save_snapshot, save_state};
 use famicom_rust::{Machine, System};
 use std::collections::HashMap;
 use std::path::Path;
@@ -101,6 +101,25 @@ fn check(
     run(&mut third, 0..at / 2, inputs);
     load_state(&mut third, &state)?;
     let got3 = run(&mut third, at + 1..to, inputs);
+
+    // Running ahead, as a frontend does it with the snapshot pair: before every
+    // frame, snapshot, run two frames nobody keeps, and come back.
+    let mut fourth = fresh(&data, machine)?;
+    load_state(&mut fourth, &state)?;
+    let mut got4 = Vec::new();
+    for frame in at + 1..to {
+        let snapshot = save_snapshot(&fourth);
+        fourth.run_frames(2);
+        fourth.take_samples();
+        load_snapshot(&mut fourth, &snapshot)?;
+        got4.extend(run(&mut fourth, frame..frame + 1, inputs));
+    }
+    if let Some(i) = expected.iter().zip(&got4).position(|(a, b)| a != b) {
+        return Ok(format!(
+            "differs at frame {} (snapshot, two frames ahead and back, every frame)",
+            at + 1 + i as u64
+        ));
+    }
 
     for (i, ((a, b), c)) in expected.iter().zip(&got).zip(&got3).enumerate() {
         let frame = at + 1 + i as u64;
