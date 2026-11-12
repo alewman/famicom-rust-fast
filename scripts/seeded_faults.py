@@ -161,10 +161,7 @@ def main() -> int:
         shutil.copytree(ROOT / "src", tree / "src")
         shutil.copytree(ROOT / "tests", tree / "tests")
         shutil.copy(ROOT / "Cargo.lock", tree / "Cargo.lock")
-        # The VRC7's chip is a path dependency, beside this checkout.
-        manifest = (ROOT / "Cargo.toml").read_text()
-        ym = (ROOT.parent / "ym2413-rust").resolve()
-        (tree / "Cargo.toml").write_text(manifest.replace('path = "../ym2413-rust"', f'path = "{ym}"'))
+        shutil.copy(ROOT / "Cargo.toml", tree / "Cargo.toml")
         source = tree / "src" / file
         text = source.read_text()
         if text.count(old) != 1:
