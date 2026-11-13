@@ -1507,9 +1507,9 @@ impl Ppu {
     fn drive(&mut self, value: u8, bits: u8) {
         self.latch = (self.latch & !bits) | (value & bits);
         let now = self.time;
-        for bit in 0..8 {
+        for (bit, time) in self.latch_times.iter_mut().enumerate() {
             if (bits >> bit) & 1 != 0 {
-                self.latch_times[bit] = now;
+                *time = now;
             }
         }
     }
@@ -1518,8 +1518,8 @@ impl Ppu {
         let mut latch = self.latch;
         if latch != 0 {
             let limit = self.time - self.latch_decay_ticks;
-            for bit in 0..8 {
-                if (latch >> bit) & 1 != 0 && self.latch_times[bit] < limit {
+            for (bit, &time) in self.latch_times.iter().enumerate() {
+                if (latch >> bit) & 1 != 0 && time < limit {
                     latch &= !(1 << bit);
                 }
             }
