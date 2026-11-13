@@ -99,20 +99,37 @@ pub fn live_dmc_rates() -> &'static [u16; 16] {
 pub mod rom_bytes {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+    /// What the ROM image gives for `Banked::prg` or `Banked::chr`.
     fn from_image(chr: bool) -> Vec<u8> {
-        let image = super::live_image();
-        if chr {
-            return image.chr;
-        }
-        let mut prg = image.prg;
-        if !prg.is_empty() && prg.len() < 0x2000 {
-            prg = prg.repeat(0x2000 / prg.len());
-        }
-        prg
+        super::with_image(|image| {
+            let Some(image) = image else {
+                return Vec::new();
+            };
+            if chr {
+                return image.chr.clone();
+            }
+            let mut prg = image.prg.clone();
+            if !prg.is_empty() && prg.len() < 0x2000 {
+                prg = prg.repeat(0x2000 / prg.len());
+            }
+            prg
+        })
+    }
+
+    /// Whether `bytes` are what [`from_image`] gives, without copying the image.
+    fn same_as_image(bytes: &[u8], chr: bool) -> bool {
+        super::with_image(|image| match image {
+            None => false,
+            Some(image) if chr => bytes == image.chr.as_slice(),
+            Some(image) if image.prg.is_empty() || image.prg.len() >= 0x2000 => {
+                bytes == image.prg.as_slice()
+            }
+            Some(_) => bytes == from_image(false).as_slice(),
+        })
     }
 
     fn save<S: Serializer>(bytes: &[u8], chr: bool, serializer: S) -> Result<S::Ok, S::Error> {
-        let same = super::has_context() && !bytes.is_empty() && bytes == from_image(chr).as_slice();
+        let same = !bytes.is_empty() && same_as_image(bytes, chr);
         let value: Option<&[u8]> = if same { None } else { Some(bytes) };
         value.serialize(serializer)
     }
@@ -141,8 +158,10 @@ pub mod rom_bytes {
     }
 }
 
-fn has_context() -> bool {
-    CONTEXT.with(|c| c.borrow().is_some())
+/// The ROM image of the system being saved or loaded, borrowed (`None` outside
+/// `save_state` and `load_state`).
+fn with_image<R>(f: impl FnOnce(Option<&RomImage>) -> R) -> R {
+    CONTEXT.with(|c| f(c.borrow().as_ref().map(|context| &context.image)))
 }
 
 /// A placeholder while a state loads (serde default for `Ppu::cart`).
@@ -259,15 +278,9 @@ fn rom_sha1(system: &System) -> String {
     }
 }
 
-/// The state of `system` as bytes (between two of its steps).
-pub fn save_state(system: &System) -> Vec<u8> {
-    let header = Header {
-        version: VERSION,
-        rom_sha1: rom_sha1(system),
-        machine: system.cpu.bus.machine.name.to_string(),
-    };
+fn load_context(system: &System) -> LoadContext {
     let machine = &system.cpu.bus.machine;
-    let context = LoadContext {
+    LoadContext {
         image: system
             .cpu
             .bus
@@ -277,8 +290,12 @@ pub fn save_state(system: &System) -> Vec<u8> {
             .map_or_else(live_image, |b| b.image.clone()),
         timing: machine.timing.clone(),
         tables: tables(machine.apu_tables),
-    };
-    CONTEXT.with(|c| *c.borrow_mut() = Some(context));
+    }
+}
+
+/// The bincode of the [`Body`]: everything a state holds but its header.
+fn body_bytes(system: &System) -> Vec<u8> {
+    CONTEXT.with(|c| *c.borrow_mut() = Some(load_context(system)));
     let board = system.cpu.bus.save_state();
     CONTEXT.with(|c| *c.borrow_mut() = None);
     let body = Body {
@@ -286,15 +303,47 @@ pub fn save_state(system: &System) -> Vec<u8> {
         instructions: system.instructions,
         board,
     };
+    bincode::serialize(&body).expect("a state serializes")
+}
+
+fn load_body(system: &mut System, body: Body) -> Result<(), String> {
+    CONTEXT.with(|c| *c.borrow_mut() = Some(load_context(system)));
+    let loaded = system.cpu.bus.load_state(&body.board);
+    CONTEXT.with(|c| *c.borrow_mut() = None);
+    loaded?;
+    system.cpu.restore_state(&body.cpu.into())?;
+    system.instructions = body.instructions;
+    Ok(())
+}
+
+/// The state of `system` as bytes (between two of its steps).
+pub fn save_state(system: &System) -> Vec<u8> {
+    let header = Header {
+        version: VERSION,
+        rom_sha1: rom_sha1(system),
+        machine: system.cpu.bus.machine.name.to_string(),
+    };
     let mut out = MAGIC.to_vec();
     out.extend(bincode::serialize(&header).expect("a header serializes"));
     let mut encoder = flate2::write::ZlibEncoder::new(out, flate2::Compression::new(6));
-    std::io::Write::write_all(
-        &mut encoder,
-        &bincode::serialize(&body).expect("a state serializes"),
-    )
-    .expect("compression in memory");
+    std::io::Write::write_all(&mut encoder, &body_bytes(system)).expect("compression in memory");
     encoder.finish().expect("compression in memory")
+}
+
+/// The state of `system` for this same system to take back soon
+/// ([`load_snapshot`]): what a frontend saves and loads every frame to rewind or
+/// to run ahead. It is [`save_state`]'s body without the header (whose hash of
+/// the ROM costs more than emulating a frame) and without the compression, so it
+/// is not a file to keep: nothing checks that it is loaded into the system, or
+/// even the build, that made it.
+pub fn save_snapshot(system: &System) -> Vec<u8> {
+    body_bytes(system)
+}
+
+/// Put `system` back where [`save_snapshot`] found it.
+pub fn load_snapshot(system: &mut System, data: &[u8]) -> Result<(), String> {
+    let body: Body = bincode::deserialize(data).map_err(|e| e.to_string())?;
+    load_body(system, body)
 }
 
 /// A size no state of `system` exceeds: what a frontend that wants a fixed
@@ -335,22 +384,5 @@ pub fn load_state(system: &mut System, data: &[u8]) -> Result<(), String> {
     }
     let body: Body = bincode::deserialize_from(flate2::read::ZlibDecoder::new(rest))
         .map_err(|e| e.to_string())?;
-    let context = LoadContext {
-        image: system
-            .cpu
-            .bus
-            .ppu
-            .cart
-            .banked()
-            .map_or_else(live_image, |b| b.image.clone()),
-        timing: machine.timing.clone(),
-        tables: tables(machine.apu_tables),
-    };
-    CONTEXT.with(|c| *c.borrow_mut() = Some(context));
-    let loaded = system.cpu.bus.load_state(&body.board);
-    CONTEXT.with(|c| *c.borrow_mut() = None);
-    loaded?;
-    system.cpu.restore_state(&body.cpu.into())?;
-    system.instructions = body.instructions;
-    Ok(())
+    load_body(system, body)
 }
