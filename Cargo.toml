@@ -16,6 +16,9 @@ name = "famicom_rust"
 # NMOS core is identical to 6502-python 9dc34bd, which famicom-python pins at
 # famicom-rust-pin-1 (the two differ only in tooling).
 sixfiveohtwo = { git = "https://github.com/alewman/6502-rust", rev = "71747eb9036702109fb206eb9fe88174a9dcc989" }
+# The VRC7's sound chip (mapper 85): the restarted ym2413-rust (2026-11-13), proven
+# equivalent to the restarted ym2413-python. A path until it has a remote.
+ym2413-rust = { package = "ym2413-rust", path = "../ym2413-rust", features = ["serde"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 crc32fast = "1"
 sha1 = "0.10"

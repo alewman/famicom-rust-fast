@@ -16,9 +16,9 @@
 //! multiasic's `HostVRC4`, chinese's embedded VRC2b) build the same way from
 //! [`Vrc24::state`] and [`vrc4e`].
 //!
-//! **The VRC7's sound is switched off for now**: the board has no model of
-//! the DS1001 while the licence of the core it used (ym2413-rust, from
-//! ym2413-python) is settled. Its two ports take writes and drop them.
+//! **The VRC7's sound** is ym2413-rust's OPLL as the DS1001: the restarted
+//! core (2026-11-13), proven equivalent to the restarted `ym2413_python` the
+//! reference uses, driven with the reference's calls.
 
 use super::banked::{Banked, Mirroring, HORIZONTAL, SCREEN_A, SCREEN_B, VERTICAL};
 use super::connector::{expansion_gain, Cartridge};
@@ -814,6 +814,17 @@ impl Cartridge for Vrc6 {
 
 // -- VRC7 ------------------------------------------------------------------------
 
+/// The VRC7's level, measured: +11.3 dB against a full-volume APU square
+/// (rainwarrior's db_vrc7 on an AV Famicom, nesdev-forum/17741.html).
+pub const VRC7_DB: f64 = 11.3;
+/// 468.8: db_vrc7's tone in summed MO words (one sample's 18), in RMS terms.
+pub fn vrc7_gain() -> f64 {
+    expansion_gain(VRC7_DB, 1) / 468.8
+}
+/// The sound's own resonator, taken as two of its clocks per CPU cycle (VRC7_audio.wiki).
+pub const FM_CLOCKS_PER_CPU_CYCLE: u32 = 2;
+pub const FM_CPU_CYCLES_PER_SAMPLE: u32 = 72 / FM_CLOCKS_PER_CPU_CYCLE;
+
 /// `VRC7_SELECT`: the address line that selects a VRC7 register's second
 /// half, by submapper (VRC7.wiki): VRC7b A3, VRC7a A4; submapper 0 both.
 pub fn vrc7_select(submapper: u8) -> u16 {
@@ -824,14 +835,20 @@ pub fn vrc7_select(submapper: u8) -> u16 {
     }
 }
 
-/// Mapper 85: the VRC7's banking and IRQ (VRC7.wiki). The sound chip, a
-/// DS1001, is not modelled for now: its ports take writes and drop them.
+/// Mapper 85: the VRC7's banking, IRQ and sound ports (VRC7.wiki); the
+/// sound chip is ym2413-rust's DS1001.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Vrc7 {
     pub b: Banked,
     pub vrc_irq: VrcIrq,
     pub select: u16,
+    pub fm: ym2413_rust::OPLL,
+    /// CPU cycles the chip has not run yet.
+    pub fm_pending: u32,
+    /// Its last sample's MO words, summed.
+    pub fm_sum: i32,
     pub sound_silenced: bool,
+    pub expansion: f64,
 }
 
 impl Vrc7 {
@@ -843,7 +860,11 @@ impl Vrc7 {
             b,
             vrc_irq: VrcIrq::new(),
             select,
+            fm: ym2413_rust::OPLL::new(ym2413_rust::DS1001),
+            fm_pending: 0,
+            fm_sum: 0,
             sound_silenced: false,
+            expansion: 0.0,
         };
         vrc7.vrc_irq.reset();
         for window in 0..3 {
@@ -856,6 +877,21 @@ impl Vrc7 {
         }
         vrc7
     }
+
+    /// Bring the sound chip up to this CPU cycle and the expansion level with it.
+    fn run_fm(&mut self) {
+        let pending = std::mem::take(&mut self.fm_pending);
+        if self.sound_silenced || pending == 0 {
+            return;
+        }
+        self.fm.run(u64::from(pending * FM_CLOCKS_PER_CPU_CYCLE));
+        // One (melody, rhythm) pair per finished sample, each already the sum of
+        // the sample's 18 words on the pin; the DS1001 has no rhythm.
+        if let Some(&(melody, _)) = self.fm.take_outputs().last() {
+            self.fm_sum = melody;
+        }
+        self.expansion = f64::from(self.fm_sum) * vrc7_gain();
+    }
 }
 
 impl Cartridge for Vrc7 {
@@ -863,8 +899,14 @@ impl Cartridge for Vrc7 {
     fn counts_m2(&self) -> bool {
         true
     }
+    fn expansion_audio(&self) -> bool {
+        true
+    }
     fn irq(&self) -> bool {
         self.vrc_irq.irq
+    }
+    fn expansion(&self) -> f64 {
+        self.expansion
     }
     fn cpu_write(&mut self, address: u16, value: u8, t: i64) {
         if address < 0x8000 {
@@ -879,8 +921,10 @@ impl Cartridge for Vrc7 {
         } else if region == 0x9000 {
             if !second && address & 0x30 == 0 {
                 self.b.map_prg(2, 8, (value & 0x3F) as i64);
+            } else if address & 0x20 != 0 || second {
+                self.run_fm();
+                self.fm.write(u8::from(address & 0x20 != 0), value);
             }
-            // $9010 and $9030, the sound chip's ports: no chip here for now.
         } else if (0xA000..=0xD000).contains(&region) {
             self.b.map_chr(
                 (((region - 0xA000) >> 11) | second as u16) as usize,
@@ -892,6 +936,12 @@ impl Cartridge for Vrc7 {
                 self.vrc_irq.latch = value;
             } else {
                 self.b.prg_ram_enabled = !self.b.prg_ram.is_empty() && value & 0x80 != 0;
+                self.run_fm();
+                if value & 0x40 != 0 && !self.sound_silenced {
+                    self.fm.reset();
+                    self.fm_sum = 0;
+                    self.expansion = 0.0;
+                }
                 self.sound_silenced = value & 0x40 != 0;
                 self.b.set_mirroring(ARRANGEMENTS[(value & 3) as usize]);
             }
@@ -905,6 +955,10 @@ impl Cartridge for Vrc7 {
     }
     fn m2(&mut self, _t: i64) {
         self.vrc_irq.m2();
+        self.fm_pending += 1;
+        if self.fm_pending >= FM_CPU_CYCLES_PER_SAMPLE {
+            self.run_fm();
+        }
     }
 }
 

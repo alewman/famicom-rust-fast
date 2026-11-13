@@ -4,3 +4,6 @@
 *.fds
 *.zip
 __pycache__/
+
+# Set aside instead of deleted
+trash/
