@@ -17,8 +17,8 @@ name = "famicom_rust"
 # famicom-rust-pin-1 (the two differ only in tooling).
 sixfiveohtwo = { git = "https://github.com/alewman/6502-rust", rev = "71747eb9036702109fb206eb9fe88174a9dcc989" }
 # The VRC7's sound chip (mapper 85): the restarted ym2413-rust (2026-11-13), proven
-# equivalent to the restarted ym2413-python. A path until it has a remote.
-ym2413-rust = { package = "ym2413-rust", path = "../ym2413-rust", features = ["serde"] }
+# equivalent to the restarted ym2413-python.
+ym2413-rust = { package = "ym2413-rust", git = "https://github.com/alewman/ym2413-rust", rev = "94df223e3e5b32d4042f321a834f6214a5ef9692", features = ["serde"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 crc32fast = "1"
 sha1 = "0.10"
