@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The MMC5's sound: two pulses and an 8-bit PCM DAC (`mmc5_sound.py`;
 //! MMC5_audio.wiki, the measured levels and their sources are there).
 //!

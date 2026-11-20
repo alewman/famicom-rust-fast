@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The console board: the CPU bus, open bus, the ports, DMA, and the one
 //! clock (`board.py`; its module notes give the design).
 //!

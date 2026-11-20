@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! nes20db: who made this cartridge, and how (`database.py`).
 //!
 //! The pinned 7z (`reference/docs/nes20db-2026-09-26.7z` under the

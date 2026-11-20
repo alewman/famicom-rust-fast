@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Rungs 3-4's reference side: every test ROM case of the reference, its board and outcome.
 
 Run on the reference's interpreter. For each case of ``famicom_python.testrom``'s

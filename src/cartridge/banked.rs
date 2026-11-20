@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! What most mappers share: PRG and CHR in windows, PRG-RAM, the CIRAM wiring
 //! (`banked.py`).
 //!

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Fold famicom-profile's samples into functions and source lines with addr2line.
 
     profile.py [external/profile.txt] [--lines N]

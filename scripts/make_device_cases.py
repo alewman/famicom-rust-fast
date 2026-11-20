@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Write scripts/cases-peripherals.tsv, rung 6's device rows: for each device
 class, test ROMs and dumps (/data/emu/roms/nes, nes20db's expansion number)
 that use it, plugged with ``--device`` and driven by scripts/inputs/devices

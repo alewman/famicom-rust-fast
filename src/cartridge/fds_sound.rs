@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The FDS's sound: the RP2C33's wavetable channel and its modulator
 //! (`fds_sound.py`; FDS_audio.wiki and loopy's measurements, the DAC, the
 //! filter and the measured level are described there).

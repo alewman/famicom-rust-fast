@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! MMC3 clones on pirate and multicart boards: outer banks, rewired
 //! registers, 32 KiB PRG modes (`mmc3_clones.py`; each from its NESdev wiki
 //! page, no judge ROM: the claims rest on sweeps against Mesen2).

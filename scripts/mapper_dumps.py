@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Index dumps by the board the reference's loader builds for them.
 
 Run on the reference's interpreter. For every .zip/.nes under the given

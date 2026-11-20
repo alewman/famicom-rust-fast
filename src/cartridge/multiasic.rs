@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Multicarts that switch whole mapper ASICs: 394, 351 and Mindkids' FPGA
 //! (446) (`multiasic.py`). Each from its NESdev wiki page; no judge ROM
 //! exists, the claims rest on sweeps against Mesen2, a detector, and on

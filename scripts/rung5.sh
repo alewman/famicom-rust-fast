@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Rung 5: every mapper the reference builds, in lockstep on dumps that use it
 # (scripts/mapper_dumps.py's index of /data/emu/roms/nes; up to PER dumps per
 # board class, 900 slices with Start pressed now and then), plus the FDS and

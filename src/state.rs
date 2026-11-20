@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Save states (the reference's `state.py`, at famicom-python `c497645`): the
 //! whole console between two instructions, as bytes, and back.
 //!

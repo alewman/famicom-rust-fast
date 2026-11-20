@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! A whole console: 6502-rust's RP2A03 on a [`Board`] (`system.py`).
 
 use crate::board::Board;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! MMC3 and its relatives (mapper 4): MMC6, MC-ACC, the NEC and Sharp IRQs;
 //! its boards TxSROM (118), TQROM (119), the AA6023 (268), the multicarts 37
 //! and 47, Kǎshèng's clone (115) and NES-EVENT2 (555) (`mmc3.py`; the

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """The lockstep gate's reference side: famicom-python, traced frame by frame.
 
 Run on the reference's interpreter (external/famicom-python/.venv-pypy). Each

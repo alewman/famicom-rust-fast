@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The consoles, as data: one board, many machines (`machine.py`).
 //!
 //! Every console is the same board with different chips and quirks, so each

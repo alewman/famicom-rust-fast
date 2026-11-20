@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Assemble the probes (our own test ROMs, probes/*.s) into external/probes
 # with cc65's ca65 and ld65 (CC65_DIR, default ~/.local/opt/cc65-2.19).
 set -euo pipefail

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Save states, proven complete as the reference proves its own
 //! (famicom-python `scripts/state_roundtrip.py`): a run saved at an
 //! instruction boundary and loaded, into a fresh system and into one that has

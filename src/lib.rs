@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! A Rust Famicom/NES board transcribed from
 //! [famicom-python](https://github.com/alewman/famicom-python) at the tag
 //! `famicom-rust-pin-1` (`fe89099`) and proven equivalent to it by a

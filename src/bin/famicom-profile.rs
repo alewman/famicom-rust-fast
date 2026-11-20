@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! A sampling profiler for the board, since `perf` is not allowed here:
 //! SIGPROF 1,000 times a second of CPU time, the interrupted instruction's
 //! address recorded, then `scripts/profile.py` maps the addresses to source

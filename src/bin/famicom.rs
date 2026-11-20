@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Run a cartridge headless (the reference's `python -m famicom_python`):
 //! prints how the cartridge was identified, runs it, and reports what a test
 //! ROM says. `--png` saves the last frame; `--wav` the run's sound.

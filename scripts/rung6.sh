@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Rung 6: the machine rows (PAL, Dendy, Famicom, AV Famicom, NES-101) in
 # lockstep, scripts/cases-machines.tsv; then the peripherals, every device
 # class plugged (--device) and driven (scripts/inputs/devices) on test ROMs and

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Controllers besides the standard pad, on the controller ports and the
 //! Famicom expansion port (`peripherals.py`; Input_devices.wiki). A device
 //! answers one of two protocols:

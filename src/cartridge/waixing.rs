@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Waixing's MMC3 boards: the 8025 "enhanced MMC3" (176), the CHR-ROM/CHR-RAM
 //! mixes (74, 191, 192, 194, 195), FS309 (199), T9552 (249), Xiangfeng's 198,
 //! Jncota's 523, and the VRC4e clones 252 and 253 (`waixing.py`).

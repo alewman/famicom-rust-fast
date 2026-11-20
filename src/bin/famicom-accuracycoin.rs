@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Rung 4: all of AccuracyCoin, as the reference's scripts/accuracycoin.py
 //! runs it (Start on the page index, every result byte read), with the test
 //! list the reference reads from the pinned .asm (scripts/accuracycoin_tests.py).

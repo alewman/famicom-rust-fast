@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Rung 1: kevtris's nestest in automation mode against nestest.log, as the
 //! reference's tests/test_nestest.py runs it: power on, the reset sequence,
 //! PC = $C000, then per instruction PC, A, X, Y, P & $CF, SP, the CPU cycle

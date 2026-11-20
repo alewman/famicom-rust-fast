@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Rungs 3-4's Rust side: run the reference's test ROM cases on this board.
 //!
 //! Reads the JSON lines scripts/testrom_outcomes.py writes (each case with

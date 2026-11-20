@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! A player's input on the board's devices: the input half of the
 //! reference's window (`frontend.py`: `_power_on`'s device choice,
 //! `_players`, `_apply_inputs`, R.O.B. in `run_frame`), without its window.

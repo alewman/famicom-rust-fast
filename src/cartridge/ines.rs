@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! iNES 1.0 and NES 2.0 files: the header and the ROM it describes (`ines.py`).
 
 pub const MAGIC: &[u8; 4] = b"NES\x1a";

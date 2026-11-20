@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # One experiment: build, keep its bench as target/ab/NAME, run the quick
 # lockstep check (rung 2's 200 cases), then A/B it against target/ab/BASE.
 #     scripts/try.sh NAME [BASE] [ROUNDS]

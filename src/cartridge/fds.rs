@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The Famicom Disk System: the RAM adapter (RP2C33) and its disk drive
 //! (`fds.py`; the registers follow FDS_Registers.wiki, the drive's model
 //! and its unmeasured spin-up are described there).

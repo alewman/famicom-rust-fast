@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Irem's mappers: G-101 (32), H3001 (65), LROG017 (77) and TAM-S1 (97)
 //! (`irem.py`). No judge ROM exists; the claims rest on sweeps against
 //! Mesen2, a detector.

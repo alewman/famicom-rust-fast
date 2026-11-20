@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Rung 3: the reference's test ROM tables (pytest -m slow's cases) on both
 # boards: verdict, CPU cycles, instructions and detail, case for case.
 # The reference's outcomes are slow to make (hours on PyPy): kept in

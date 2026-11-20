@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! MMC1 (mappers 1 and 155) and NES-EVENT (105): five serial writes load a
 //! register (`mmc1.py`; the boards' wirings are described there).
 //!

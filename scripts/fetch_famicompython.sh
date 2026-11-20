@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # The reference, famicom-python at the tag famicom-rust-pin-1, into external/
 # with a PyPy venv, plus links to a local clone's test ROMs and reference/
 # (fetched by its scripts/fetch_references.py; never committed anywhere).

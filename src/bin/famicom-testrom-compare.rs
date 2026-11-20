@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! scripts/testrom_compare.py without Python: compare the reference's test
 //! ROM outcomes with this board's (`famicom-testrom`'s), case by case.
 //!

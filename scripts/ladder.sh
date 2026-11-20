@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # The fork's gate: every change must leave this board identical to
 # famicom-rust (whose traces equal famicom-python's at famicom-rust-pin-1).
 # No Python: everything the reference ran is cached in external/ (copied

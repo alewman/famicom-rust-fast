@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The SST39SF040 flash, the self-flashing homebrew boards' PRG (`flash.py`;
 //! the commands are described there, from Microchip's DS20005022C).
 //!

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Rung 2: the lockstep gate on every NROM test ROM (600 slices) and
 # AccuracyCoin's run-all (3,000), scripts/cases.tsv; then the probes, our own
 # test ROMs (probes/*.s, assembled by probes/build.sh), scripts/cases-probes.tsv.

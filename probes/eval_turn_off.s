@@ -1,3 +1,4 @@
+; SPDX-License-Identifier: MIT
 ; Rendering turned off in the middle of sprite evaluation, at a different
 ; dot each frame, and what evaluation left behind shown afterwards.
 ;

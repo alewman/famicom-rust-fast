@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! From the PPU's 9-bit pixels to RGB, and a PNG (`video.py`).
 //!
 //! The 2C02 has no RGB: colour is the frontend's choice. The default is

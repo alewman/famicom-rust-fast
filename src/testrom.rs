@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Reading test ROMs' verdicts (`testrom.py`): blargg's $6000 protocol, the
 //! screen, Holy Mapperel, values in the test ROMs' fonts, RAM, pixel spans,
 //! and AccuracyCoin.

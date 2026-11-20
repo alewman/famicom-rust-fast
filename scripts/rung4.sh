@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Rung 4: AccuracyCoin, all 147 tests, as the reference's scripts/accuracycoin.py
 # runs them; must pass all and end on the reference's cycle and frame counts.
 set -euo pipefail

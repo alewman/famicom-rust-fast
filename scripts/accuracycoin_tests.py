@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """AccuracyCoin's tests as the reference reads them from the pinned .asm, as JSON.
 
 Run on the reference's interpreter; famicom-accuracycoin reads the list.

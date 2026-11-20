@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The lockstep gate's Rust side without Python: run each case of a case
 //! table on this board (`famicom-trace`) and compare its trace with the
 //! reference's cached one, line for line. scripts/lockstep.py does the same

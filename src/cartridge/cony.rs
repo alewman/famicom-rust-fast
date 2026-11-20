@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Cony's (Yoko's) chip-on-board ASIC on its boards: mapper 83 (submappers
 //! 0-3) and NES 2.0 264 (`cony.py`).
 //!

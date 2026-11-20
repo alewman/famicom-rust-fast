@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! J.Y. Company's ASIC (209, and the boards 35, 90 and 211) and the
 //! JY830623C (91), from J.Y._Company_ASIC.wiki and INES_Mapper_091.wiki
 //! (`jycompany.py`). No judge ROM exists; the claims rest on sweeps against

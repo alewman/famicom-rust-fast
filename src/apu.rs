@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The 2A03's sound unit: five channels, the frame counter, $4015, the DMC's
 //! DMA request (`apu.py`; its module notes give the sources and the clocks).
 //!

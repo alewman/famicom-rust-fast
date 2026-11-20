@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Every mapper number the reference builds (famicom-python's `MAPPERS` at
 //! famicom-rust-pin-1) builds here too, from a synthetic image.
 

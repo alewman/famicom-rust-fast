@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Homebrew boards (`homebrew.py`): Action 53 (28), Sealie's RET-CUFROM (29),
 //! the NSF subset (31), GTROM (111), Magic Floor (218), Drip (284) and
 //! BATMAP-SRR-X (413). Each from its NESdev wiki page (or MAME, as its class

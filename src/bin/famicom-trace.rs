@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The lockstep gate's Rust side: the same lines as scripts/famicom_trace.py
 //! writes for the reference (see there for the format).
 //!

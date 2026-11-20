@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """A/B two builds of famicom-bench on this shared machine: alternate them, game
 by game, on one pinned CPU, and compare medians.
 

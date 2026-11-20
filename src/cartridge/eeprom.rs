@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Serial EEPROMs on Bandai's and others' boards (`eeprom.py`; the protocols
 //! are described there): the 24C02 (I²C, 256 bytes), Xicor's X24C01 (128
 //! bytes, no device byte) and Microchip's Microwire 93C66 / 93C56.

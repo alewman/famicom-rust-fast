@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Write the device rows' input files, scripts/inputs/devices/*.txt (rung 6's
 peripherals, scripts/cases-peripherals.tsv): pad lines ``FRAME PAD BUTTONS`` and
 device lines ``FRAME set PATH FIELD VALUE...`` (scripts/famicom_trace.py) that

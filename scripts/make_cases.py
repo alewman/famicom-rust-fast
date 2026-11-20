@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Write scripts/cases.tsv, the lockstep gate's cases (names and arguments, no ROMs).
 
     make_cases.py

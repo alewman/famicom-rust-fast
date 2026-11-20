@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Konami's VRC5 in the Q-Ta adapter (mapper 547): NHK Gakuen's Space School
 //! and Space College (`vrc5.py`, from NES_2.0_Mapper_547.wiki). No judge ROM
 //! exists; the claims rest on looking (docs/claims.md).

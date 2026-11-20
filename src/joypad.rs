@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The standard controller: a 4021 shift register behind the port (`joypad.py`).
 
 pub const A: u8 = 0x01;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Famicom Disk System disks: a `.fds` or `.qd` file's sides as the drive's
 //! head meets them (`fds_disk.py`; FDS_file_format.wiki, FDS_disk_format.wiki,
 //! QD.wiki: the stream's layout is described there).

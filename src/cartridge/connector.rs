@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The cartridge connector, as signals: the only thing a mapper knows of the
 //! console (`cartridge/connector.py`; the protocol is described there).
 //!

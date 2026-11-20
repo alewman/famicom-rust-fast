@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Jaleco's mappers (`jaleco.py`): SS88006 (18) and the discrete JF boards:
 //! JF-17/19 (72, 92), JF-16 (78), JF-13 (86) and JF-11/14 (140). The speech
 //! chips (µPD7756C) are not modelled, as in the reference: their register

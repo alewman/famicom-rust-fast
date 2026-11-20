@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The PIC16C54, the protection microcontroller of mapper 355, and the board
 //! around it (`pic16c54.py`; from Microchip's PIC16C5X data sheet, DS30453E:
 //! Table 10-2 the instructions, Table 5-3 the reset state). The watchdog and

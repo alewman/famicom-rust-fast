@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Changing FDS disks without a player (`fds_auto.py`): for scripted runs and
 //! a frontend's default.
 //!

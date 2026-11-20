@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Tengen's RAMBO-1 (64): the MMC3 with more banks and a CPU-cycle counter
 //! mode, and its TLS board (158) (`tengen.py`; RAMBO-1.wiki, judged by sweeps
 //! against Mesen2).

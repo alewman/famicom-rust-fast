@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Unlicensed North American discrete boards (`unlicensed.py`): Color Dreams
 //! (11), Camerica/Codemasters (71, 232), AVE's NINA-03/06 (79) with HES's
 //! multicart extension (113), and the other small unlicensed boards (38, 41,

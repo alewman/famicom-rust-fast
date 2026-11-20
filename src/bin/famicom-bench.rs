@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The benchmark: run cartridges headless for N frames each and print the
 //! frames per second, with a checksum of every picture, every audio sample
 //! and the CPU's cycle count, so a faster build that changes the output is

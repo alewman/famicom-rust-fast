@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Cartridge conversions of Famicom Disk System games (`conversions.py`):
 //! ROM and a few KiB of RAM quilted across the CPU's space. Most from their
 //! NESdev wiki pages (NES_2.0_Mapper_*.wiki), others as their class says;

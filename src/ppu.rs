@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! The RP2C02 picture processor, dot by dot, every fetch on its bus (`ppu.py`;
 //! its module notes give the schedule and the sources).
 //!

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """The lockstep gate: run each case on both boards and compare the traces.
 
 Each case of ``scripts/cases.tsv`` runs ``famicom-trace`` (this board) and

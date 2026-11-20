@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """A gate that cannot fail proves nothing: build the board with one fault at a
 time and check that some rung of scripts/ladder.sh catches each.
 

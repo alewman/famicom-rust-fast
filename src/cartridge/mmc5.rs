@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! MMC5 (mapper 5): its banking, ExRAM, scanline detection and vertical
 //! split (`mmc5.py`; MMC5.wiki throughout; the sound is `mmc5_sound.rs`).
 //!

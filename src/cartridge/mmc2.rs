@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! MMC2 (mapper 9) and MMC4 (mapper 10): CHR banks that the PPU's own fetches
 //! switch (`mmc2.py`; MMC2.wiki and MMC4.wiki, judged by Holy Mapperel).
 //!

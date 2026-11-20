@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Compare the reference's test ROM outcomes with this board's, case by case.
 
     testrom_compare.py REFERENCE.jsonl RUST.jsonl

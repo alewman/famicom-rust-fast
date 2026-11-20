@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 //! Cartridges: the connector protocol, the file loader and the mappers
 //! (`cartridge/__init__.py`).
 //!

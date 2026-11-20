@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Write a cases file for rung 5: dumps that use the given mappers.
 
 Reads the index scripts/mapper_dumps.py wrote (default external/mapper-dumps.tsv)

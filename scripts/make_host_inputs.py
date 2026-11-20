@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """The host gate's input: one script of a player's window input (famicom_trace.py
 ``--host`` format), deterministic, touching everything the reference's window
 reads, so each device's case drives that device and the pads through
