@@ -6,7 +6,10 @@
 # Usage: scripts/fetch_famicompython.sh [DEST] [SOURCE]
 set -euo pipefail
 PIN=famicom-rust-pin-1
-COMMIT=fe89099  # what the tag names (short)
+# 47d33c1 = fe89099 after famicom-python's history rewrite of 2026-11-21: the tag keeps its name.
+# The code is the same; that rewrite took out the GPL tools and .mailmap and replaced the
+# furrtek-sourced A12 text in the docs and in mmc3.py's docstring (same line count).
+COMMIT=47d33c1  # what the tag names (short)
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 DEST=${1:-"$ROOT/external/famicom-python"}
 SOURCE=${2:-https://github.com/alewman/famicom-python.git}
