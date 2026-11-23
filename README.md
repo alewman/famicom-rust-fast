@@ -3,7 +3,8 @@
 A speed fork of [famicom-rust](https://github.com/alewman/famicom-rust), the
 Rust Famicom / NES board, held in lockstep with it: every change must leave
 this board's traces identical to famicom-rust's (which are identical to
-famicom-python's at `famicom-rust-pin-1`) on every case, and must measure
+famicom-python's at `e3e1474`, the reference since 2026-11-23, which replaced
+the tag `famicom-rust-pin-1`) on every case, and must measure
 faster, or it is not kept. The fork point is famicom-rust `553ead2`; the
 library keeps the name `famicom_rust`, so famicom-libretro switches to it by
 one dependency line.

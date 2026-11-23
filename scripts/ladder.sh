@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 # The fork's gate: every change must leave this board identical to
-# famicom-rust (whose traces equal famicom-python's at famicom-rust-pin-1).
+# famicom-rust (whose traces equal famicom-python's at e3e1474, the reference
+# since 2026-11-23; famicom-rust's scripts/fetch_famicompython.sh).
 # No Python: everything the reference ran is cached in external/ (copied
 # from famicom-rust). In order:
 #   cargo test (mapper_coverage: all 294 mappers build);
