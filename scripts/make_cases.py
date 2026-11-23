@@ -38,6 +38,8 @@ DEFAULTS: dict[str, str | None] = {
     "NES_AFTERMARKET": no_intro("Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)"),
     "FDS_DUMPS": no_intro("Nintendo - Family Computer Disk System (FDS)"),
     "INPUTS": str(HERE / "inputs"),
+    # rainwarrior's nes-audio-tests, prebuilt, in the reference's fetched reference/.
+    "NES_AUDIO_TESTS": str(REFERENCE / "reference" / "src" / "nes-audio-tests" / "build"),
     "PROBES": str(ROOT / "external" / "probes"),
 }
 # The mappers built so far (cartridge::build).

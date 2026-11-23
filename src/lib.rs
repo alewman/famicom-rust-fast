@@ -35,3 +35,31 @@ pub use system::System;
 pub(crate) fn peripherals_nes_only(device: u8) -> bool {
     peripherals::nes_only(device)
 }
+
+/// The reference's checkout, where the run-time data the board reads lives
+/// (pally's palettes, nes20db): `FAMICOM_REFERENCE`, else this repository's
+/// `external/famicom-python`.
+///
+/// The repository is found at run time, never baked into the build (a wasm
+/// build would otherwise carry its build machine's path): `CARGO_MANIFEST_DIR`
+/// when cargo runs the program, else the nearest directory above the running
+/// executable (target/release/..., target/release/deps/...) that holds
+/// `external/famicom-python`, else that path relative to the working directory.
+pub fn reference_checkout() -> std::path::PathBuf {
+    use std::path::PathBuf;
+    if let Ok(path) = std::env::var("FAMICOM_REFERENCE") {
+        return PathBuf::from(path);
+    }
+    let inside = PathBuf::from("external/famicom-python");
+    if let Ok(root) = std::env::var("CARGO_MANIFEST_DIR") {
+        return PathBuf::from(root).join(inside);
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        for dir in exe.ancestors().skip(1) {
+            if dir.join(&inside).is_dir() {
+                return dir.join(inside);
+            }
+        }
+    }
+    inside
+}

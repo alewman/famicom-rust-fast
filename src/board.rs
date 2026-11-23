@@ -537,6 +537,12 @@ impl Board {
 
     /// Load a state [`Board::save_state`] wrote, inside `state::load_state`'s
     /// context. The cartridge and devices must be of the types saved.
+    ///
+    /// All or nothing: on an error the board is as it was. The parts held by
+    /// value are decoded into temporaries first; the cartridge and the devices,
+    /// trait objects that load in place (each one atomically, [`crate::state::Snapshot`]), go
+    /// devices first with their old states kept, the cartridge last, and a failure
+    /// puts the devices back.
     pub fn load_state(&mut self, data: &[u8]) -> Result<(), String> {
         let fields: BoardFields = bincode::deserialize(data).map_err(|e| e.to_string())?;
         let mut ppu: Ppu = bincode::deserialize(&fields.ppu).map_err(|e| e.to_string())?;
@@ -546,15 +552,28 @@ impl Board {
         if fields.expansion.is_some() != self.expansion.is_some() {
             return Err("a state with other devices plugged".into());
         }
-        // The cartridge stays this system's own object; its state is loaded into it.
+        let kept_pads = [self.pads[0].save_state(), self.pads[1].save_state()];
+        let kept_expansion = self.expansion.as_ref().map(|device| device.save_state());
+        let loaded = (|| {
+            for (pad, saved) in self.pads.iter_mut().zip(&fields.pads) {
+                pad.load_state(saved)?;
+            }
+            if let (Some(device), Some(saved)) = (self.expansion.as_mut(), &fields.expansion) {
+                device.load_state(saved)?;
+            }
+            // The cartridge stays this system's own object; its state is loaded into it.
+            self.ppu.cart.load_state(&fields.cart)
+        })();
+        if let Err(error) = loaded {
+            for (pad, kept) in self.pads.iter_mut().zip(&kept_pads) {
+                pad.load_state(kept).expect("a device takes back its own state");
+            }
+            if let (Some(device), Some(kept)) = (self.expansion.as_mut(), &kept_expansion) {
+                device.load_state(kept).expect("a device takes back its own state");
+            }
+            return Err(error);
+        }
         std::mem::swap(&mut ppu.cart, &mut self.ppu.cart);
-        ppu.cart.load_state(&fields.cart)?;
-        for (pad, saved) in self.pads.iter_mut().zip(&fields.pads) {
-            pad.load_state(saved)?;
-        }
-        if let (Some(device), Some(saved)) = (self.expansion.as_mut(), &fields.expansion) {
-            device.load_state(saved)?;
-        }
         self.ppu = ppu;
         self.apu = apu;
         self.analogue = analogue;

@@ -34,11 +34,7 @@ pub fn nes20db_path() -> PathBuf {
     if let Ok(path) = std::env::var("FAMICOM_NES20DB") {
         return PathBuf::from(path);
     }
-    let reference = match std::env::var("FAMICOM_REFERENCE") {
-        Ok(path) => PathBuf::from(path),
-        Err(_) => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("external/famicom-python"),
-    };
-    reference.join("reference/docs/nes20db-2026-09-26.7z")
+    crate::reference_checkout().join("reference/docs/nes20db-2026-09-26.7z")
 }
 
 /// The attributes of the first `<tag .../>` child in `game`.

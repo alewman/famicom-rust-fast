@@ -1,0 +1,12 @@
+# The Sunsoft 5B's sound (mapper 69, ay8910-rust): rainwarrior's nes-audio-tests that
+# program it, and Gimmick!, whose music is the 5B's, on the Famicom (which routes the
+# cartridge's sound); once each on the NES-001, where the sound goes nowhere.
+5b/db_5b-famicom	1200	$NES_AUDIO_TESTS/db_5b.nes	--machine famicom
+5b/db_5b-nes	600	$NES_AUDIO_TESTS/db_5b.nes
+5b/clip_5b-famicom	900	$NES_AUDIO_TESTS/clip_5b.nes	--machine famicom
+5b/envelope_5b-famicom	900	$NES_AUDIO_TESTS/envelope_5b.nes	--machine famicom
+5b/noise_5b-famicom	900	$NES_AUDIO_TESTS/noise_5b.nes	--machine famicom
+5b/phase_5b-famicom	900	$NES_AUDIO_TESTS/phase_5b.nes	--machine famicom
+5b/sweep_5b-famicom	900	$NES_AUDIO_TESTS/sweep_5b.nes	--machine famicom
+5b/gimmick-japan-famicom	3000	$NES_DUMPS/Gimmick! (Japan) (En).zip	--input $INPUTS/start-mash.txt --machine famicom
+5b/gimmick-japan-nes	600	$NES_DUMPS/Gimmick! (Japan) (En).zip	--input $INPUTS/start-mash.txt

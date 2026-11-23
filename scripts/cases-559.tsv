@@ -1,0 +1,4 @@
+# Mapper 559 (Subor559, chinese.rs): the one dump that uses it, on the Dendy its nes20db
+# entry names and on the NES-001.
+m559-Subor559-Sangokushi_II_Subor-dendy	900	$NES_DUMPS/Sangokushi II - Haou no Tairiku (China) (Ja) (Subor) (Pirate).zip	--input $INPUTS/start-mash.txt --machine dendy
+m559-Subor559-Sangokushi_II_Subor	900	$NES_DUMPS/Sangokushi II - Haou no Tairiku (China) (Ja) (Subor) (Pirate).zip	--input $INPUTS/start-mash.txt

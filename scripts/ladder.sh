@@ -5,10 +5,11 @@
 # since 2026-11-23; famicom-rust's scripts/fetch_famicompython.sh).
 # No Python: everything the reference ran is cached in external/ (copied
 # from famicom-rust). In order:
-#   cargo test (mapper_coverage: all 294 mappers build);
+#   cargo test (mapper_coverage: the reference's mappers but 99 build, 295);
 #   rung 1, nestest against nestest.log;
 #   the lockstep cases against the cached reference traces: rung 2, rung 5
-#     (every board class, the FDS, Lagrange Point's VRC7), the machine rows
+#     (every board class, the FDS, Lagrange Point's VRC7, the Sunsoft 5B's
+#     sound, mapper 559), the machine rows
 #     and the peripherals;
 #   rung 3, the reference's test ROM tables, outcome for outcome;
 #   rung 4, AccuracyCoin: 147 of 147 on the reference's 126,984,584 cycles
@@ -26,6 +27,7 @@ if [ -z "${FAMICOM_FDS_BIOS:-}" ]; then
     [ -n "${NO_INTRO_DIR:-}" ] || { echo "set NO_INTRO_DIR (No-Intro's sets) or FAMICOM_FDS_BIOS"; exit 1; }
     export FAMICOM_FDS_BIOS="$NO_INTRO_DIR/Nintendo - Family Computer Disk System (FDS)/[BIOS] Family Computer Disk System (Japan) (En) (Rev 1).zip"
 fi
+NES_DUMPS=${NES_DUMPS:-${NO_INTRO_DIR:-}/Nintendo - Nintendo Entertainment System (Headered)}
 # nes20db, which identifies the dumps, read at run time (copied into external/
 # from the reference's reference/docs; never committed). Without it many
 # dumps load as their headers say and the traces differ.
@@ -75,6 +77,10 @@ step "lockstep: rung 5, the FDS"
 lockstep "$EXT/cases-fds.tsv" "$EXT/refcache-mappers"
 step "lockstep: rung 5, Lagrange Point (VRC7)"
 lockstep "$EXT/cases-lagrange.tsv" "$EXT/refcache-mappers"
+step "lockstep: rung 5, the Sunsoft 5B's sound (nes-audio-tests, Gimmick!)"
+lockstep "$ROOT/scripts/cases-5b.tsv" "$EXT/refcache-5b"
+step "lockstep: rung 5, mapper 559"
+lockstep "$ROOT/scripts/cases-559.tsv" "$EXT/refcache-559"
 step "lockstep: rung 5, AutoDisk (FDS sides changed as the program asks)"
 lockstep "$ROOT/scripts/cases-fds-auto.tsv" "$EXT/refcache-mappers"
 step "lockstep: rung 6, machine rows"
@@ -110,10 +116,23 @@ for i in $(seq 0 $((JOBS - 1))); do
 done
 for pid in "${pids[@]}"; do wait "$pid" || true; done
 total=$(cat "$EXT/state-dumps.txt" | wc -l)
-same=$(cat "$split_dir"/part*.out | grep -c ": identical" || true)
-cat "$split_dir"/part*.out | grep -v ": identical" || true
+# This run's shares only (a run with more JOBS leaves more part files behind).
+outs=()
+for i in $(seq 0 $((JOBS - 1))); do outs+=("$split_dir/part$i.out"); done
+same=$(cat "${outs[@]}" | grep -c ": identical" || true)
+cat "${outs[@]}" | grep -v ": identical" || true
 echo "$same of $total dumps round-trip"
 [ "$same" = "$total" ] || failed=1
+
+step "save states: the 5B on the Famicom, 559 on the Dendy"
+A=$FAMICOM_REFERENCE/reference/src/nes-audio-tests/build
+extra=$(nice "$BIN/famicom-state-roundtrip" --machine famicom "$NES_DUMPS/Gimmick! (Japan) (En).zip" \
+    "$A/db_5b.nes" "$A/envelope_5b.nes" "$A/noise_5b.nes" 2>&1; nice "$BIN/famicom-state-roundtrip" \
+    --machine dendy "$NES_DUMPS/Sangokushi II - Haou no Tairiku (China) (Ja) (Subor) (Pirate).zip" 2>&1)
+echo "$extra" | grep -v ": identical" || true
+same=$(echo "$extra" | grep -c ": identical" || true)
+echo "$same of 5 round-trip"
+[ "$same" = 5 ] || failed=1
 
 step "done"
 if [ "$failed" = 0 ]; then echo "LADDER GREEN"; else echo "LADDER RED"; fi

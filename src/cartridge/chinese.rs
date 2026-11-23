@@ -31,6 +31,7 @@
 //! - 515: `Noraebang515`
 //! - 518: `Dance2000`
 //! - 551: `Jncota551`
+//! - 559: `Subor559`
 //!
 //! Subclasses: `Jncota551` (of `Education178`, overriding `_update`) is a
 //! flag of [`Education178`]; `SL1632` (of `Huang116`, overriding `active`,
@@ -1058,6 +1059,125 @@ impl Cartridge for Sangokushi330 {
     }
 }
 
+// -- Subor559 ---------------------------------------------------------------------------
+
+/// Mapper 559 (Subor's *Sangokushi II - Haou no Tairiku*): the Namco 163 game, moved.
+///
+/// No page or emulator describes it. The dump is Namco's mapper-19 release (its
+/// Japanese one) with 968 bytes patched, and each patched store lines up a
+/// 163 register (INES_Mapper_019.wiki, and the original's own code) with the
+/// address the pirate board uses instead (C88; famicom-mapper-study, 559 audit
+/// entry 16). The map is that reading, FITTED by the game: on it the dump plays
+/// within 0-20 pixels a frame of the licensed cart on the Namco163 class.
+///
+/// - $8000, $A000: PRG at $8000, $A000 (the 163's $E000, $E800). The game
+///   still ORs $C0 into the $A000 value: D4-D0 are taken, the dump's 32 banks.
+/// - $9C00: PRG at $C000 (the 163's $F000); the last 8 KiB fixed.
+///   $9C0C-$9C0F: the four nametables (the 163's $C000-$D800); the game
+///   writes only $E0/$E1, so D0 is CIRAM A10. The other $9C0x are unused by it.
+/// - $B000-$EC00 in steps of $400: the eight 1 KiB CHR banks, two addresses
+///   each (the 163's $8000-$B800). The game writes the same value to both,
+///   so either sets the whole bank: whether they are two halves is open.
+/// - $F000/$F400: the IRQ latch (the game writes both). $F800: D1 set starts
+///   an 8-bit up-counter from the latch, clear stops it and acknowledges; it
+///   asserts /IRQ on the wrap past $FF. The game's own conversion tables
+///   ($F700-$F7FF of the last bank) assume a step every 115 CPU cycles, but
+///   the licensed cart's picture is matched by one step per 341/3 CPU cycles,
+///   a scanline (7 differing pixels a frame against 1,782): FITTED. A scanline
+///   counter and an M2 divider agree on NTSC and Dendy (both 341/3 CPU cycles
+///   a line) and differ only on PAL and with rendering off; this is the divider.
+/// - $9800: written 1 at reset where the original wrote $2001; unknown, ignored.
+/// - PRG-RAM at $6000: always on (the 163's protection port became $F800).
+///
+/// No hardware has been seen. Power-on registers unspecified: 0 here.
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Subor559 {
+    pub b: Banked,
+    pub nametables: [u8; 4],
+    pub latch: u8,
+    pub counter: u8,
+    /// In thirds of a CPU cycle.
+    pub prescaler: u32,
+    pub counting: bool,
+    pub irq: bool,
+}
+
+impl Subor559 {
+    /// Thirds of a CPU cycle per step: a scanline.
+    pub const STEP_THIRDS: u32 = 341;
+
+    pub fn new(image: RomImage, cpu_cycle_ticks: i64) -> Subor559 {
+        let mut b = Banked::new(image, cpu_cycle_ticks);
+        let last = (b.prg.len() / 0x2000) as i64 - 1;
+        b.map_prg(3, 8, last);
+        Subor559 {
+            b,
+            nametables: [0, 1, 0, 1], // not given; the game sets them at once
+            latch: 0,
+            counter: 0,
+            prescaler: 0,
+            counting: false,
+            irq: false,
+        }
+    }
+}
+
+impl Cartridge for Subor559 {
+    banked_field!(b);
+    fn counts_m2(&self) -> bool {
+        true
+    }
+    fn irq(&self) -> bool {
+        self.irq
+    }
+    fn cpu_write(&mut self, address: u16, value: u8, t: i64) {
+        if address < 0x8000 {
+            self.b.base_cpu_write(address, value, t);
+            return;
+        }
+        let region = address & 0xFC00;
+        if region == 0x8000 {
+            self.b.map_prg(0, 8, (value & 0x1F) as i64);
+        } else if region == 0xA000 {
+            self.b.map_prg(1, 8, (value & 0x1F) as i64);
+        } else if region == 0x9C00 {
+            let index = address & 0x0F;
+            if index == 0 {
+                self.b.map_prg(2, 8, (value & 0x1F) as i64);
+            } else if index >= 0x0C {
+                self.nametables[(index - 0x0C) as usize] = value & 1;
+            }
+        } else if (0xB000..0xF000).contains(&region) {
+            self.b
+                .map_chr(((region - 0xB000) >> 11) as usize, 1, value as i64);
+        } else if region == 0xF000 || region == 0xF400 {
+            self.latch = value;
+        } else if region == 0xF800 {
+            self.irq = false;
+            self.counting = value & 2 != 0;
+            if self.counting {
+                self.counter = self.latch;
+                self.prescaler = 0;
+            }
+        }
+    }
+    fn m2(&mut self, _t: i64) {
+        if self.counting {
+            self.prescaler += 3;
+            if self.prescaler >= Self::STEP_THIRDS {
+                self.prescaler -= Self::STEP_THIRDS;
+                self.counter = self.counter.wrapping_add(1);
+                if self.counter == 0 {
+                    self.irq = true;
+                }
+            }
+        }
+    }
+    fn ciram_a10(&mut self, address: u16) -> Option<u8> {
+        Some(self.nametables[((address >> 10) & 3) as usize])
+    }
+}
+
 // -- FutureMedia117 ---------------------------------------------------------------------
 
 /// Mapper 117 (Future Media's Crayon Shin-Chan, San Guo Zhi 4): 8 KiB PRG, 1
@@ -1193,6 +1313,7 @@ pub fn build(
         515 => Box::new(Noraebang515::new(image, t)),
         518 => Box::new(Dance2000::new(image, t)),
         551 => Box::new(Education178::new(image, t, true)),
+        559 => Box::new(Subor559::new(image, t)),
         _ => return Err(image),
     })
 }

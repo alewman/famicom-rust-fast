@@ -8,7 +8,7 @@
 //!     famicom-lockstep --cases TSV --cache DIR [--jobs N] [--trace BIN] [--only TEXT]
 //!
 //! A case is `name<TAB>slices<TAB>rom<TAB>arguments`; `$NES_TEST_ROMS`,
-//! `$NES_DUMPS`, `$NES_AFTERMARKET`, `$FDS_DUMPS`, `$INPUTS` and `$PROBES` are
+//! `$NES_DUMPS`, `$NES_AFTERMARKET`, `$FDS_DUMPS`, `$INPUTS`, `$PROBES` and `$NES_AUDIO_TESTS` are
 //! taken from the environment, with lockstep.py's defaults (the test ROMs at
 //! the reference checkout of a famicom-rust beside this one; the dumps in
 //! No-Intro's sets under `$NO_INTRO_DIR`, a case reported MISSING without it). The cached trace is `DIR/<name>.<slices>.ref`, the name with
@@ -67,6 +67,16 @@ fn cases(table: &Path) -> Vec<Case> {
         ),
         ("INPUTS", Some(format!("{ROOT}/scripts/inputs"))),
         ("PROBES", Some(format!("{ROOT}/external/probes"))),
+        // rainwarrior's nes-audio-tests, prebuilt: the reference's fetched
+        // reference/src/nes-audio-tests/build, copied under FAMICOM_REFERENCE.
+        (
+            "NES_AUDIO_TESTS",
+            Some(format!(
+                "{}/reference/src/nes-audio-tests/build",
+                std::env::var("FAMICOM_REFERENCE")
+                    .unwrap_or_else(|_| format!("{ROOT}/external/reference"))
+            )),
+        ),
     ]
     .into_iter()
     .map(|(k, d)| (format!("${k}"), std::env::var(k).ok().or(d)))

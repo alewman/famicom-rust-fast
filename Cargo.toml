@@ -20,6 +20,9 @@ sixfiveohtwo = { git = "https://github.com/alewman/6502-rust", rev = "71747eb903
 # The VRC7's sound chip (mapper 85): the restarted ym2413-rust (2026-11-13), proven
 # equivalent to the restarted ym2413-python.
 ym2413-rust = { package = "ym2413-rust", git = "https://github.com/alewman/ym2413-rust", rev = "94df223e3e5b32d4042f321a834f6214a5ef9692", features = ["serde"] }
+# The Sunsoft 5B's sound chip (mapper 69): ay8910-rust, a line-by-line transcription of
+# ay8910-python a3bb485, whose src/ is e9420aa's (the reference's pin) plus SPDX lines.
+ay8910-rust = { package = "ay8910-rust", git = "https://github.com/alewman/ay8910-rust", rev = "9b670a73bd3858364a6fe08a25a3a52c9ca1dc19", features = ["serde"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 crc32fast = "1"
 sha1 = "0.10"

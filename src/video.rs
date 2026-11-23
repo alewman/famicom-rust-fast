@@ -13,11 +13,7 @@ use std::path::{Path, PathBuf};
 
 /// Where the reference keeps pally's palettes.
 pub fn images() -> PathBuf {
-    let reference = match std::env::var("FAMICOM_REFERENCE") {
-        Ok(path) => PathBuf::from(path),
-        Err(_) => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("external/famicom-python"),
-    };
-    reference.join("reference/nesdev-wiki/images")
+    crate::reference_checkout().join("reference/nesdev-wiki/images")
 }
 
 /// The pally palette of a video standard.

@@ -28,7 +28,11 @@ use sixfiveohtwo::CpuState;
 use std::cell::RefCell;
 
 pub const MAGIC: &[u8; 8] = b"FCRSTATE";
-pub const VERSION: u32 = 1;
+/// The format's version, refused up front when it differs (as the reference's
+/// `state.py` refuses another format or version before decoding). 2 since
+/// 2026-11-23: the VRC7's chip became the restarted ym2413-rust's and mapper 69
+/// gained the 5B's, so a version 1 state of either no longer decodes.
+pub const VERSION: u32 = 2;
 
 /// What a loading state takes from the system it is loaded into.
 #[derive(Clone)]
@@ -307,12 +311,17 @@ fn body_bytes(system: &System) -> Vec<u8> {
     bincode::serialize(&body).expect("a state serializes")
 }
 
+/// All or nothing: the CPU's part is checked before the board's is loaded (which
+/// is itself all or nothing, `Board::load_state`), so a state that fails leaves
+/// the system as it was, running.
 fn load_body(system: &mut System, body: Body) -> Result<(), String> {
+    let cpu: CpuState = body.cpu.into();
+    cpu.validate()?;
     CONTEXT.with(|c| *c.borrow_mut() = Some(load_context(system)));
     let loaded = system.cpu.bus.load_state(&body.board);
     CONTEXT.with(|c| *c.borrow_mut() = None);
     loaded?;
-    system.cpu.restore_state(&body.cpu.into())?;
+    system.cpu.restore_state(&cpu).expect("a validated CPU state restores");
     system.instructions = body.instructions;
     Ok(())
 }

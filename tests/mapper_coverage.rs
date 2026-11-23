@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 //! Every mapper number the reference builds (famicom-python's `MAPPERS` at
-//! famicom-rust-pin-1) builds here too, from a synthetic image.
+//! famicom-rust-pin-1, and 559 from `e3e1474`) builds here too, from a synthetic
+//! image. `e3e1474` also builds 99, the Vs. System's sockets, not carried yet
+//! (README, "The repin of 2026-11-23").
 
 use famicom_rust::cartridge::{build, BoardInfo, RomImage};
 
@@ -20,7 +22,7 @@ const REFERENCE: &[u16] = &[
     319, 326, 328, 330, 332, 334, 346, 347, 351, 355, 359, 368, 374, 380, 389, 394, 396, 399, 400,
     406, 409, 412, 413, 415, 417, 418, 422, 446, 451, 470, 471, 487, 493, 512, 513, 515, 516, 517,
     518, 519, 521, 522, 523, 525, 526, 529, 530, 533, 534, 535, 538, 539, 540, 541, 544, 547, 548,
-    549, 551, 552, 553, 554, 555, 557, 558, 594,
+    549, 551, 552, 553, 554, 555, 557, 558, 559, 594,
 ];
 
 #[test]
@@ -44,5 +46,5 @@ fn every_reference_mapper_builds() {
         }
     }
     assert!(missing.is_empty(), "not built: {missing:?}");
-    assert_eq!(REFERENCE.len(), 294);
+    assert_eq!(REFERENCE.len(), 295); // the reference's 296 less 99
 }

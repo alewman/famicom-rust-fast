@@ -2,7 +2,9 @@
 //! Sunsoft's mappers (`sunsoft.py`): Sunsoft-3 (67), Sunsoft-4 (68), FME-7,
 //! 5A and 5B (69), and the discrete Sunsoft-1 (184) and Sunsoft-2 (89, 93).
 //! 69 is judged by Holy Mapperel and tepples's `fme7acktest` and
-//! `fme7ramtest`; the others rest on sweeps against Mesen2.
+//! `fme7ramtest`; the 5B's sound is ay8910-python's YM2149 variant (here
+//! ay8910-rust, its transcription), judged there against the AY-3-8910's die
+//! model; the others rest on sweeps against Mesen2, a detector.
 //!
 //! The reference's `Sunsoft4Dual` subclasses `Sunsoft4`; here one struct
 //! carries the dual cartridge's state as an `Option`.
@@ -11,11 +13,34 @@ use super::banked::{Banked, Mirroring, HORIZONTAL, SCREEN_A, SCREEN_B, VERTICAL}
 use super::connector::Cartridge;
 use super::ines::RomImage;
 use crate::banked_field;
+use ay8910_rust::{Levels, PSG, SUNSOFT_5B};
+
+/// One 5B channel's DAC level (ay8910-rust's `mix()`: 0.0-1.0 a channel) in
+/// the APU mixer's units. rainwarrior's `db_5b` on an AV Famicom measured the
+/// 5B's square at volume 12 as 1.3 dB below a full-volume APU square
+/// (nesdev-forum/17741.html, hardware-captured on one console and one
+/// cartridge); fitted so db_5b measures that through the board
+/// (the reference's scripts/expansion_levels.py). The amplifier's compression
+/// above one channel at volume 14 and its filtering (Sunsoft_5B_audio.wiki
+/// "Output": "ongoing") are not modelled: no measurement gives the curve.
+pub const SUNSOFT_5B_GAIN: f64 = 0.364;
 
 const ARRANGEMENTS: [Mirroring; 4] = [VERTICAL, HORIZONTAL, SCREEN_A, SCREEN_B];
 
 /// Mapper 69: a command register ($8000) and its parameter ($A000)
 /// (Sunsoft_FME-7.wiki).
+///
+/// The 5B adds a YM2149F (Sunsoft_5B_audio.wiki): $C000 selects its register,
+/// $E000 writes it, and it is clocked by M2, one input clock a CPU cycle
+/// (the variant halves it). Neither the header nor nes20db tells a 5B from an
+/// FME-7 or 5A, which have no sound and whose games never write there, so
+/// every mapper 69 cartridge carries the chip.
+///
+/// Forced by Rust: the reference sends a new level to the mixer when the
+/// chip's `levels()` is a different object from the last it sent (`is not`);
+/// [`Levels`] is a value here, so the test is `!=`. The chip makes a new
+/// object only when it recomputes its levels, and the level sent is a function
+/// of them, so the mixer gets the same level on the same cycle either way.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Fme7 {
     pub b: Banked,
@@ -26,6 +51,11 @@ pub struct Fme7 {
     pub counting: bool,
     pub irq_enabled: bool,
     pub irq: bool,
+    pub sound: PSG,
+    /// The levels last sent to the mixer (the reference's `_levels`).
+    pub levels: Levels,
+    /// The level on the cartridge's audio pin, in the mixer's units.
+    pub expansion: f64,
 }
 
 impl Fme7 {
@@ -38,7 +68,11 @@ impl Fme7 {
             counting: false,
             irq_enabled: false,
             irq: false,
+            sound: PSG::with_record(SUNSOFT_5B, false),
+            levels: [0; 3],
+            expansion: 0.0,
         };
+        m.levels = m.sound.levels();
         let last = (m.b.prg.len() / 0x2000) as i64 - 1;
         m.b.map_prg(3, 8, last);
         m
@@ -73,11 +107,26 @@ impl Cartridge for Fme7 {
         true
     }
 
+    fn expansion_audio(&self) -> bool {
+        true
+    }
+
+    fn expansion(&self) -> f64 {
+        self.expansion
+    }
+
     fn irq(&self) -> bool {
         self.irq
     }
 
     fn m2(&mut self, _t: i64) {
+        let sound = &mut self.sound;
+        sound.tick();
+        let levels = sound.levels();
+        if levels != self.levels {
+            self.levels = levels;
+            self.expansion = sound.mix() * SUNSOFT_5B_GAIN;
+        }
         if self.counting {
             self.counter = self.counter.wrapping_sub(1);
             if self.counter == 0xFFFF && self.irq_enabled {
@@ -115,6 +164,10 @@ impl Cartridge for Fme7 {
         } else if region == 0xA000 {
             let command = self.command;
             self.parameter(command, value);
+        } else if region == 0xC000 {
+            self.sound.select(value);
+        } else {
+            self.sound.write(value);
         }
     }
 }
