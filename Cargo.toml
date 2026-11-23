@@ -14,7 +14,7 @@ name = "famicom_rust"
 [dependencies]
 # 6502-rust (crate sixfiveohtwo), transcribed from 6502-python 741419a; its
 # NMOS core is identical to 6502-python 9dc34bd (the two differ only in tooling),
-# which the reference, famicom-python e3e1474, pins as e73f471 (9dc34bd after
+# which the reference, famicom-python b3dbf1b, pins as e73f471 (9dc34bd after
 # 6502-python's history rewrite, the same tree).
 sixfiveohtwo = { git = "https://github.com/alewman/6502-rust", rev = "71747eb9036702109fb206eb9fe88174a9dcc989" }
 # The VRC7's sound chip (mapper 85): the restarted ym2413-rust (2026-11-13), proven

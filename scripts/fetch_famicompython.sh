@@ -6,22 +6,31 @@
 # never committed anywhere).
 # Usage: scripts/fetch_famicompython.sh [DEST] [SOURCE]
 # FAMICOM_PYTHON_COMMIT overrides the pin; PYTHON names the interpreter (PyPy).
+# FAMICOM_PYTHON_SOURCE (or the SOURCE argument) names another clone to fetch the pin
+# from, a local one while the pinned commit is not on GitHub yet; the default is GitHub.
 set -euo pipefail
-# e3e1474 (2026-11-23): famicom-python's main, which pins the restarted ym2413-python
-# 67fdb1e (written from documents) and ay8910-python e9420aa, both public. The old pin,
-# the tag famicom-rust-pin-1 (47d33c1, fe89099 before the 2026-11-21 history rewrite),
-# pinned the archived ym2413-python 13df60c, a translation of GPL code that this family's
-# MIT work must not reach. No new tag is made while the clean-up settles, so the pin is
-# the commit.
-COMMIT=${FAMICOM_PYTHON_COMMIT:-e3e14747355ab4404c1df4415a977f074a0404c9}
+# b3dbf1b (2026-11-23): famicom-python's main, which repins z80-python to b59c80b by git
+# commit (the PlayChoice-10's supervisor; was the 0.4.0 release, which no Rust Z80
+# transcribes) and ay8910-python to a3bb485 (was e9420aa, whose src/ differs only by
+# SPDX lines; ay8910-rust transcribes a3bb485). Before it, e3e1474, which pinned the
+# restarted ym2413-python 67fdb1e (written from documents); before that, the tag
+# famicom-rust-pin-1 (47d33c1, fe89099 before the 2026-11-21 history rewrite), which
+# pinned the archived ym2413-python 13df60c, a translation of GPL code that this
+# family's MIT work must not reach. No new tag is made while the clean-up settles, so
+# the pin is the commit. Until b3dbf1b is on GitHub, FAMICOM_PYTHON_SOURCE names a
+# local clone that has it.
+COMMIT=${FAMICOM_PYTHON_COMMIT:-b3dbf1b1b681bda133b5ff5f5222c0aa193ec2b4}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 DEST=${1:-"$ROOT/external/famicom-python"}
-SOURCE=${2:-https://github.com/alewman/famicom-python.git}
+SOURCE=${2:-${FAMICOM_PYTHON_SOURCE:-https://github.com/alewman/famicom-python.git}}
 PYTHON=${PYTHON:-$(command -v pypy3.11 || command -v pypy3)}
 if [ ! -d "$DEST/.git" ]; then
     git clone -q "$SOURCE" "$DEST"
 fi
 git -C "$DEST" fetch -q origin
+if [ "$SOURCE" != "$(git -C "$DEST" remote get-url origin)" ]; then
+    git -C "$DEST" fetch -q "$SOURCE" "+refs/heads/*:refs/remotes/source/*"
+fi
 git -C "$DEST" checkout -q --detach "$COMMIT"
 if [ ! -x "$DEST/.venv-pypy/bin/python" ]; then
     "$PYTHON" -m venv "$DEST/.venv-pypy"
@@ -29,7 +38,7 @@ fi
 # pip keeps an installed core whose pin URL changed (an old ym2413-python would survive
 # this repin that way), so the reference's cores are uninstalled first and come back at
 # the pins its pyproject names: 6502-python, ym2413-python and ay8910-python by git
-# commit on GitHub; z80-python (the PlayChoice-10's supervisor only) as a release.
+# commit on GitHub, and z80-python (the PlayChoice-10's supervisor only) the same way.
 "$DEST/.venv-pypy/bin/python" -m pip uninstall -q -y \
     6502-python ym2413-python ay8910-python z80-python famicom-python || true
 "$DEST/.venv-pypy/bin/python" -m pip install -q -e "$DEST"
@@ -40,5 +49,5 @@ if [ -n "$LOCAL" ]; then
     [ -e "$DEST/tests/test_roms" ] || ln -s "$LOCAL/tests/test_roms" "$DEST/tests/test_roms"
     [ -e "$DEST/reference" ] || ln -s "$LOCAL/reference" "$DEST/reference"
 fi
-"$DEST/.venv-pypy/bin/python" -m pip freeze | grep -E "python @ git|z80-python" || true
+"$DEST/.venv-pypy/bin/python" -m pip freeze | grep -E "python @ git" || true
 echo "famicom-python $(git -C "$DEST" rev-parse --short HEAD) in $DEST"

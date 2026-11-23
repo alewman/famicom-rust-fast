@@ -3,8 +3,8 @@
 A speed fork of [famicom-rust](https://github.com/alewman/famicom-rust), the
 Rust Famicom / NES board, held in lockstep with it: every change must leave
 this board's traces identical to famicom-rust's (which are identical to
-famicom-python's at `e3e1474`, the reference since 2026-11-23, which replaced
-the tag `famicom-rust-pin-1`) on every case, and must measure
+famicom-python's at `b3dbf1b`, the reference since 2026-11-23, which replaced
+`e3e1474` and before it the tag `famicom-rust-pin-1`) on every case, and must measure
 faster, or it is not kept. The fork point is famicom-rust `553ead2`; the
 library keeps the name `famicom_rust`, so famicom-libretro switches to it by
 one dependency line.
@@ -29,6 +29,11 @@ five bench games (no 5B) gave x0.985, within what code layout moves here (an
 A/A run is within 1% overall). No 5B speed change was tried: the carry is
 kept plain. Not merged because famicom-rust does not have them yet: the
 Vs. System and the PlayChoice-10.
+
+**Merged from famicom-rust on 2026-11-23** (`11a1b7c`): the reference moved to
+famicom-python `b3dbf1b` (z80-python `b59c80b` by commit, ay8910-python `a3bb485`).
+famicom-rust regenerated every reference trace against it, byte-for-byte the
+old caches' (918 of 918), so the caches in `external/` stand; no code changed.
 
 ## Speed
 
