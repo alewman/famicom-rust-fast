@@ -11,6 +11,7 @@ mean). The best, not the median: on this shared machine other work only ever
 slows a run down (a busy SMT sibling, shared cache), so each side's fastest
 of many short runs is the closest to its own speed. The checksums must agree, or the builds do not compute
 the same thing and the comparison is refused. An A/A run shows the noise.
+The games are read from No-Intro's NES set under $NO_INTRO_DIR.
 """
 
 from __future__ import annotations
@@ -22,12 +23,14 @@ import statistics
 import subprocess
 import sys
 
+#: In No-Intro's NES set, under $NO_INTRO_DIR.
+NES = "Nintendo - Nintendo Entertainment System (Headered)"
 GAMES = [
-    "/data/emu/roms/nes/Super Mario Bros. (World).zip",  # NROM
-    "/data/emu/roms/nes/Legend of Zelda, The (USA).zip",  # MMC1
-    "/data/emu/roms/nes/Super Mario Bros. 3 (USA).zip",  # MMC3
-    "/data/emu/roms/nes/Castlevania III - Dracula's Curse (USA).zip",  # MMC5
-    "/data/emu/roms/nes/Akumajou Densetsu (Japan).zip",  # VRC6, its sound on the Famicom
+    "Super Mario Bros. (World).zip",  # NROM
+    "Legend of Zelda, The (USA).zip",  # MMC1
+    "Super Mario Bros. 3 (USA).zip",  # MMC3
+    "Castlevania III - Dracula's Curse (USA).zip",  # MMC5
+    "Akumajou Densetsu (Japan).zip",  # VRC6, its sound on the Famicom
 ]
 # nes20db, as the ladder reads it (identification changes some boards).
 os.environ.setdefault(
@@ -53,8 +56,11 @@ def main() -> int:
     parser.add_argument("--frames", type=int, default=300)
     parser.add_argument("--cpu", type=int, default=31)
     args = parser.parse_args()
+    base = os.environ.get("NO_INTRO_DIR")
+    if not base:
+        raise SystemExit("set NO_INTRO_DIR to the No-Intro romset folder")
     ratios = []
-    for game in GAMES:
+    for game in (os.path.join(base, NES, name) for name in GAMES):
         a_runs, b_runs = [], []
         for r in range(args.rounds):
             order = [("a", args.a), ("b", args.b)] if r % 2 == 0 else [("b", args.b), ("a", args.a)]

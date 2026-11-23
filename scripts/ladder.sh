@@ -18,8 +18,13 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 EXT=$ROOT/external
 JOBS=${JOBS:-4}
-export NES_TEST_ROMS=${NES_TEST_ROMS:-/data/emu/famicom-rust/external/famicom-python/tests/test_roms}
-export FAMICOM_FDS_BIOS=${FAMICOM_FDS_BIOS:-"/data/emu/roms/fds/[BIOS] Family Computer Disk System (Japan) (En) (Rev 1).zip"}
+# The test ROMs: the reference checkout of a famicom-rust beside this one.
+export NES_TEST_ROMS=${NES_TEST_ROMS:-$(dirname "$ROOT")/famicom-rust/external/famicom-python/tests/test_roms}
+# The dumps and the FDS BIOS: No-Intro's sets under NO_INTRO_DIR.
+if [ -z "${FAMICOM_FDS_BIOS:-}" ]; then
+    [ -n "${NO_INTRO_DIR:-}" ] || { echo "set NO_INTRO_DIR (No-Intro's sets) or FAMICOM_FDS_BIOS"; exit 1; }
+    export FAMICOM_FDS_BIOS="$NO_INTRO_DIR/Nintendo - Family Computer Disk System (FDS)/[BIOS] Family Computer Disk System (Japan) (En) (Rev 1).zip"
+fi
 # nes20db, which identifies the dumps, read at run time (copied into external/
 # from the reference's reference/docs; never committed). Without it many
 # dumps load as their headers say and the traces differ.

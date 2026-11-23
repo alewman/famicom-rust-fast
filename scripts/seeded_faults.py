@@ -83,8 +83,8 @@ FAULTS = {
 }
 
 ENV = {
-    "NES_TEST_ROMS": "/data/emu/famicom-rust/external/famicom-python/tests/test_roms",
-    "FAMICOM_FDS_BIOS": "/data/emu/roms/fds/[BIOS] Family Computer Disk System (Japan) (En) (Rev 1).zip",
+    # The test ROMs: the reference checkout of a famicom-rust beside this one.
+    "NES_TEST_ROMS": str(ROOT.parent / "famicom-rust" / "external" / "famicom-python" / "tests" / "test_roms"),
     "FAMICOM_NES20DB": str(EXT / "nes20db-2026-09-26.7z"),
     # The case tables' inputs (the binaries' default is beside their source).
     "INPUTS": str(ROOT / "scripts" / "inputs"),
@@ -151,6 +151,10 @@ def main() -> int:
     parser.add_argument("--jobs", type=int, default=4)
     args = parser.parse_args()
     env = {**os.environ, **{k: os.environ.get(k, v) for k, v in ENV.items()}}
+    if "FAMICOM_FDS_BIOS" not in env:
+        if "NO_INTRO_DIR" not in env:
+            raise SystemExit("set NO_INTRO_DIR (No-Intro's sets) or FAMICOM_FDS_BIOS")
+        env["FAMICOM_FDS_BIOS"] = str(Path(env["NO_INTRO_DIR"]) / "Nintendo - Family Computer Disk System (FDS)" / "[BIOS] Family Computer Disk System (Japan) (En) (Rev 1).zip")
     missed = ran = 0
     for name, (file, old, new) in FAULTS.items():
         if args.only and name not in args.only.split(","):

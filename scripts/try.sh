@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 NAME=$1
 BASE=${2:-base}
-export NES_TEST_ROMS=${NES_TEST_ROMS:-/data/emu/famicom-rust/external/famicom-python/tests/test_roms}
+export NES_TEST_ROMS=${NES_TEST_ROMS:-$(dirname "$ROOT")/famicom-rust/external/famicom-python/tests/test_roms}
 export FAMICOM_NES20DB=${FAMICOM_NES20DB:-$ROOT/external/nes20db-2026-09-26.7z}
 # Its own target directory, so a ladder running meanwhile keeps its binaries.
 export CARGO_TARGET_DIR=$ROOT/target/exp

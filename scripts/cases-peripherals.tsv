@@ -1,55 +1,55 @@
-# name	slices	rom	arguments: device rows (rung 6's peripherals); $NES_TEST_ROMS $INPUTS
-four-score/gauntlet-ii	1500	/data/emu/roms/nes/Gauntlet II (USA).zip	--machine nes --device 0x02 --input $INPUTS/devices/four-score.txt
+# name	slices	rom	arguments: device rows (rung 6's peripherals); $NES_TEST_ROMS $NES_DUMPS $NES_AFTERMARKET $INPUTS
+four-score/gauntlet-ii	1500	$NES_DUMPS/Gauntlet II (USA).zip	--machine nes --device 0x02 --input $INPUTS/devices/four-score.txt
 four-score/read_joy3-test_buttons	900	$NES_TEST_ROMS/nes-test-roms/read_joy3/test_buttons.nes	--machine nes --device 0x02 --input $INPUTS/devices/four-score.txt
-famicom-four/bomberman-ii	1500	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --device 0x03 --input $INPUTS/devices/expansion-pads.txt
-famicom-four/kunio-soccer	1500	/data/emu/roms/nes/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device 0x03 --input $INPUTS/devices/expansion-pads.txt
-hori-adapter/bomberman-ii	1500	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --device hori-adapter --input $INPUTS/devices/hori-adapter.txt
-hori-adapter/kunio-soccer	1500	/data/emu/roms/nes/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device hori-adapter --input $INPUTS/devices/hori-adapter.txt
-zapper-famicom/duck-hunt	1500	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
-zapper-nes/duck-hunt	1500	/data/emu/roms/nes/Duck Hunt (World).zip	--machine nes --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
-zapper-nes/hogans-alley	1500	/data/emu/roms/nes/Hogan's Alley (World).zip	--machine nes --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
-zapper-nes/hogans-alley-pal	1500	/data/emu/roms/nes/Hogan's Alley (World).zip	--machine pal --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
-two-zappers/duck-hunt	1500	/data/emu/roms/nes/Duck Hunt (World).zip	--machine nes --device 0x09 --input $INPUTS/devices/two-zappers.txt
-zapper-4016/shark-pirate	1500	/data/emu/roms/nes/Shark Pirate's Harpoon The Dolphin - Win a Prize! (World) (Demo) (Aftermarket) (Unl).zip	--machine famicom --device 0x49 --input $INPUTS/devices/zapper-4016.txt
-bandai-hyper-shot/duck-hunt	1500	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --device 0x0A --input $INPUTS/devices/bandai-hyper-shot.txt
+famicom-four/bomberman-ii	1500	$NES_DUMPS/Bomberman II (Japan) (En).zip	--machine famicom --device 0x03 --input $INPUTS/devices/expansion-pads.txt
+famicom-four/kunio-soccer	1500	$NES_DUMPS/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device 0x03 --input $INPUTS/devices/expansion-pads.txt
+hori-adapter/bomberman-ii	1500	$NES_DUMPS/Bomberman II (Japan) (En).zip	--machine famicom --device hori-adapter --input $INPUTS/devices/hori-adapter.txt
+hori-adapter/kunio-soccer	1500	$NES_DUMPS/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device hori-adapter --input $INPUTS/devices/hori-adapter.txt
+zapper-famicom/duck-hunt	1500	$NES_DUMPS/Duck Hunt (World).zip	--machine famicom --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
+zapper-nes/duck-hunt	1500	$NES_DUMPS/Duck Hunt (World).zip	--machine nes --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
+zapper-nes/hogans-alley	1500	$NES_DUMPS/Hogan's Alley (World).zip	--machine nes --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
+zapper-nes/hogans-alley-pal	1500	$NES_DUMPS/Hogan's Alley (World).zip	--machine pal --device 0x08 --input $INPUTS/devices/zapper-duck-hunt.txt
+two-zappers/duck-hunt	1500	$NES_DUMPS/Duck Hunt (World).zip	--machine nes --device 0x09 --input $INPUTS/devices/two-zappers.txt
+zapper-4016/shark-pirate	1500	$NES_AFTERMARKET/Shark Pirate's Harpoon The Dolphin - Win a Prize! (World) (Demo) (Aftermarket) (Unl).zip	--machine famicom --device 0x49 --input $INPUTS/devices/zapper-4016.txt
+bandai-hyper-shot/duck-hunt	1500	$NES_DUMPS/Duck Hunt (World).zip	--machine famicom --device 0x0A --input $INPUTS/devices/bandai-hyper-shot.txt
 vaus-nes/vaus-test	1500	$NES_TEST_ROMS/nes-test-roms/vaus-test/vaus-test.nes	--machine nes --device 0x0F --input $INPUTS/devices/vaus-nes.txt
-vaus-nes/arkanoid-usa	1500	/data/emu/roms/nes/Arkanoid (USA).zip	--machine nes --device 0x0F --input $INPUTS/devices/vaus-nes.txt
-vaus-famicom/arkanoid-japan	1500	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --device 0x10 --input $INPUTS/devices/vaus-nes.txt
+vaus-nes/arkanoid-usa	1500	$NES_DUMPS/Arkanoid (USA).zip	--machine nes --device 0x0F --input $INPUTS/devices/vaus-nes.txt
+vaus-famicom/arkanoid-japan	1500	$NES_DUMPS/Arkanoid (Japan) (En).zip	--machine famicom --device 0x10 --input $INPUTS/devices/vaus-nes.txt
 vaus-famicom/vaus-test	1500	$NES_TEST_ROMS/nes-test-roms/vaus-test/vaus-test.nes	--machine famicom --device 0x10 --input $INPUTS/devices/vaus-nes.txt
-vaus-famicom-on-nes/chase-hq	1500	/data/emu/roms/nes/Taito Chase H.Q. (Japan).zip	--machine nes --device 0x10 --input $INPUTS/devices/vaus-nes.txt
-vaus-pair/arkanoid-japan	1500	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --device 0x11 --input $INPUTS/devices/vaus-pair.txt
-power-pad/world-class-track-meet	1500	/data/emu/roms/nes/World Class Track Meet (USA).zip	--machine nes --device 0x0C --input $INPUTS/devices/power-pad.txt
-power-pad/athletic-world	1500	/data/emu/roms/nes/Athletic World (USA).zip	--machine nes --device 0x0B --input $INPUTS/devices/power-pad.txt
-power-pad/test-cartridge	1500	/data/emu/roms/nes/Nintendo World Class Service - Power Pad Test Cartridge (USA) (Test Program).zip	--machine nes --device 0x0C --input $INPUTS/devices/power-pad.txt
-family-trainer/athletic-world	1500	/data/emu/roms/nes/Family Trainer 1 - Athletic World (Japan).zip	--machine famicom --device 0x0D --input $INPUTS/devices/family-trainer.txt
-family-trainer/aerobics-studio	1500	/data/emu/roms/nes/Family Trainer 3 - Aerobics Studio (Japan).zip	--machine famicom --device 0x0E --input $INPUTS/devices/family-trainer.txt
-taptap-mat/mogura-tataki	1500	/data/emu/roms/nes/Super Mogura Tataki!! - Pokkun Mogurar (Japan).zip	--machine famicom --device 0x1A --input $INPUTS/devices/family-trainer.txt
-family-basic-keyboard/family-basic-v2.1	1500	/data/emu/roms/nes/Family BASIC v2.1 (Japan).zip	--machine famicom --device 0x23 --input $INPUTS/devices/family-basic-keyboard.txt
-data-recorder/family-basic-v2.1-save-load	7700	/data/emu/roms/nes/Family BASIC v2.1 (Japan).zip	--machine famicom --device 0x23 --input $INPUTS/devices/data-recorder.txt
-data-recorder/excitebike	1500	/data/emu/roms/nes/Excitebike (Japan, USA) (En).zip	--machine famicom --device 0x20 --input $INPUTS/devices/data-recorder-only.txt
-turbo-file/dungeon-kid	2500	/data/emu/roms/nes/Dungeon Kid (Japan).zip	--machine famicom --device 0x21 --input $INPUTS/devices/turbo-file.txt
-subor-keyboard/text-editor	1500	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x26 --input $INPUTS/devices/subor-keyboard.txt
-subor-mouse-4016/text-editor	1500	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x28 --input $INPUTS/devices/subor-mouse.txt
-subor-mouse-4017/text-editor	1500	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x36 --input $INPUTS/devices/subor-mouse.txt
-macro-winners/text-editor	1500	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x27 --input $INPUTS/devices/subor-mouse.txt
-mega-book/mega-book-4-in-1	1500	/data/emu/roms/nes/Mega Book 4-in-1 (Italy) (Aftermarket) (Unl).zip	--machine dendy --device 0x4F --input $INPUTS/devices/subor-mouse.txt
-subor-yuxing/text-editor	1500	/data/emu/roms/nes/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x44 --input $INPUTS/devices/subor-mouse.txt
-yuxing-mouse/duck-hunt	1500	/data/emu/roms/nes/Duck Hunt (World).zip	--machine famicom --device 0x43 --input $INPUTS/devices/mouse-only.txt
-snes-mouse-4016/thwaite	1500	/data/emu/roms/nes/Thwaite (World) (Proto 4) (Aftermarket) (Unl).zip	--machine famicom --device 0x29 --input $INPUTS/devices/snes-mouse.txt
-snes-mouse-4016/crosspaint	1500	/data/emu/roms/nes/CrossPaint (World) (Demo 5) (Aftermarket) (Unl).zip	--machine famicom --device 0x29 --input $INPUTS/devices/snes-mouse.txt
-snes-mouse-4017/theremin	1500	/data/emu/roms/nes/Theremin (World) (Aftermarket) (Unl).zip	--machine famicom --device 0x48 --input $INPUTS/devices/snes-mouse.txt
+vaus-famicom-on-nes/chase-hq	1500	$NES_DUMPS/Taito Chase H.Q. (Japan).zip	--machine nes --device 0x10 --input $INPUTS/devices/vaus-nes.txt
+vaus-pair/arkanoid-japan	1500	$NES_DUMPS/Arkanoid (Japan) (En).zip	--machine famicom --device 0x11 --input $INPUTS/devices/vaus-pair.txt
+power-pad/world-class-track-meet	1500	$NES_DUMPS/World Class Track Meet (USA).zip	--machine nes --device 0x0C --input $INPUTS/devices/power-pad.txt
+power-pad/athletic-world	1500	$NES_DUMPS/Athletic World (USA).zip	--machine nes --device 0x0B --input $INPUTS/devices/power-pad.txt
+power-pad/test-cartridge	1500	$NES_DUMPS/Nintendo World Class Service - Power Pad Test Cartridge (USA) (Test Program).zip	--machine nes --device 0x0C --input $INPUTS/devices/power-pad.txt
+family-trainer/athletic-world	1500	$NES_DUMPS/Family Trainer 1 - Athletic World (Japan).zip	--machine famicom --device 0x0D --input $INPUTS/devices/family-trainer.txt
+family-trainer/aerobics-studio	1500	$NES_DUMPS/Family Trainer 3 - Aerobics Studio (Japan).zip	--machine famicom --device 0x0E --input $INPUTS/devices/family-trainer.txt
+taptap-mat/mogura-tataki	1500	$NES_DUMPS/Super Mogura Tataki!! - Pokkun Mogurar (Japan).zip	--machine famicom --device 0x1A --input $INPUTS/devices/family-trainer.txt
+family-basic-keyboard/family-basic-v2.1	1500	$NES_DUMPS/Family BASIC v2.1 (Japan).zip	--machine famicom --device 0x23 --input $INPUTS/devices/family-basic-keyboard.txt
+data-recorder/family-basic-v2.1-save-load	7700	$NES_DUMPS/Family BASIC v2.1 (Japan).zip	--machine famicom --device 0x23 --input $INPUTS/devices/data-recorder.txt
+data-recorder/excitebike	1500	$NES_DUMPS/Excitebike (Japan, USA) (En).zip	--machine famicom --device 0x20 --input $INPUTS/devices/data-recorder-only.txt
+turbo-file/dungeon-kid	2500	$NES_DUMPS/Dungeon Kid (Japan).zip	--machine famicom --device 0x21 --input $INPUTS/devices/turbo-file.txt
+subor-keyboard/text-editor	1500	$NES_DUMPS/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x26 --input $INPUTS/devices/subor-keyboard.txt
+subor-mouse-4016/text-editor	1500	$NES_DUMPS/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x28 --input $INPUTS/devices/subor-mouse.txt
+subor-mouse-4017/text-editor	1500	$NES_DUMPS/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x36 --input $INPUTS/devices/subor-mouse.txt
+macro-winners/text-editor	1500	$NES_DUMPS/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x27 --input $INPUTS/devices/subor-mouse.txt
+mega-book/mega-book-4-in-1	1500	$NES_AFTERMARKET/Mega Book 4-in-1 (Italy) (Aftermarket) (Unl).zip	--machine dendy --device 0x4F --input $INPUTS/devices/subor-mouse.txt
+subor-yuxing/text-editor	1500	$NES_DUMPS/Text Editor (Russia) (Subor Keyboard) (Unl).zip	--machine dendy --device 0x44 --input $INPUTS/devices/subor-mouse.txt
+yuxing-mouse/duck-hunt	1500	$NES_DUMPS/Duck Hunt (World).zip	--machine famicom --device 0x43 --input $INPUTS/devices/mouse-only.txt
+snes-mouse-4016/thwaite	1500	$NES_AFTERMARKET/Thwaite (World) (Proto 4) (Aftermarket) (Unl).zip	--machine famicom --device 0x29 --input $INPUTS/devices/snes-mouse.txt
+snes-mouse-4016/crosspaint	1500	$NES_AFTERMARKET/CrossPaint (World) (Demo 5) (Aftermarket) (Unl).zip	--machine famicom --device 0x29 --input $INPUTS/devices/snes-mouse.txt
+snes-mouse-4017/theremin	1500	$NES_AFTERMARKET/Theremin (World) (Aftermarket) (Unl).zip	--machine famicom --device 0x48 --input $INPUTS/devices/snes-mouse.txt
 snes-controllers/read_joy3-test_buttons	900	$NES_TEST_ROMS/nes-test-roms/read_joy3/test_buttons.nes	--machine nes --device 0x2B --input $INPUTS/devices/snes-controllers.txt
-snes-controllers/gauntlet-ii	1500	/data/emu/roms/nes/Gauntlet II (USA).zip	--machine nes --device 0x2B --input $INPUTS/devices/snes-controllers.txt
-hori-track/bomberman-ii	1500	/data/emu/roms/nes/Bomberman II (Japan) (En).zip	--machine famicom --device 0x50 --input $INPUTS/devices/hori-track.txt
-hori-track/kunio-soccer	1500	/data/emu/roms/nes/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device 0x50 --input $INPUTS/devices/hori-track.txt
-pachinko/pachio-kun-4	1500	/data/emu/roms/nes/Pachio-kun 4 (Japan).zip	--machine famicom --device 0x13 --input $INPUTS/devices/pachinko.txt
-konami-hyper-shot/hyper-olympic	1500	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x12 --input $INPUTS/devices/konami-hyper-shot.txt
-boxing-bag/hyper-olympic	1500	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x14 --input $INPUTS/devices/boxing.txt
-jissen-mahjong/jissen-mahjong	1500	/data/emu/roms/nes/Ide Yousuke Meijin no Jissen Mahjong (Japan).zip	--machine famicom --device 0x15 --input $INPUTS/devices/jissen-mahjong.txt
-partytap/casino-derby	1500	/data/emu/roms/nes/Casino Derby (Japan).zip	--machine famicom --device 0x16 --input $INPUTS/devices/partytap.txt
-oeka-kids/hyper-olympic	1500	/data/emu/roms/nes/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x17 --input $INPUTS/devices/oeka-kids.txt
-famicom-3d/highway-star	1500	/data/emu/roms/nes/Highway Star (Japan) (En) (Famicom 3D System).zip	--machine famicom --device 0x1D --input $INPUTS/devices/famicom-3d.txt
-rob/gyromite	1500	/data/emu/roms/nes/Gyromite (World).zip	--machine famicom --device 0x1F --input $INPUTS/devices/rob-gyromite-direct.txt
-rob/stack-up	1500	/data/emu/roms/nes/Stack-Up (World).zip	--machine famicom --device 0x2E --input $INPUTS/devices/rob-stack-up-direct.txt
-port-test/port-test-cartridge	1500	/data/emu/roms/nes/Nintendo World Class Service - Port Test Cartridge (USA) (Test Program).zip	--machine famicom --device 0x37 --input $INPUTS/devices/port-test.txt
-auto/arkanoid-japan	600	/data/emu/roms/nes/Arkanoid (Japan) (En).zip	--machine famicom --device auto --input $INPUTS/devices/vaus-nes.txt
+snes-controllers/gauntlet-ii	1500	$NES_DUMPS/Gauntlet II (USA).zip	--machine nes --device 0x2B --input $INPUTS/devices/snes-controllers.txt
+hori-track/bomberman-ii	1500	$NES_DUMPS/Bomberman II (Japan) (En).zip	--machine famicom --device 0x50 --input $INPUTS/devices/hori-track.txt
+hori-track/kunio-soccer	1500	$NES_DUMPS/Kunio-kun no Nekketsu Soccer League (Japan).zip	--machine famicom --device 0x50 --input $INPUTS/devices/hori-track.txt
+pachinko/pachio-kun-4	1500	$NES_DUMPS/Pachio-kun 4 (Japan).zip	--machine famicom --device 0x13 --input $INPUTS/devices/pachinko.txt
+konami-hyper-shot/hyper-olympic	1500	$NES_DUMPS/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x12 --input $INPUTS/devices/konami-hyper-shot.txt
+boxing-bag/hyper-olympic	1500	$NES_DUMPS/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x14 --input $INPUTS/devices/boxing.txt
+jissen-mahjong/jissen-mahjong	1500	$NES_DUMPS/Ide Yousuke Meijin no Jissen Mahjong (Japan).zip	--machine famicom --device 0x15 --input $INPUTS/devices/jissen-mahjong.txt
+partytap/casino-derby	1500	$NES_DUMPS/Casino Derby (Japan).zip	--machine famicom --device 0x16 --input $INPUTS/devices/partytap.txt
+oeka-kids/hyper-olympic	1500	$NES_DUMPS/Hyper Olympic (Japan) (En).zip	--machine famicom --device 0x17 --input $INPUTS/devices/oeka-kids.txt
+famicom-3d/highway-star	1500	$NES_DUMPS/Highway Star (Japan) (En) (Famicom 3D System).zip	--machine famicom --device 0x1D --input $INPUTS/devices/famicom-3d.txt
+rob/gyromite	1500	$NES_DUMPS/Gyromite (World).zip	--machine famicom --device 0x1F --input $INPUTS/devices/rob-gyromite-direct.txt
+rob/stack-up	1500	$NES_DUMPS/Stack-Up (World).zip	--machine famicom --device 0x2E --input $INPUTS/devices/rob-stack-up-direct.txt
+port-test/port-test-cartridge	1500	$NES_DUMPS/Nintendo World Class Service - Port Test Cartridge (USA) (Test Program).zip	--machine famicom --device 0x37 --input $INPUTS/devices/port-test.txt
+auto/arkanoid-japan	600	$NES_DUMPS/Arkanoid (Japan) (En).zip	--machine famicom --device auto --input $INPUTS/devices/vaus-nes.txt

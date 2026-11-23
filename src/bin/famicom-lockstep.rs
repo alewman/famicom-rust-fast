@@ -8,9 +8,10 @@
 //!     famicom-lockstep --cases TSV --cache DIR [--jobs N] [--trace BIN] [--only TEXT]
 //!
 //! A case is `name<TAB>slices<TAB>rom<TAB>arguments`; `$NES_TEST_ROMS`,
-//! `$NES_DUMPS`, `$INPUTS` and `$PROBES` are taken from the environment, with
-//! lockstep.py's defaults (the test ROMs at famicom-rust's reference
-//! checkout). The cached trace is `DIR/<name>.<slices>.ref`, the name with
+//! `$NES_DUMPS`, `$NES_AFTERMARKET`, `$FDS_DUMPS`, `$INPUTS` and `$PROBES` are
+//! taken from the environment, with lockstep.py's defaults (the test ROMs at
+//! the reference checkout of a famicom-rust beside this one; the dumps in
+//! No-Intro's sets under `$NO_INTRO_DIR`, a case reported MISSING without it). The cached trace is `DIR/<name>.<slices>.ref`, the name with
 //! every run of other characters than `A-Za-z0-9._-` made one `_`, as
 //! lockstep.py names it.
 
@@ -21,6 +22,10 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 const ROOT: &str = env!("CARGO_MANIFEST_DIR");
+/// No-Intro's NES set, under `$NO_INTRO_DIR`.
+const NES: &str = "Nintendo - Nintendo Entertainment System (Headered)";
+/// The dump folders, which default to No-Intro's sets under `$NO_INTRO_DIR`.
+const DUMP_VARS: [&str; 3] = ["NES_DUMPS", "NES_AFTERMARKET", "FDS_DUMPS"];
 
 struct Case {
     name: String,
@@ -45,21 +50,33 @@ fn safe(name: &str) -> String {
 }
 
 fn cases(table: &Path) -> Vec<Case> {
-    let vars: Vec<(String, String)> = [
+    let no_intro = std::env::var("NO_INTRO_DIR").ok();
+    let set = |folder: &str| no_intro.as_ref().map(|base| format!("{base}/{folder}"));
+    let vars: Vec<(String, Option<String>)> = [
         (
             "NES_TEST_ROMS",
-            "/data/emu/famicom-rust/external/famicom-python/tests/test_roms".to_owned(),
+            Some(format!(
+                "{ROOT}/../famicom-rust/external/famicom-python/tests/test_roms"
+            )),
         ),
-        ("NES_DUMPS", "/data/emu/roms/nes".to_owned()),
-        ("INPUTS", format!("{ROOT}/scripts/inputs")),
-        ("PROBES", format!("{ROOT}/external/probes")),
+        ("NES_DUMPS", set(NES)),
+        ("NES_AFTERMARKET", set(&format!("{NES} (Aftermarket)"))),
+        (
+            "FDS_DUMPS",
+            set("Nintendo - Family Computer Disk System (FDS)"),
+        ),
+        ("INPUTS", Some(format!("{ROOT}/scripts/inputs"))),
+        ("PROBES", Some(format!("{ROOT}/external/probes"))),
     ]
     .into_iter()
-    .map(|(k, d)| (format!("${k}"), std::env::var(k).unwrap_or(d)))
+    .map(|(k, d)| (format!("${k}"), std::env::var(k).ok().or(d)))
     .collect();
+    // A variable with no value stays as `$NAME`; its case is reported MISSING.
     let expand = |text: &str| {
-        vars.iter()
-            .fold(text.to_owned(), |t, (k, v)| t.replace(k.as_str(), v))
+        vars.iter().fold(text.to_owned(), |t, (k, v)| match v {
+            Some(v) => t.replace(k.as_str(), v),
+            None => t,
+        })
     };
     let text =
         std::fs::read_to_string(table).unwrap_or_else(|e| panic!("{}: {e}", table.display()));
@@ -86,6 +103,11 @@ fn cases(table: &Path) -> Vec<Case> {
 }
 
 fn one(case: &Case, trace: &Path, cache: &Path, scratch: &Path) -> Result<String, String> {
+    for var in DUMP_VARS {
+        if case.rom.contains(&format!("${var}")) {
+            return Err(format!("MISSING: set NO_INTRO_DIR (or {var})"));
+        }
+    }
     let safe = safe(&case.name);
     let reference = cache.join(format!("{safe}.{}.ref", case.slices));
     if !reference.is_file() {

@@ -7,7 +7,7 @@ judged. The reference is the spec: transcribe it, never improve it.
 ## Where things are
 
 - The reference checkout: `external/famicom-python` (in a worktree, use the
-  main tree's: `/data/emu/famicom-rust/external/famicom-python`). Set
+  main tree's: `<famicom-rust checkout>/external/famicom-python`). Set
   `FAMICOM_REFERENCE` to it in a worktree; `scripts/lockstep.py`, the
   case scripts and the Rust loader's nes20db lookup all read it.
 - One Rust module per Python module: `src/cartridge/<module>.rs`. Its
@@ -58,13 +58,14 @@ judged. The reference is the spec: transcribe it, never improve it.
 
 Every class needs at least one dump that runs identically under the lockstep
 gate. The index `external/mapper-dumps.tsv` (scripts/mapper_dumps.py) gives,
-for every dump under `/data/emu/roms/nes`, the board the reference builds:
+for every dump in No-Intro's NES sets (`$NO_INTRO_DIR/Nintendo - Nintendo Entertainment System (Headered)` and its
+(Aftermarket) half), the board the reference builds:
 
-    export FAMICOM_REFERENCE=/data/emu/famicom-rust/external/famicom-python
-    python3 scripts/make_mapper_cases.py --index /data/emu/famicom-rust/external/mapper-dumps.tsv \
+    export FAMICOM_REFERENCE=<famicom-rust checkout>/external/famicom-python
+    python3 scripts/make_mapper_cases.py --index <famicom-rust checkout>/external/mapper-dumps.tsv \
         --mappers 21,22,23 --per 2 --slices 600 --out /tmp/cases-vrc.tsv
     python3 scripts/lockstep.py --cases /tmp/cases-vrc.tsv --jobs 2 \
-        --reference-cache /data/emu/famicom-rust/external/refcache-mappers
+        --reference-cache <famicom-rust checkout>/external/refcache-mappers
 
 A difference reports the first differing slice; `famicom-trace ... --detail
 N` and `famicom_trace.py ... --detail N` print every bus cycle of slice N on

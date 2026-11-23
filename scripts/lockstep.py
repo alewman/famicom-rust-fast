@@ -12,7 +12,8 @@ first differing line is reported with its slice.
                 [--reference-cache DIR]
 
 ``$NES_TEST_ROMS`` and the other case variables come from the environment,
-with the defaults in scripts/make_cases.py. Stdlib only.
+with the defaults in scripts/make_cases.py; a case whose variable has no value
+is reported MISSING and fails. Stdlib only.
 """
 
 from __future__ import annotations
@@ -39,7 +40,8 @@ PYTHON = REFERENCE / ".venv-pypy" / "bin" / "python"
 
 
 def cases(table: Path) -> list[tuple[str, int, str, list[str]]]:
-    env = {**DEFAULTS, **{k: os.environ[k] for k in DEFAULTS if k in os.environ}}
+    env = {k: os.environ.get(k, v) for k, v in DEFAULTS.items()}
+    env = {k: v for k, v in env.items() if v is not None}
     rows = []
     for line in table.read_text().splitlines():
         if not line or line.startswith("#"):
@@ -54,6 +56,9 @@ def cases(table: Path) -> list[tuple[str, int, str, list[str]]]:
 
 def one(case, rust: Path, traces: Path, keep: bool, cache: Path | None) -> tuple[str, bool, str]:
     name, slices, rom, args = case
+    unset = [v for v in re.findall(r"\$([A-Z_]+)", rom) if v in DEFAULTS]
+    if unset:
+        return name, False, f"MISSING: set NO_INTRO_DIR (or {unset[0]})"
     safe = re.sub(r"[^A-Za-z0-9._-]+", "_", name)
     ref, ours = traces / f"{safe}.ref", traces / f"{safe}.rust"
     if cache is not None:

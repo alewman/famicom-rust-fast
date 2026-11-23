@@ -10,6 +10,8 @@ tests/test_roms) whose header names a mapper this board builds, 600 slices
 (Start pressed as the reference's harness presses it), 3,000 slices. The
 inputs live in scripts/inputs/. Paths are written with the variables and
 resolved by scripts/lockstep.py against DEFAULTS or the environment.
+The dump folders ($NES_DUMPS, $NES_AFTERMARKET, $FDS_DUMPS) default to No-Intro's
+sets under $NO_INTRO_DIR; with neither set, their cases are reported MISSING.
 """
 
 from __future__ import annotations
@@ -21,9 +23,20 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 REFERENCE = Path(os.environ.get("FAMICOM_REFERENCE", ROOT / "external" / "famicom-python"))
-DEFAULTS = {
+NO_INTRO = os.environ.get("NO_INTRO_DIR")
+
+
+def no_intro(folder: str) -> str | None:
+    """No-Intro's FOLDER under $NO_INTRO_DIR, or None when that is unset."""
+    return str(Path(NO_INTRO) / folder) if NO_INTRO else None
+
+
+#: The case variables; None: no default (set the variable or NO_INTRO_DIR).
+DEFAULTS: dict[str, str | None] = {
     "NES_TEST_ROMS": str(REFERENCE / "tests" / "test_roms"),
-    "NES_DUMPS": "/data/emu/roms/nes",
+    "NES_DUMPS": no_intro("Nintendo - Nintendo Entertainment System (Headered)"),
+    "NES_AFTERMARKET": no_intro("Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)"),
+    "FDS_DUMPS": no_intro("Nintendo - Family Computer Disk System (FDS)"),
     "INPUTS": str(HERE / "inputs"),
     "PROBES": str(ROOT / "external" / "probes"),
 }
