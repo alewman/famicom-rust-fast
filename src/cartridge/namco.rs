@@ -145,7 +145,11 @@ impl Cartridge for Namco108 {
 
 /// Mapper 19: Namco 129/163: 1 KiB CHR banks, nametables from CIRAM or
 /// CHR-ROM, a cycle IRQ, and the wavetable sound (INES_Mapper_019.wiki,
-/// Namco_163_audio.wiki; the IRQ's count-while-enabled is Mesen2's reading).
+/// Namco_163_audio.wiki). The wiki does not say whether the IRQ counter counts
+/// while disabled; here only while enabled, as MAME's BSD-3 namcot.cpp does and
+/// as Mesen2 2.1.1 does, OBSERVED closed-box (the reference's
+/// `scripts/provenance_probes.py n163-counter-disabled`). Two emulators, no
+/// hardware test.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Namco163 {
     pub b: Banked,

@@ -535,7 +535,9 @@ impl Cartridge for Ntdec2722 {
 pub const TONY_I_BANKS: [i64; 8] = [4, 3, 4, 4, 4, 7, 5, 6];
 
 /// Mapper 43 (SMB2J conversions on the TONY-I and YS-612 boards): three PRG
-/// chips (INES_Mapper_043.wiki; the file layout is Mesen2's).
+/// chips (INES_Mapper_043.wiki). The file holds the two 32 KiB chips, then the
+/// 2 KiB chip four times, then the 8 KiB chip, 80 KiB in all (DOC: the page's
+/// opening paragraph); the board reads the first of the four copies.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct TonyI43 {
     pub b: Banked,

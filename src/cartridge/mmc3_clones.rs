@@ -36,7 +36,21 @@ fn mmc3(image: RomImage, cpu_cycle_ticks: i64) -> Mmc3 {
 // -- GA23C ---------------------------------------------------------------------
 
 /// Mapper 45: the GA23C multicart ASIC, an MMC3 with four outer registers at
-/// $6000 (INES_Mapper_045.wiki; power-on values Mesen2's).
+/// $6000 (INES_Mapper_045.wiki).
+///
+/// Power-on, which the wiki does not give (the MMC3's own registers are
+/// unspecified). The CHR registers start as 0, 2, 4, 5, 6, 7, CHR in order:
+/// MAME's BSD-3 mmc3.cpp (`mmc3_common_initialize`) starts them so for
+/// unlicensed carts "that use VRAM and don't init banks properly", and the
+/// three CHR-RAM dumps the reference checked (*7-in-1 Famicom Yarou* Vol. 2 and
+/// 3, *8-Bit Slasher*) draw differently if they start at 0, so the games see it.
+/// The outer registers start, and return on a reset, as $6001 leaves them ("as
+/// a soft reset would", the wiki): 0, 0, $0F, 0, CHR-AND and PRG-AND keeping
+/// every MMC3 bit, the masks MAME's `nes_bmc_hik8_device::pcb_reset` sets; two
+/// menus (*23-in-1 Super Game*, *Mali Jiazu 7-in-1*) draw differently with a
+/// CHR-AND of 0. OBSERVED closed-box, Mesen2 2.1.1 shows the same pages and
+/// masks at power-on and after a reset that follows outer writes (the
+/// reference's `scripts/provenance_probes.py 45-power-on`). No hardware test.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Ga23c {
     pub m: Mmc3,
@@ -748,7 +762,14 @@ impl Cartridge for F003 {
 // -- Latched165 ------------------------------------------------------------------
 
 /// Mapper 165: an MMC3 with MMC2-style CHR latches and 4 KiB of CHR-RAM as
-/// page 0 (INES_Mapper_165.wiki; Mesen2's latch ranges).
+/// page 0 (INES_Mapper_165.wiki). The latches flip on PPU addresses
+/// $xFD0-$xFD7 (0) and $xFE8-$xFEF (1), after the access. OBSERVED closed-box:
+/// Mesen2 2.1.1 has the same ranges (the reference's
+/// `scripts/provenance_probes.py 165-latch-ranges`). Not settled: Disch's notes
+/// say the game reads $xFD0 or $xFE0, and the games do read $1FD0 and $1FE0
+/// through $2007, which $xFE8-$xFEF misses; their CHR-RAM uploads land either
+/// way, while their pictures then differ, with no judge to say which is right.
+/// No hardware source.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Latched165 {
     pub m: Mmc3,
@@ -1078,7 +1099,14 @@ impl Cartridge for Nitra250 {
 
 // -- Gouder208 -------------------------------------------------------------------
 
-/// Mapper 208's protection XOR table (INES_Mapper_208.wiki, from FCEUX).
+/// Mapper 208's protection: the value XORed into a write to $5800-$5FFF, by the
+/// index last written to $5000-$57FF. No hardware description of the chip exists
+/// (the wiki's table is an emulator's). OBSERVED closed-box: recovered from
+/// Mesen2 2.1.1 by writing $00 and $FF at every index and reading the registers
+/// back (the reference's `scripts/provenance_probes.py 208-protection`, all 512
+/// answers), measured with the program run as an instrument, not read. The
+/// game's own code confirms the five entries it jumps through ($09, $0D, $62,
+/// $8E, $B3: tests/mappers_since_pin_1.rs carries the reference's test).
 const PROTECTION_208: [u8; 256] = {
     const HEX: &[u8] = b"\
 59595959595959595949190959491909\
@@ -1114,7 +1142,8 @@ const PROTECTION_208: [u8; 256] = {
 };
 
 /// Mapper 208 (Street Fighter IV, Gouder): MMC3 CHR and IRQ, a 32 KiB PRG
-/// register, protection (INES_Mapper_208.wiki, FCEUX's implementation).
+/// register, protection (INES_Mapper_208.wiki; the page's register map is an
+/// emulator's, FCEUX's, as it says; the table is measured, `PROTECTION_208`).
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Gouder208 {
     pub m: Mmc3,

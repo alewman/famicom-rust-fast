@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 //! The Famicom Disk System: the RAM adapter (RP2C33) and its disk drive
 //! (`fds.py`; the registers follow FDS_Registers.wiki, the drive's model
-//! and its unmeasured spin-up are described there).
+//! is described there; the spin-up, unmeasured, at [`spin_up_bytes`]).
 
 use super::banked::{Banked, HORIZONTAL, VERTICAL};
 use super::connector::Cartridge;
@@ -16,6 +16,12 @@ pub const BYTE_TICKS: i64 = 1792;
 pub fn master_hz() -> f64 {
     236_250_000.0 / 11.0
 }
+/// Scan start to ready. Not measured on hardware (FDS_Registers.wiki: "TODO:
+/// Ready flag behavior"): 50,000 CPU cycles, a detector's figure, OBSERVED
+/// closed-box: on Mesen2 2.1.1 the BIOS booting *Zelda no Densetsu* (Japan)
+/// first reads $4032 with D1 clear 50,043 cycles after its scan-starting $4025
+/// write, on the board 49,962, the rest being the BIOS's polling and the byte
+/// clock (the reference's `scripts/provenance_probes.py --fds-ready`).
 pub fn spin_up_bytes() -> i64 {
     (50_000.0f64 * 12.0 / BYTE_TICKS as f64).round_ties_even() as i64
 }

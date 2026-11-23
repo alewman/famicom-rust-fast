@@ -33,8 +33,15 @@ pub enum Kind {
 }
 
 /// Mapper 16: 16 KiB PRG and the last fixed, eight 1 KiB CHR banks, a 16-bit
-/// M2 counter (registers at $6000 on the FCG-1/2, $8000 on the LZ93D50; the
-/// counter's test-then-decrement order is Mesen2's, BandaiFcg.h).
+/// M2 counter (registers at $6000 on the FCG-1/2, $8000 on the LZ93D50). While
+/// counting, each M2 cycle the counter is tested and then decremented, a zero
+/// asserting /IRQ. DOC: the wiki's order (INES_Mapper_016.wiki: "When it holds
+/// a value of zero, an IRQ is generated", and enabling it while it holds zero
+/// generates one "immediately"). OBSERVED closed-box: Mesen2 2.1.1 gives the
+/// immediate IRQ too, but asserts /IRQ one cycle sooner after counts of
+/// $100-$108 (the reference's `scripts/provenance_probes.py
+/// fcg-test-then-decrement`); MAME's bandai.cpp decrements first. That cycle is
+/// open: no hardware test.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct BandaiFcg {
     pub b: Banked,

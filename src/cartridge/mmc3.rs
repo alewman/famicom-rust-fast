@@ -166,6 +166,13 @@ pub fn base_cpu_write<T: Mmc3Like + ?Sized>(this: &mut T, address: u16, value: u
     }
 }
 
+/// `MMC3.A12_LOW_FALLS`: M2 falls A12 must stay low through before a rise
+/// clocks the counter. TEST ROM: blargg's `2-details` and `4-scanline_timing`
+/// fail with one or two falls on both revisions and every MMC3 judge passes from
+/// three to sixteen (the reference's sweep of 2026-11-19 and its seeded faults,
+/// its docs/claims.md); three is a CHOICE at that lower bound.
+pub const A12_LOW_FALLS: i64 = 3;
+
 /// `MMC3.ppu_address`: the A12 filter.
 pub fn base_ppu_address<T: Mmc3Like + ?Sized>(this: &mut T, address: u16, t: i64) {
     let m = this.mmc3_mut();
@@ -179,7 +186,7 @@ pub fn base_ppu_address<T: Mmc3Like + ?Sized>(this: &mut T, address: u16, t: i64
     } else if m.a12 != 0 {
         m.a12 = 0;
         let ticks = m.b.cpu_cycle_ticks;
-        m.a12_ready = (t.div_euclid(ticks) + 3) * ticks;
+        m.a12_ready = (t.div_euclid(ticks) + A12_LOW_FALLS) * ticks;
     }
 }
 
