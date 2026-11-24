@@ -6,7 +6,7 @@
 //!     famicom ROM [--machine auto|KEY] [--frames N] [--blargg] [--png OUT] [--wav OUT] [--palette PAL]
 
 use famicom_rust::testrom::{blargg_text, peek, run_blargg, screen_text, SIGNATURE};
-use famicom_rust::video::{load_palette, palette_for, to_rgb, write_png};
+use famicom_rust::video::{machine_palette, to_rgb, write_png};
 use famicom_rust::{Machine, System};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -115,8 +115,7 @@ fn main() {
     );
     if let Some(png) = png {
         let timing = &machine.timing;
-        let path = palette.unwrap_or_else(|| palette_for(timing));
-        let colours = load_palette(&path, timing.swapped_emphasis).unwrap();
+        let colours = machine_palette(timing, palette.as_deref()).unwrap();
         write_png(
             &png,
             &to_rgb(&system.cpu.bus.ppu.picture, &colours),

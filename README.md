@@ -27,13 +27,40 @@ on the Famicom ran 409.3 frames a second against 447.8 before (x0.914, best
 of six alternating 300-frame runs on one pinned core); `scripts/ab.py` on the
 five bench games (no 5B) gave x0.985, within what code layout moves here (an
 A/A run is within 1% overall). No 5B speed change was tried: the carry is
-kept plain. Not merged because famicom-rust does not have them yet: the
-Vs. System and the PlayChoice-10.
+kept plain.
 
 **Merged from famicom-rust on 2026-11-23** (`11a1b7c`): the reference moved to
 famicom-python `b3dbf1b` (z80-python `b59c80b` by commit, ay8910-python `a3bb485`).
 famicom-rust regenerated every reference trace against it, byte-for-byte the
 old caches' (918 of 918), so the caches in `external/` stand; no code changed.
+
+**Merged from famicom-rust on 2026-11-23** (`8eb496f`): the Vs. System
+(UniSystem and DualSystem, mapper 99, the Namco 108 protection chips, the
+RGB PPUs' rows and colours, the letterless 2A03), with its gate: every Vs.
+image the reference's `vs_images.py` assembles from `$MAME_ROMPATH`
+(`scripts/cases-vs.tsv`, `VS_IMAGES_DIR`, famicom-rust's `external/vs-images`
+by default), the Vs. rows on home test ROMs, the `eval_turn_off` probe on the
+RP2C03B, save states on every UniSystem image. The fork's PPU fast paths take
+the new PPU variants unchanged: none of their conditions read the Timing
+fields the RGB PPUs change (the skipped dot, the register swap and identifier
+are outside them), and with no OAM corruption on an RGB PPU the pixel dot's
+mask test is no longer a guard but the only thing between it and a wrong
+sprite evaluation: a seeded fault there, an equivalent mutant on the 2C02
+until now, is caught by the probe on the RP2C03B. The carry cost ordinary
+games x0.970 / x0.988 / x0.986 (`scripts/ab.py` on the three code layouts,
+default, 32- and 64-byte block alignment, against `0414c49`), so the board's
+Vs. branches were moved off the per-cycle path, keeping every cycle: the
+mainboard's $4020-$7FFF reads and writes and its OUT lines out of line
+(`vs_read`, `vs_write`, `vs_set_out`, `#[cold]`), the address tested before the
+mainboard; the watchdog's $4017 time noted in the port read, not on every
+read (only a DMA's repeats of a stalled $4017 read also pass there, and the
+CPU's own read overwrites them before the instruction ends, the watchdog being
+checked between instructions); the external /IRQ tested before the
+cartridge's call; and famicom-rust's empty `clock` call on the mainboard
+dropped. After them: x1.006 / x0.998 / x0.997 (12 rounds, 300 frames, the
+five bench games), within an A/A run's noise (1% overall; Super Mario Bros. 3
+on the 64-byte layout x0.976, the one game outside 2%). Not merged because
+famicom-rust does not have it yet: the PlayChoice-10.
 
 ## Speed
 
@@ -80,14 +107,14 @@ without a cached trace.
 
 | Step | What | Count |
 | --- | --- | --- |
-| `cargo test` | incl. `tests/mapper_coverage.rs`: the reference's mappers but 99 (the Vs. System's) build, 295; `tests/state_failed_load.rs`; the reference's unit tests for the 5B, 559 and 208 | |
+| `cargo test` | incl. `tests/mapper_coverage.rs`: the reference's 296 mappers build; `tests/state_failed_load.rs`; the reference's unit tests for the 5B, 559 and 208, and its Vs. System tests (`tests/vs_system.rs`, 32) | |
 | rung 1 | nestest against nestest.log | 8,991 lines |
-| rung 2 | lockstep, every NROM test ROM (600 slices) and AccuracyCoin's run-all (3,000), `scripts/cases.tsv`; the probes, famicom-rust's own test ROMs (`probes/*.s`, assembled with cc65's ca65 and ld65 at `CC65_DIR`), `scripts/cases-probes.tsv` | 200 + 1 cases |
+| rung 2 | lockstep, every NROM test ROM (600 slices) and AccuracyCoin's run-all (3,000), `scripts/cases.tsv`; the probes, famicom-rust's own test ROMs (`probes/*.s`, assembled with cc65's ca65 and ld65 at `CC65_DIR`), `scripts/cases-probes.tsv` (`eval_turn_off` on the NES-001 and on the Vs. RP2C03B) | 200 + 2 cases |
 | rung 5 | lockstep, every board class on dumps (`external/cases-rung5.tsv`), the FDS on three disks (`cases-fds.tsv`), Lagrange Point's VRC7 FM (`cases-lagrange.tsv`, 3,000 slices), the Sunsoft 5B (`scripts/cases-5b.tsv`: rainwarrior's six 5B ROMs, copied under `external/reference/reference/src/nes-audio-tests/build`, and *Gimmick!*), mapper 559 (`scripts/cases-559.tsv`), AutoDisk | 581 + 6 + 1 + 9 + 2 + 3 |
-| rung 6 | lockstep, the machine rows (`scripts/cases-machines.tsv`) and the peripherals (`scripts/cases-peripherals.tsv`) | 25 + 54 |
+| rung 6 | lockstep, the machine rows (`scripts/cases-machines.tsv`, the Vs. rows among them), the peripherals (`scripts/cases-peripherals.tsv`), the host input (`scripts/cases-host.tsv`) and the Vs. System (`scripts/cases-vs.tsv`: 43 UniSystem and 22 DualSystem images and a reset, 900 slices with coins, DIP switches, the panel, the Vs. Zapper, `--rgb`) | 33 + 54 + 36 + 66 |
 | rung 3 | the reference's test ROM tables, outcome for outcome (`famicom-testrom`, `famicom-testrom-compare`) | 197 |
 | rung 4 | AccuracyCoin: 147 of 147 on the reference's 126,984,584 CPU cycles and 4,264 frames | 147 |
-| save states | `famicom-state-roundtrip`, one dump of every board class (`external/state-dumps.txt`); the 5B on the Famicom (*Gimmick!*, three 5B ROMs) and 559 on the Dendy | 363 + 5 |
+| save states | `famicom-state-roundtrip`, one dump of every board class (`external/state-dumps.txt`); the 5B on the Famicom (*Gimmick!*, three 5B ROMs) and 559 on the Dendy; every Vs. UniSystem image, saved with a coin's contact closed (`scripts/inputs/vs-state.txt`) | 363 + 5 + 43 |
 
 `famicom-lockstep` is `scripts/lockstep.py --reference-cache` without the
 reference: it runs `famicom-trace` on each case and compares the trace with
@@ -120,6 +147,18 @@ in 600 frames (dots 66-255, both parities) and reads OAM back where
 evaluation left OAMADDR. With a panic in place of the skipped evaluation,
 no case in any of the ladder's tables fired it, the probe included. The probe
 stays as the gate's direct case for that region.
+
+Since the Vs. System's merge (2026-11-23) there are ten, all caught
+(`external/faults-vs.log`, `faults-vs2.log`): the six above by rung 2; the
+mask test, which an RGB PPU leaves unguarded (it arms no OAM corruption), by
+the probe on the RP2C03B (`probes/eval-turn-off-vs`); and the three Vs.
+shortcuts, the mainboard's read taken for too few addresses, the watchdog's
+$4017 read not noted, the external /IRQ lost, by the Vs. table (*Vs. Ice
+Climber*, a DualSystem). The fault script had no `FAMICOM_REFERENCE`, so the
+host gate's light-gun cases ran on greys and failed on any build: a fault that
+got past the machine rows and peripherals was reported "caught by rung 6 host"
+whether the gate saw it or not. None of the six earlier faults reached that
+far; the script now sets it, and the three Vs. faults were run again with it.
 
 ## Measuring
 

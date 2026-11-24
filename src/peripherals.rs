@@ -2026,6 +2026,12 @@ fn subor_mouse(device: u8) -> Option<(usize, Option<Box<dyn PortDevice>>)> {
     })
 }
 
+/// The colours a light sensor sees: the machine's palette, or greys without it
+/// (the pally palettes come with the reference's fetch_references.py).
+pub fn palette_of(board: &Board) -> Vec<[u8; 3]> {
+    crate::video::machine_palette(&board.ppu.timing, None).unwrap_or_else(|_| grey_palette())
+}
+
 /// Put in the devices of NES 2.0 expansion number `device`; return where the
 /// one the player drives is. `famicom`: the console has the Famicom's
 /// expansion port, which takes the Famicom versions of the Zapper and the
@@ -2038,11 +2044,7 @@ pub fn plug(
     palette: Option<Vec<[u8; 3]>>,
 ) -> Plugged {
     let ticks = board.ppu.timing.master_hz;
-    let palette = palette.unwrap_or_else(|| {
-        let timing = &board.ppu.timing;
-        crate::video::load_palette(&crate::video::palette_for(timing), timing.swapped_emphasis)
-            .unwrap_or_else(|_| grey_palette())
-    });
+    let palette = palette.unwrap_or_else(|| palette_of(board));
     let ppu = &board.ppu;
     match device {
         FOUR_SCORE => {

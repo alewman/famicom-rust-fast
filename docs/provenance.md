@@ -19,6 +19,8 @@ No GPL or LGPL source was opened.
 | `ay8910-rust` (the Sunsoft 5B, 2026-11-23) | pinned by git at `9b670a7`, a transcription of ay8910-python `a3bb485` | MIT | clean (audited with the cores) |
 | The 5B cases' ROMs (`external/reference/.../nes-audio-tests/build`, gitignored) | rainwarrior's nes-audio-tests | "may be freely redistributed and modified for any purpose" | clean |
 | Speed changes (`docs/not-kept.md` for what was tried) | our own work against famicom-rust's traces | | clean |
+| The Vs. System, merged from famicom-rust `8eb496f` (2026-11-23): `vs.rs`, `dual.rs`, `cartridge/vs.rs`, the Vs. rows, the protection chips, `RGB_DAC` | famicom-rust's transcription of the reference's `b3dbf1b`: the NESdev wiki and MAME's BSD-3 `vsnes.cpp`/`ppu2c0x.cpp` facts | our MIT; facts from BSD-3 files | **cite**, as famicom-rust's provenance.md says: MAME's BSD-3 notice with the holders' names is owed here as in famicom-rust and the reference |
+| `scripts/cases-vs.tsv`, `scripts/inputs/vs/` | famicom-rust's; the images assembled from `$MAME_ROMPATH` by the reference's `vs_images.py`, outside the repository | | clean |
 
 ## The VRC7 and its history (the repository is public)
 

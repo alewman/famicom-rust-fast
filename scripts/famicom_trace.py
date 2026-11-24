@@ -11,13 +11,26 @@ of the slice as ``board.bus_observers`` sees it (packed ``t << 25 | write <<
 slice's audio (``take_samples``, little-endian f64). ``target/release/famicom-trace``
 writes the same lines; ``scripts/lockstep.py`` compares them.
 
-    famicom_trace.py ROM --slices N [--machine KEY] [--input FILE] [--device N]
-                     [--reset FRAME ...] [--detail FRAME] [--auto-disk]
-                     [--host FILE [--host-device N]] --out FILE
+    famicom_trace.py ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
+                     [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
+                     [--host FILE [--host-device N]] [--dual] --out FILE
+
+``--machine auto``: ``System.machine_for`` (a Vs. game gets its Vs. row).
+``--rgb``: each line also ends with ``rgb`` and a CRC of the picture in the
+machine's colours (``video.machine_palette``: an RGB PPU's own), so the palette
+tables are judged too.
+``--dual``: a Vs. DualSystem image, both sides (``dual.VsDualSystem``), each slice
+one ``run_frames(1)``; the line is the slice, ``wd`` and the watchdog's resets, then
+``A`` and the primary side's fields, ``B`` and the secondary's (each as a single
+system's line has them, from ``cyc`` to the sound). Input pads 0 and 1 are the
+primary side's, 2 and 3 the secondary's.
 
 ``--input``: lines ``FRAME PAD BUTTONS`` (hex), applied before that slice to a
-standard pad, and lines ``FRAME set PATH FIELD [VALUE ...]`` that drive the
-device ``--device`` plugged (see ``drive``).
+standard pad (a Vs. stick), and lines ``FRAME set PATH FIELD [VALUE ...]`` that drive the
+device ``--device`` plugged (see ``drive``). A Vs. System's mainboard takes
+``FRAME coin [SIDE] ACCEPTOR`` (``System.insert_coin``, before the slice runs),
+``FRAME dip [SIDE] HEX`` (``vs.dip``) and ``FRAME service [SIDE] 0|1``; SIDE (0
+primary, 1 secondary) only with ``--dual``.
 ``--device N``: ``System.plug(N)`` before the first slice (NES 2.0 expansion
 number, decimal or 0x hex); ``auto``, the cartridge's own (``System.plug()``);
 ``hori-adapter``, a ``peripherals.HoriAdapter`` on the expansion port (no number
@@ -47,6 +60,9 @@ from famicom_python import peripherals
 from famicom_python.cartridge import read_rom_file
 from famicom_python.machine import MACHINES
 from famicom_python.system import System
+from famicom_python.video import machine_palette, to_rgb
+
+VS_EVENTS = ("coin", "dip", "service")
 
 
 def drive(plugged: object, path: str, field: str, values: list[str]) -> None:
@@ -231,6 +247,79 @@ def host_summary(frontend) -> str:
     return out
 
 
+def vs_event(system: System, what: str, value: str) -> None:
+    """A mainboard line of ``--input``: a coin, the DIP switches, the service button."""
+    if what == "coin":
+        system.insert_coin(int(value, 0))
+    elif what == "dip":
+        system.board.vs.dip = int(value, 16)
+    else:
+        system.board.vs.service = value == "1"
+
+
+def fields(system: System, log, samples: list[float], rgb_palette) -> str:
+    """One side's part of a line: from ``cyc`` to the sound (``--rgb``: and its colours)."""
+    board, cpu, ppu = system.board, system.cpu, system.board.ppu
+    packed = array("Q", log)
+    if sys.byteorder != "little":
+        packed.byteswap()
+    bus = zlib.crc32(packed.tobytes())
+    picture = array("H", ppu.picture)
+    if sys.byteorder != "little":
+        picture.byteswap()
+    pic = zlib.crc32(picture.tobytes())
+    snd = zlib.crc32(struct.pack(f"<{len(samples)}d", *samples))
+    text = (
+        f"cyc {board.cycles} ins {system.instructions} "
+        f"pc {cpu.pc:04X} a {cpu.a:02X} x {cpu.x:02X} y {cpu.y:02X} "
+        f"s {cpu.s:02X} p {cpu.p:02X} bus {bus:08X} {len(log)} "
+        f"pic {pic:08X} v {ppu.v:04X} t {ppu.t:04X} st {ppu.status:02X} "
+        f"snd {snd:08X} {len(samples)}"
+    )
+    if rgb_palette is not None:
+        text += f" rgb {zlib.crc32(to_rgb(ppu.picture, rgb_palette)):08X}"
+    return text
+
+
+def run_dual(args, inputs, events) -> int:
+    """``--dual``: both sides of a Vs. DualSystem, a slice at a time."""
+    from famicom_python.dual import VsDualSystem
+
+    dual = VsDualSystem.from_rom(read_rom_file(args.rom))
+    logs = []
+    for side in dual.sides:
+        log = array("Q")
+        logs.append(log)
+
+        def observe(kind: str, address: int, value: int, t: int, append=log.append) -> None:
+            append(t << 25 | (kind == "write") << 24 | address << 8 | value)
+
+        side.board.bus_observers.append(observe)
+    palettes = [machine_palette(side.machine.timing) if args.rgb else None for side in dual.sides]
+    with open(args.out, "w") as out:
+        for frame in range(args.slices):
+            for pad, buttons in inputs.get(frame, ()):
+                dual.sides[pad // 2].board.pads[pad % 2].buttons = buttons
+            for what, side, value in events.get(frame, ()):
+                vs_event(dual.sides[side], what, value)
+            if frame in args.reset:
+                dual.reset()
+            for log in logs:
+                del log[:]
+            dual.run_frames(1)
+            parts = [f"{frame} wd {dual.watchdog_resets}"]
+            for name, side, log, palette in zip("AB", dual.sides, logs, palettes, strict=True):
+                parts.append(f"{name} {fields(side, log, side.take_samples(), palette)}")
+            out.write(" ".join(parts) + "\n")
+            if frame == args.detail:
+                for name, log in zip("AB", logs, strict=True):
+                    for packed in log:
+                        t, rest = packed >> 25, packed & 0x1FFFFFF
+                        kind = "W" if rest >> 24 else "R"
+                        out.write(f"  {name} {t} {kind} {(rest >> 8) & 0xFFFF:04X} {rest & 0xFF:02X}\n")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("rom")
@@ -243,22 +332,30 @@ def main() -> int:
     parser.add_argument("--auto-disk", action="store_true")
     parser.add_argument("--host")
     parser.add_argument("--host-device")
+    parser.add_argument("--rgb", action="store_true")
+    parser.add_argument("--dual", action="store_true")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
     inputs: dict[int, list[tuple[int, int]]] = {}
     sets: dict[int, list[list[str]]] = {}
+    events: dict[int, list[tuple[str, int, str]]] = {}
     if args.input:
         with open(args.input) as handle:
             for text in handle:
                 parts = text.split()
                 if text.startswith("#"):
                     continue
-                if len(parts) == 3:
+                if len(parts) >= 3 and parts[1] in VS_EVENTS:
+                    side = int(parts[2]) if args.dual else 0
+                    events.setdefault(int(parts[0]), []).append((parts[1], side, parts[-1]))
+                elif len(parts) == 3:
                     inputs.setdefault(int(parts[0]), []).append((int(parts[1]), int(parts[2], 16)))
                 elif len(parts) >= 4 and parts[1] == "set":
                     sets.setdefault(int(parts[0]), []).append(parts[2:])
 
+    if args.dual:
+        return run_dual(args, inputs, events)
     frontend = host = None
     if args.host:
         from pathlib import Path
@@ -280,7 +377,9 @@ def main() -> int:
         system = frontend._power_on()
         frontend.system = system
     else:
-        system = System.from_rom(read_rom_file(args.rom), MACHINES[args.machine])
+        data = read_rom_file(args.rom)
+        machine = System.machine_for(data) if args.machine == "auto" else MACHINES[args.machine]
+        system = System.from_rom(data, machine)
     board, cpu, ppu = system.board, system.cpu, system.board.ppu
     plugged = None
     if frontend is not None:
@@ -310,6 +409,8 @@ def main() -> int:
                 board.pads[pad].buttons = buttons
             for path, field, *values in sets.get(frame, ()):
                 drive(plugged, path, field, values)
+            for what, _side, value in events.get(frame, ()):
+                vs_event(system, what, value)
             summary = None
             if frontend is not None:
                 host_step(frontend.pg, frontend.controllers, host.get(frame, []))
@@ -344,6 +445,8 @@ def main() -> int:
                 )
             if summary is not None:
                 out.write(f" host {summary}")
+            if args.rgb:
+                out.write(f" rgb {zlib.crc32(to_rgb(ppu.picture, machine_palette(ppu.timing))):08X}")
             out.write("\n")
             if frame == args.detail:
                 for packed in log:

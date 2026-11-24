@@ -17,6 +17,7 @@
 pub mod apu;
 pub mod board;
 pub mod cartridge;
+pub mod dual;
 pub mod fds_auto;
 pub mod host;
 pub mod joypad;
@@ -27,6 +28,7 @@ pub mod state;
 pub mod system;
 pub mod testrom;
 pub mod video;
+pub mod vs;
 
 pub use board::Board;
 pub use machine::Machine;

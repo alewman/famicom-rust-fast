@@ -66,14 +66,41 @@ FAULTS = {
         ".is_none_or(|&(due, _)| due > self.time + ticks)",
         ".is_none_or(|&(due, _)| due > self.time)",
     ),
-    # (Not a fault: the pixel dot evaluating sprites with rendering masked.
-    # The one way to `on` with the mask clear is a $2001 write of both bits
-    # off while rendering, which also sets `oam_corrupt`, and
-    # `pixel_dot_ready` refuses until a write turns rendering back on, so
-    # `pixel_dot`'s mask test is a guard. Missed on 2026-11-08 and taken for a
-    # gap; then shown: the probe probes/eval_turn_off.s turns rendering off
-    # mid-evaluation 329 times, and a panic in place of the skipped
-    # evaluation fired on no case of the ladder's tables, the probe included.)
+    # The pixel dot evaluating sprites with rendering masked. On a 2C02 this
+    # is no fault: the one way to `on` with the mask clear is a $2001 write
+    # of both bits off while rendering, which also sets `oam_corrupt`, and
+    # `pixel_dot_ready` refuses until a write turns rendering back on (missed
+    # on 2026-11-08 and taken for a gap; then shown: the probe
+    # probes/eval_turn_off.s turns rendering off mid-evaluation 329 times,
+    # and a panic in place of the skipped evaluation fired on no 2C02 case).
+    # An RGB PPU (the Vs. rows, 2026-11-23) arms no OAM corruption, so there
+    # the mask test is all that stands between the pixel dot and a wrong
+    # evaluation: the probe on the RP2C03B (probes/eval-turn-off-vs) must
+    # catch it.
+    "pixel-dot-evaluates-while-masked": (
+        "ppu.rs",
+        "        if self.mask & 0x18 != 0 {\n            self.evaluate(line, dot);\n        }\n        self.pixel(line, (dot - 2) as usize);",
+        "        self.evaluate(line, dot);\n        self.pixel(line, (dot - 2) as usize);",
+    ),
+    # The Vs. mainboard's read out of line (`vs_read`) taken for too few
+    # addresses: the shared RAM at $6000 left to the sockets.
+    "vs-read-misses-the-ram": (
+        "board.rs",
+        "let read = if address < 0x8000 && self.vs.is_some() {",
+        "let read = if address < 0x6000 && self.vs.is_some() {",
+    ),
+    # The watchdog's $4017 read, noted in the port branch, not noted.
+    "vs-watchdog-not-fed": (
+        "board.rs",
+        "                if let Some(vs) = self.vs.as_mut() {\n                    vs.fed = t;\n                }",
+        "",
+    ),
+    # The external /IRQ (a DualSystem's cross interrupt), tested first, lost.
+    "external-irq-lost": (
+        "board.rs",
+        "let irq = self.apu.irq || self.external_irq || self.ppu.cart.irq();",
+        "let irq = self.apu.irq || self.ppu.cart.irq();",
+    ),
     # The frame counter's quiet run taken from before its first cycle.
     "apu-quiet-run-without-its-start": (
         "apu.rs",
@@ -89,6 +116,12 @@ ENV = {
     # The case tables' inputs (the binaries' default is beside their source).
     "INPUTS": str(ROOT / "scripts" / "inputs"),
     "PROBES": str(EXT / "probes"),
+    # pally's palettes, as the ladder reads them (without them the Zapper judges
+    # light on greys and the host gate's light-gun cases differ on any build:
+    # every fault reaching them was "caught" by the harness until 2026-11-23).
+    "FAMICOM_REFERENCE": str(EXT / "reference"),
+    # The Vs. System's images (famicom-rust's, assembled by the reference's vs_images.py).
+    "VS_IMAGES_DIR": str(ROOT.parent / "famicom-rust" / "external" / "vs-images"),
 }
 TABLES = [
     ("rung 2", ROOT / "scripts" / "cases.tsv", EXT / "refcache"),
@@ -100,6 +133,7 @@ TABLES = [
     ("rung 5 AutoDisk", ROOT / "scripts" / "cases-fds-auto.tsv", EXT / "refcache-mappers"),
     ("rung 6 peripherals", ROOT / "scripts" / "cases-peripherals.tsv", EXT / "refcache-devices"),
     ("rung 6 host", ROOT / "scripts" / "cases-host.tsv", EXT / "refcache-host"),
+    ("rung 6 Vs.", ROOT / "scripts" / "cases-vs.tsv", EXT / "refcache-vs"),
 ]
 
 

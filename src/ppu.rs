@@ -1453,9 +1453,20 @@ impl Ppu {
 
     // -- the CPU's registers -----------------------------------------------
 
+    /// The OAM row a rendering start will overwrite, if a mid-line turn-off
+    /// armed one (the reference's `_oam_corrupt`, read by its tests).
+    pub fn oam_corrupt(&self) -> Option<usize> {
+        self.oam_corrupt
+    }
+
     pub fn read_register(&mut self, register: u16) -> u8 {
         if register == 2 {
-            let value = (self.status & 0xE0) | (self.decayed_latch() & 0x1F);
+            let mut value = (self.status & 0xE0) | (self.decayed_latch() & 0x1F);
+            let mask = self.timing.identifier_mask;
+            if mask != 0 {
+                // an RC2C05's identifier in place of the latch (machine::Timing)
+                value = (value & !mask) | self.timing.identifier;
+            }
             if self.line == self.timing.vblank_line && self.dot == 0 {
                 self.vbl_suppress = true;
             }
@@ -1532,7 +1543,13 @@ impl Ppu {
     /// A register read's value as M2 falls, the cycle's end.
     pub fn end_read(&self, register: u16, value: u8) -> u8 {
         if register == 2 {
-            return (value & 0x9F) | (self.status & 0x60);
+            let mut value = (value & 0x9F) | (self.status & 0x60);
+            let mask = self.timing.identifier_mask & 0x60;
+            if mask != 0 {
+                // the RC2C05-02's identifier covers the overflow bit
+                value = (value & !mask) | (self.timing.identifier & mask);
+            }
+            return value;
         }
         value
     }
@@ -1595,6 +1612,10 @@ impl Ppu {
     /// master ticks from the access to the start of the dot the PPU is in.
     pub fn write_register(&mut self, register: u16, value: u8, early: Option<u8>, phase: i64) {
         self.drive(value, 0xFF);
+        let mut register = register;
+        if register < 2 && self.timing.swapped_control {
+            register ^= 1; // the RC2C05: $2000 is PPUMASK, $2001 PPUCTRL
+        }
         match register {
             0 => {
                 if self.resetting {
@@ -1615,7 +1636,9 @@ impl Ppu {
                     {
                         self.last_eval_step();
                     }
-                    self.oam_corrupt = Some(self.oam2_row());
+                    if self.timing.oam_corruption {
+                        self.oam_corrupt = Some(self.oam2_row());
+                    }
                 } else if value & 0x18 != 0 && (self.line as usize) < HEIGHT {
                     self.oam_corrupt = None;
                 }

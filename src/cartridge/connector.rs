@@ -22,6 +22,11 @@
 //!   `restore_battery`) are trait methods too, so the override is seen.
 //!   Helpers the Python overrides further down a chain (`map_prg`,
 //!   `set_mirroring`) are each mapper's own business, transcribed per class.
+//!
+//! **The Vs. System** has no connector: its ROM sockets and daughterboards sit
+//! on the mainboard, which also hands them the 2A03's OUT2 ([`Cartridge::out`]).
+//! The mainboard's own RAM at $6000-$7FFF and its coin counter at $4020-$5FFF
+//! are the board's (`vs.rs`), not the cartridge's.
 
 use super::banked::Banked;
 
@@ -88,6 +93,10 @@ pub trait Cartridge: crate::state::Snapshot {
     fn read_data(&mut self, address: u16, value: u8, t: i64) {}
     fn m2_gap(&mut self, t: i64) {}
     fn m2(&mut self, t: i64) {}
+    /// The 2A03's OUT2-0 as they change: no cartridge connector carries
+    /// them; the Vs. System's mainboard wires OUT2 to its ROM sockets
+    /// (mapper 99's bank select).
+    fn out(&mut self, value: u8) {}
 
     // -- the PPU side ------------------------------------------------------
 

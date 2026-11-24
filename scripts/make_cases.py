@@ -41,6 +41,9 @@ DEFAULTS: dict[str, str | None] = {
     # rainwarrior's nes-audio-tests, prebuilt, in the reference's fetched reference/.
     "NES_AUDIO_TESTS": str(REFERENCE / "reference" / "src" / "nes-audio-tests" / "build"),
     "PROBES": str(ROOT / "external" / "probes"),
+    # The Vs. System's images, assembled from MAME's sets ($MAME_ROMPATH) by the
+    # reference's scripts/vs_images.py, outside the repository: no default.
+    "VS_IMAGES_DIR": None,
 }
 # The mappers built so far (cartridge::build).
 BUILT = {0}

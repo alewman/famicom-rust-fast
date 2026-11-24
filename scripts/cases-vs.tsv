@@ -1,0 +1,67 @@
+# name	slices	rom	arguments: the Vs. System (scripts/make_vs_cases.py); $VS_IMAGES_DIR $INPUTS
+vs/Atari_R.B.I._Baseball_set_1	900	$VS_IMAGES_DIR/Atari R.B.I. Baseball (set 1).nes	--machine auto --rgb --input $INPUTS/vs/Atari_R.B.I._Baseball_set_1.txt
+vs/Atari_R.B.I._Baseball_set_2	900	$VS_IMAGES_DIR/Atari R.B.I. Baseball (set 2).nes	--machine auto --rgb --input $INPUTS/vs/Atari_R.B.I._Baseball_set_2.txt
+vs/Battle_City	900	$VS_IMAGES_DIR/Battle City.nes	--machine auto --rgb --input $INPUTS/vs/Battle_City.txt
+vs/Clu_Clu_Land	900	$VS_IMAGES_DIR/Clu Clu Land.nes	--machine auto --rgb --input $INPUTS/vs/Clu_Clu_Land.txt
+vs/Dr._Mario	900	$VS_IMAGES_DIR/Dr. Mario.nes	--machine auto --rgb --input $INPUTS/vs/Dr._Mario.txt
+vs/Duck_Hunt	900	$VS_IMAGES_DIR/Duck Hunt.nes	--machine auto --rgb --device auto --input $INPUTS/vs/Duck_Hunt.txt
+vs/Excitebike_EB4-3_E	900	$VS_IMAGES_DIR/Excitebike (EB4-3 E).nes	--machine auto --rgb --input $INPUTS/vs/Excitebike_EB4-3_E.txt
+vs/Excitebike_EB4-3_X	900	$VS_IMAGES_DIR/Excitebike (EB4-3 X).nes	--machine auto --rgb --input $INPUTS/vs/Excitebike_EB4-3_X.txt
+vs/Excitebike_EB4-4_A	900	$VS_IMAGES_DIR/Excitebike (EB4-4 A).nes	--machine auto --rgb --input $INPUTS/vs/Excitebike_EB4-4_A.txt
+vs/Freedom_Force	900	$VS_IMAGES_DIR/Freedom Force.nes	--machine auto --rgb --device auto --input $INPUTS/vs/Freedom_Force.txt
+vs/Hogan_s_Alley	900	$VS_IMAGES_DIR/Hogan's Alley.nes	--machine auto --rgb --device auto --input $INPUTS/vs/Hogan_s_Alley.txt
+vs/Ice_Climber_IC4-4_A-1	900	$VS_IMAGES_DIR/Ice Climber (IC4-4 A-1).nes	--dual --rgb --input $INPUTS/vs/Ice_Climber_IC4-4_A-1.txt
+vs/Ice_Climber_IC4-4_A-1_doubled_CHR	900	$VS_IMAGES_DIR/Ice Climber (IC4-4 A-1)[doubled CHR].nes	--dual --rgb --input $INPUTS/vs/Ice_Climber_IC4-4_A-1_doubled_CHR.txt
+vs/Ice_Climber_IC4-4_B-1	900	$VS_IMAGES_DIR/Ice Climber (IC4-4 B-1).nes	--machine auto --rgb --input $INPUTS/vs/Ice_Climber_IC4-4_B-1.txt
+vs/Ice_Climber_IC4-4_X	900	$VS_IMAGES_DIR/Ice Climber (IC4-4 X).nes	--machine auto --rgb --input $INPUTS/vs/Ice_Climber_IC4-4_X.txt
+vs/Mach_Rider_Endurance_Course	900	$VS_IMAGES_DIR/Mach Rider (Endurance Course).nes	--machine auto --rgb --input $INPUTS/vs/Mach_Rider_Endurance_Course.txt
+vs/Mach_Rider_Fighting_Course	900	$VS_IMAGES_DIR/Mach Rider (Fighting Course).nes	--machine auto --rgb --input $INPUTS/vs/Mach_Rider_Fighting_Course.txt
+vs/Mighty_Bomb_Jack	900	$VS_IMAGES_DIR/Mighty Bomb Jack.nes	--machine auto --rgb --input $INPUTS/vs/Mighty_Bomb_Jack.txt
+vs/Pinball_PN3_B	900	$VS_IMAGES_DIR/Pinball (PN3 B).nes	--machine auto --rgb --input $INPUTS/vs/Pinball_PN3_B.txt
+vs/Pinball_PN4_E-1	900	$VS_IMAGES_DIR/Pinball (PN4 E-1).nes	--machine auto --rgb --input $INPUTS/vs/Pinball_PN4_E-1.txt
+vs/Platoon	900	$VS_IMAGES_DIR/Platoon.nes	--machine auto --rgb --input $INPUTS/vs/Platoon.txt
+vs/Raid_on_Bungeling_Bay_padded	900	$VS_IMAGES_DIR/Raid on Bungeling Bay [padded].nes	--dual --rgb --input $INPUTS/vs/Raid_on_Bungeling_Bay_padded.txt
+vs/Raid_on_Bungeling_Bay	900	$VS_IMAGES_DIR/Raid on Bungeling Bay.nes	--dual --rgb --input $INPUTS/vs/Raid_on_Bungeling_Bay.txt
+vs/Skate_Kids_Vs._Super_Mario_Bros	900	$VS_IMAGES_DIR/Skate Kids {Vs. Super Mario Bros.}.nes	--machine auto --rgb --input $INPUTS/vs/Skate_Kids_Vs._Super_Mario_Bros.txt
+vs/Soccer_SC4-2_A	900	$VS_IMAGES_DIR/Soccer (SC4-2 A).nes	--machine auto --rgb --input $INPUTS/vs/Soccer_SC4-2_A.txt
+vs/Soccer_SC4-3_X	900	$VS_IMAGES_DIR/Soccer (SC4-3 X).nes	--machine auto --rgb --input $INPUTS/vs/Soccer_SC4-3_X.txt
+vs/Star_Luster	900	$VS_IMAGES_DIR/Star Luster.nes	--machine auto --rgb --input $INPUTS/vs/Star_Luster.txt
+vs/Stroke_Match_Golf_GF3_B	900	$VS_IMAGES_DIR/Stroke & Match Golf (GF3 B).nes	--machine auto --rgb --input $INPUTS/vs/Stroke_Match_Golf_GF3_B.txt
+vs/Stroke_Match_Golf_GF4-2_F	900	$VS_IMAGES_DIR/Stroke & Match Golf (GF4-2 F).nes	--machine auto --rgb --input $INPUTS/vs/Stroke_Match_Golf_GF4-2_F.txt
+vs/Stroke_Match_Golf_GF4-2_X	900	$VS_IMAGES_DIR/Stroke & Match Golf (GF4-2 X).nes	--machine auto --rgb --input $INPUTS/vs/Stroke_Match_Golf_GF4-2_X.txt
+vs/Stroke_Match_Golf_LG4_E	900	$VS_IMAGES_DIR/Stroke & Match Golf (LG4 E).nes	--machine auto --rgb --input $INPUTS/vs/Stroke_Match_Golf_LG4_E.txt
+vs/Stroke_Match_Golf_LG4_X	900	$VS_IMAGES_DIR/Stroke & Match Golf (LG4 X).nes	--machine auto --rgb --input $INPUTS/vs/Stroke_Match_Golf_LG4_X.txt
+vs/Super_Sky_Kid	900	$VS_IMAGES_DIR/Super Sky Kid.nes	--machine auto --rgb --input $INPUTS/vs/Super_Sky_Kid.txt
+vs/supxevs-Super_Xevious_Gamp	900	$VS_IMAGES_DIR/Super Xevious꞉ Gampの謎.nes	--machine auto --rgb --input $INPUTS/vs/supxevs-Super_Xevious_Gamp.txt
+vs/vstetris-Tetris_The_Soviet_Mind_Game_padded	900	$VS_IMAGES_DIR/Tetris꞉ The Soviet Mind Game [padded].nes	--machine auto --rgb --input $INPUTS/vs/vstetris-Tetris_The_Soviet_Mind_Game_padded.txt
+vs/vstetris-Tetris_The_Soviet_Mind_Game	900	$VS_IMAGES_DIR/Tetris꞉ The Soviet Mind Game.nes	--machine auto --rgb --input $INPUTS/vs/vstetris-Tetris_The_Soviet_Mind_Game.txt
+vs/Vs._Balloon_Fight_CHR_overdump	900	$VS_IMAGES_DIR/Vs. Balloon Fight [CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._Balloon_Fight_CHR_overdump.txt
+vs/Vs._Balloon_Fight	900	$VS_IMAGES_DIR/Vs. Balloon Fight.nes	--dual --rgb --input $INPUTS/vs/Vs._Balloon_Fight.txt
+vs/Vs._BaseBall_BA_A-1	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-1).nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-1.txt
+vs/Vs._BaseBall_BA_A-1_CHR_overdump	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-1)[CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-1_CHR_overdump.txt
+vs/Vs._BaseBall_BA_A-2	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-2).nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-2.txt
+vs/Vs._BaseBall_BA_A-2_CHR_overdump	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-2)[CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-2_CHR_overdump.txt
+vs/Vs._BaseBall_BA_A-3	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-3).nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-3.txt
+vs/Vs._BaseBall_BA_A-3_CHR_overdump	900	$VS_IMAGES_DIR/Vs. BaseBall (BA A-3)[CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_A-3_CHR_overdump.txt
+vs/Vs._BaseBall_BA_E-1	900	$VS_IMAGES_DIR/Vs. BaseBall (BA E-1).nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_E-1.txt
+vs/Vs._BaseBall_BA_E-1_CHR_overdump	900	$VS_IMAGES_DIR/Vs. BaseBall (BA E-1)[CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._BaseBall_BA_E-1_CHR_overdump.txt
+vs/Vs._Castlevania	900	$VS_IMAGES_DIR/Vs. Castlevania.nes	--machine auto --rgb --input $INPUTS/vs/Vs._Castlevania.txt
+vs/Vs._Gradius	900	$VS_IMAGES_DIR/Vs. Gradius.nes	--machine auto --rgb --input $INPUTS/vs/Vs._Gradius.txt
+vs/Vs._Gumshoe_padded	900	$VS_IMAGES_DIR/Vs. Gumshoe [padded].nes	--machine auto --rgb --device auto --input $INPUTS/vs/Vs._Gumshoe_padded.txt
+vs/Vs._Gumshoe	900	$VS_IMAGES_DIR/Vs. Gumshoe.nes	--machine auto --rgb --device auto --input $INPUTS/vs/Vs._Gumshoe.txt
+vs/Vs._Slalom	900	$VS_IMAGES_DIR/Vs. Slalom.nes	--machine auto --rgb --input $INPUTS/vs/Vs._Slalom.txt
+vs/Vs._Super_Mario_Bros._SM4-4_E	900	$VS_IMAGES_DIR/Vs. Super Mario Bros. (SM4-4 E).nes	--machine auto --rgb --input $INPUTS/vs/Vs._Super_Mario_Bros._SM4-4_E.txt
+vs/Vs._Super_Mario_Bros._SM4-4_E-reset	900	$VS_IMAGES_DIR/Vs. Super Mario Bros. (SM4-4 E).nes	--machine auto --rgb --reset 600 --input $INPUTS/vs/Vs._Super_Mario_Bros._SM4-4_E.txt
+vs/Vs._Super_Mario_Bros._X	900	$VS_IMAGES_DIR/Vs. Super Mario Bros. (X).nes	--machine auto --rgb --input $INPUTS/vs/Vs._Super_Mario_Bros._X.txt
+vs/Vs._T.K.O._Boxing	900	$VS_IMAGES_DIR/Vs. T.K.O. Boxing.nes	--machine auto --rgb --input $INPUTS/vs/Vs._T.K.O._Boxing.txt
+vs/Vs._Tennis_TE_A-3	900	$VS_IMAGES_DIR/Vs. Tennis (TE A-3).nes	--dual --rgb --input $INPUTS/vs/Vs._Tennis_TE_A-3.txt
+vs/Vs._Tennis_set_2	900	$VS_IMAGES_DIR/Vs. Tennis (set 2).nes	--dual --rgb --input $INPUTS/vs/Vs._Tennis_set_2.txt
+vs/Vs._Tennis_set_3_right_screen_stays_black	900	$VS_IMAGES_DIR/Vs. Tennis (set 3)[right screen stays black].nes	--dual --rgb --input $INPUTS/vs/Vs._Tennis_set_3_right_screen_stays_black.txt
+vs/Vs._The_Goonies	900	$VS_IMAGES_DIR/Vs. The Goonies.nes	--machine auto --rgb --input $INPUTS/vs/Vs._The_Goonies.txt
+vs/Vs._Top_Gun	900	$VS_IMAGES_DIR/Vs. Top Gun.nes	--machine auto --rgb --input $INPUTS/vs/Vs._Top_Gun.txt
+vs/Vs._Wrecking_Crew_CHR_overdump	900	$VS_IMAGES_DIR/Vs. Wrecking Crew [CHR overdump].nes	--dual --rgb --input $INPUTS/vs/Vs._Wrecking_Crew_CHR_overdump.txt
+vs/Vs._Wrecking_Crew	900	$VS_IMAGES_DIR/Vs. Wrecking Crew.nes	--dual --rgb --input $INPUTS/vs/Vs._Wrecking_Crew.txt
+vs/vsmahjng-Vs._CHR_overdump	900	$VS_IMAGES_DIR/Vs. 麻雀 [CHR overdump].nes	--dual --rgb --input $INPUTS/vs/vsmahjng-Vs._CHR_overdump.txt
+vs/vsmahjng-Vs._padded	900	$VS_IMAGES_DIR/Vs. 麻雀 [padded].nes	--dual --rgb --input $INPUTS/vs/vsmahjng-Vs._padded.txt
+vs/vsmahjng-Vs	900	$VS_IMAGES_DIR/Vs. 麻雀.nes	--dual --rgb --input $INPUTS/vs/vsmahjng-Vs.txt
+vs/jajamaru	900	$VS_IMAGES_DIR/忍者じゃじゃ丸くん.nes	--machine auto --rgb --input $INPUTS/vs/jajamaru.txt

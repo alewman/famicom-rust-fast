@@ -1,18 +1,40 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
-# Rung 6: the machine rows (PAL, Dendy, Famicom, AV Famicom, NES-101) in
-# lockstep, scripts/cases-machines.tsv; then the peripherals, every device
-# class plugged (--device) and driven (scripts/inputs/devices) on test ROMs and
-# dumps that use it, scripts/cases-peripherals.tsv (scripts/make_device_cases.py);
-# then the host, the reference's window (frontend.py on a stand-in pygame) and
-# famicom_rust::host driving each device from one player script,
-# scripts/cases-host.tsv (scripts/make_host_inputs.py).
+# Rung 6: the machine rows (PAL, Dendy, Famicom, AV Famicom, NES-101, and the Vs.
+# rows' RGB PPUs and letterless 2A03 on home test ROMs) in lockstep,
+# scripts/cases-machines.tsv; then the peripherals, every device class plugged
+# (--device) and driven (scripts/inputs/devices) on test ROMs and dumps that use it,
+# scripts/cases-peripherals.tsv (scripts/make_device_cases.py); then the host, the
+# reference's window (frontend.py on a stand-in pygame) and famicom_rust::host
+# driving each device from one player script, scripts/cases-host.tsv
+# (scripts/make_host_inputs.py); then the Vs. System, every image the reference's
+# scripts/vs_images.py assembles from MAME's sets ($VS_IMAGES_DIR, outside the
+# repository), scripts/cases-vs.tsv (scripts/make_vs_cases.py), and save states on
+# every UniSystem image.
 set -uo pipefail
 HERE=$(dirname "$0")
+ROOT=$(cd "$HERE/.." && pwd)
 python3 "$HERE/lockstep.py" --cases "$HERE/cases-machines.tsv" --jobs "${JOBS:-12}" "$@"
 machines=$?
 python3 "$HERE/lockstep.py" --cases "$HERE/cases-peripherals.tsv" --jobs "${JOBS:-12}" "$@"
 peripherals=$?
 python3 "$HERE/lockstep.py" --cases "$HERE/cases-host.tsv" --jobs "${JOBS:-12}" "$@"
 host=$?
-exit $((machines || peripherals || host))
+vs=1
+states=1
+if [ -n "${VS_IMAGES_DIR:-}" ]; then
+    python3 "$HERE/lockstep.py" --cases "$HERE/cases-vs.tsv" --jobs "${JOBS:-12}" \
+        --reference-cache "$ROOT/external/refcache-vs" "$@"
+    vs=$?
+    # Save states on the UniSystem images (the DualSystem has none in the reference).
+    mapfile -t roms < <(python3 -c 'import json, os, sys; d = sys.argv[1]
+for e in json.load(open(os.path.join(d, "manifest.json"))):
+    if e["vs_hardware"] not in (5, 6): print(os.path.join(d, e["file"]))' "$VS_IMAGES_DIR")
+    nice "$ROOT/target/release/famicom-state-roundtrip" --machine auto --at 300 --to 420 \
+        --input "$HERE/inputs/vs-state.txt" "${roms[@]}" | tee "$ROOT/external/states-vs.log" | grep -v ": identical"
+    states=${PIPESTATUS[0]}
+    echo "$(grep -c ': identical' "$ROOT/external/states-vs.log") of ${#roms[@]} Vs. images round-trip"
+else
+    echo "VS_IMAGES_DIR unset: the Vs. System's cases not run"
+fi
+exit $((machines || peripherals || host || vs || states))

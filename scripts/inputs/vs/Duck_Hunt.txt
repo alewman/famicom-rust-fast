@@ -1,0 +1,26 @@
+0 dip 28
+240 coin 0
+270 coin 0
+380 set - aim 128 120
+380 set - trigger 1
+386 set - trigger 0
+400 set - aim 40 60
+400 set - trigger 1
+406 set - trigger 0
+520 set - aim 200 180
+520 set - trigger 1
+526 set - trigger 0
+640 set - aim 128 40
+640 set - trigger 1
+646 set - trigger 0
+700 set - aim 20 220
+700 set - trigger 1
+706 set - trigger 0
+760 set - aim none
+800 set - trigger 1
+806 set - trigger 0
+640 1 01
+650 1 00
+870 coin 1
+880 service 1
+884 service 0

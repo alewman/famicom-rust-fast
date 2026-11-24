@@ -3,8 +3,10 @@
 
 use crate::board::Board;
 use crate::cartridge::{self, BoardInfo, Loaded, RomImage};
+use crate::joypad::START;
 use crate::machine::Machine;
 use crate::peripherals;
+use crate::vs::{VsStick, VsZapper, VS_DEVICES, VS_ZAPPER};
 use sixfiveohtwo::Mos6502;
 use std::path::Path;
 
@@ -37,12 +39,17 @@ impl System {
         system
     }
 
-    /// The console a cartridge asks for: the NES 2.0 header's or nes20db's
-    /// timing (1 PAL, 3 Dendy), else a Famicom (NES-only expansion devices
-    /// pick the NES).
+    /// The console a cartridge asks for: a Vs. UniSystem with the game's PPU
+    /// if the NES 2.0 header or nes20db says console type 1 (and which PPU:
+    /// machine::VS_PPUS); else the NES 2.0 header's or nes20db's timing (1
+    /// PAL, 3 Dendy), else a Famicom (NES-only expansion devices pick the
+    /// NES). The reference's PlayChoice-10 row (console type 2) is not carried.
     pub fn machine_for(data: &[u8]) -> Result<Machine, String> {
         let loaded = cartridge::load(data, 12, None, true)?;
         let board = &loaded.image.board;
+        if board.console == 1 {
+            return Ok(Machine::vs_machine(board.vs_ppu));
+        }
         Ok(match board.timing {
             1 => Machine::pal_nes(),
             3 => Machine::dendy(),
@@ -64,9 +71,19 @@ impl System {
             disagreements,
         } = cartridge::load(data, machine.timing.cpu_divider, override_board, true)?;
         let mut system = System::new(cartridge, machine);
+        let vs_hardware = image.board.vs_hardware;
         system.image = Some(image);
         system.source = source;
         system.disagreements = disagreements;
+        if system.cpu.bus.vs.is_some() && matches!(vs_hardware, 4 | 6) {
+            // Vs. Ice Climber (Japan) and Vs. Raid on Bungeling Bay: the fourth
+            // bit of both sticks' reports is wired on (vs::VsStick).
+            for pad in system.cpu.bus.pads.iter_mut() {
+                if let Some(pad) = pad.as_any_mut().downcast_mut::<VsStick>() {
+                    pad.jumper = START;
+                }
+            }
+        }
         Ok(system)
     }
 
@@ -87,8 +104,23 @@ impl System {
             Some(device) => device,
             None => self.image.as_ref().map_or(0, |image| image.board.expansion),
         };
-        let famicom = self.cpu.bus.machine.famicom_expansion_port;
-        peripherals::plug(&mut self.cpu.bus, device, famicom, None)
+        let board = &mut self.cpu.bus;
+        if board.vs.is_some() {
+            // A Vs. cabinet's controls are its own: the two sticks are on the
+            // mainboard already (vs::panel says whose is whose), and its light
+            // gun reports through $4016's shift register.
+            if device == VS_ZAPPER {
+                let palette = peripherals::palette_of(board);
+                board.pads[0] = Box::new(VsZapper::new(&board.ppu, &palette));
+                return peripherals::Plugged::Pad(0);
+            }
+            return peripherals::Plugged::None;
+        }
+        if VS_DEVICES.contains(&device) {
+            return peripherals::Plugged::None; // a Vs. game on a home console: standard pads
+        }
+        let famicom = board.machine.famicom_expansion_port;
+        peripherals::plug(board, device, famicom, None)
     }
 
     // -- power and reset ---------------------------------------------------
@@ -114,6 +146,19 @@ impl System {
         self.cpu.bus.take_samples()
     }
 
+    /// Drop a coin into a Vs. System's coin acceptor 0 or 1 (vs::VsMainboard).
+    pub fn insert_coin(&mut self, acceptor: usize) -> Result<(), String> {
+        let board = &mut self.cpu.bus;
+        let now = board.t;
+        match board.vs.as_mut() {
+            None => Err(format!("the {} takes no coins", board.machine.name)),
+            Some(vs) => {
+                vs.insert_coin(acceptor, now);
+                Ok(())
+            }
+        }
+    }
+
     // -- running -----------------------------------------------------------
 
     pub fn cycles(&self) -> i64 {
@@ -121,7 +166,7 @@ impl System {
     }
 
     #[inline]
-    fn cpu_step(&mut self) {
+    pub(crate) fn cpu_step(&mut self) {
         if self.cpu.bus.machine.dma_halts_on_opcode {
             self.cpu.bus.opcode_read = true;
         }

@@ -143,6 +143,134 @@ impl Cartridge for Namco108 {
     }
 }
 
+/// The protection chips' decoding: (the addresses decoded, as a mask and a
+/// value; the 32 bytes), by NES 2.0 Vs. hardware type.
+pub fn vs_sequence(protection: u8) -> (u16, u16, [u8; 32]) {
+    match protection {
+        // Vs. Atari R.B.I. Baseball: $5600-$5601 and $5E00-$5E01 ("address
+        // fully decoded except A11").
+        1 => (
+            0xF7FE,
+            0x5600,
+            [
+                0xff, 0xfd, 0xf5, 0xf4, 0xb4, 0xb4, 0xa6, 0x2e, 0x2f, 0x6f, 0x6f, 0x7d, 0xd5, 0xd4,
+                0x94, 0x94, 0x86, 0x2e, 0x2f, 0x6f, 0x6b, 0x79, 0xd1, 0xd0, 0x92, 0x92, 0x8d, 0x65,
+                0x64, 0x34, 0xb0, 0xa2,
+            ],
+        ),
+        // Vs. T.K.O. Boxing (chip "128"): $5E00-$5E01.
+        2 => (
+            0xFFFE,
+            0x5E00,
+            [
+                0xff, 0xbf, 0xb7, 0x97, 0x97, 0x17, 0x57, 0x4f, 0x6f, 0x6b, 0xeb, 0xa9, 0xb1, 0x90,
+                0x94, 0x14, 0x56, 0x4e, 0x6f, 0x6b, 0xeb, 0xa9, 0xb1, 0x90, 0xd4, 0x5c, 0x3e, 0x26,
+                0x87, 0x83, 0x13, 0x00,
+            ],
+        ),
+        _ => panic!("no protection sequence for hardware type {protection}"),
+    }
+}
+
+/// Vs. Super Xevious: $54FF returns $05 and flips the bit; the others answer by it.
+pub fn vs_xevious(address: u16) -> Option<(u8, u8)> {
+    match address {
+        0x5678 => Some((0x00, 0x01)),
+        0x578F => Some((0xD1, 0x89)),
+        0x5567 => Some((0x3E, 0x37)),
+        _ => None,
+    }
+}
+
+/// A Namco 108 daughterboard of the Vs. System with a protection chip in
+/// $4020-$5FFF (NES 2.0 Vs. hardware types 1 to 3; Vs._System.wiki "Copy
+/// Protection": "a few third-party games added an extra IC as well").
+///
+/// What the chips answer is known only as the bytes each game expects:
+/// MAME's vsnes.cpp (BSD-3; emulator-derived) holds them, and says of chip
+/// "127" that it "uses a LFSR with taps: 23, 18, 0" whose read-back shuffle
+/// is unknown. Types 1 and 2 are a sequence of 32 bytes: a read of an even
+/// address returns 0 and rewinds it, a read of an odd address returns the
+/// next byte. Type 3 is four fixed addresses, one of which flips a bit that
+/// picks between two answers at the other three.
+///
+/// The reference subclasses `Namco108`; here the board is a field, and every
+/// method the subclass does not override goes to it.
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct VsProtected108 {
+    pub namco: Namco108,
+    pub protection: u8,
+    pub protection_index: u64,
+}
+
+impl VsProtected108 {
+    pub fn new(image: RomImage, cpu_cycle_ticks: i64) -> VsProtected108 {
+        let protection = image.board.vs_hardware;
+        VsProtected108 {
+            namco: Namco108::new(image, cpu_cycle_ticks, Kind::Namco108),
+            protection,
+            protection_index: 0,
+        }
+    }
+}
+
+impl Cartridge for VsProtected108 {
+    fn banked(&self) -> Option<&Banked> {
+        Some(&self.namco.b)
+    }
+    fn banked_mut(&mut self) -> Option<&mut Banked> {
+        Some(&mut self.namco.b)
+    }
+
+    fn cpu_read(&mut self, address: u16, _t: i64) -> Option<u16> {
+        let b = &self.namco.b;
+        if address >= 0x8000 {
+            let a = address as usize;
+            return Some(b.prg[b.prg_offsets[(a >> 13) & 3] + (a & 0x1FFF)] as u16);
+        }
+        if self.protection == 3 {
+            if address == 0x54FF {
+                self.protection_index ^= 1;
+                return Some(0x05);
+            }
+            return vs_xevious(address).map(|answers| {
+                (if self.protection_index != 0 {
+                    answers.1
+                } else {
+                    answers.0
+                }) as u16
+            });
+        }
+        let (mask, base, data) = vs_sequence(self.protection);
+        if address & mask != base {
+            return None;
+        }
+        if address & 1 == 0 {
+            self.protection_index = 0;
+            return Some(0);
+        }
+        let value = data[(self.protection_index & 0x1F) as usize];
+        self.protection_index += 1;
+        Some(value as u16)
+    }
+
+    fn cpu_write(&mut self, address: u16, value: u8, t: i64) {
+        self.namco.cpu_write(address, value, t);
+    }
+
+    fn ciram_a10(&mut self, address: u16) -> Option<u8> {
+        self.namco.ciram_a10(address)
+    }
+}
+
+/// Mapper 206: the plain board, or a Vs. System daughterboard with its chip.
+pub fn namco108_for(image: RomImage, cpu_cycle_ticks: i64) -> Box<dyn Cartridge> {
+    if image.board.console == 1 && matches!(image.board.vs_hardware, 1..=3) {
+        return Box::new(VsProtected108::new(image, cpu_cycle_ticks));
+    }
+    Box::new(Namco108::new(image, cpu_cycle_ticks, Kind::Namco108))
+}
+
 /// Mapper 19: Namco 129/163: 1 KiB CHR banks, nametables from CIRAM or
 /// CHR-ROM, a cycle IRQ, and the wavetable sound (INES_Mapper_019.wiki,
 /// Namco_163_audio.wiki). The wiki does not say whether the IRQ counter counts
@@ -432,7 +560,7 @@ pub fn build(
             Box::new(Namco108::new(image, t, Kind::Namco3433 { one_screen }))
         }
         95 => Box::new(Namco108::new(image, t, Kind::Namco3425)),
-        206 => Box::new(Namco108::new(image, t, Kind::Namco108)),
+        206 => namco108_for(image, t),
         210 => Box::new(Namco175::new(image, t)),
         _ => return Err(image),
     })

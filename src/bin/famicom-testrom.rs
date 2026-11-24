@@ -33,6 +33,8 @@ fn board(value: &Value) -> BoardInfo {
         timing: n("timing") as u8,
         console: n("console") as u8,
         expansion: n("expansion") as u8,
+        vs_ppu: n("vs_ppu") as u8,
+        vs_hardware: n("vs_hardware") as u8,
     }
 }
 

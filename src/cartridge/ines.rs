@@ -22,6 +22,13 @@ pub struct BoardInfo {
     pub console: u8,
     /// The Default Expansion Device (NES 2.0 byte 15).
     pub expansion: u8,
+    /// A Vs. System game's (console 1) NES 2.0 byte 13, or nes20db's `<vs>`:
+    /// the RGB PPU its colours and checks expect (0 RP2C03, 2-5 RP2C04-0001 to
+    /// -0004, 8-11 RC2C05-01 to -04) and its hardware type (0 UniSystem, 1-4 a
+    /// UniSystem with a protection, 5 DualSystem, 6 DualSystem with Raid on
+    /// Bungeling Bay's protection) (NES_2.0.wiki "Vs. System Type").
+    pub vs_ppu: u8,
+    pub vs_hardware: u8,
 }
 
 impl BoardInfo {
@@ -38,6 +45,8 @@ impl BoardInfo {
             timing: 0,
             console: 0,
             expansion: 0,
+            vs_ppu: 0,
+            vs_hardware: 0,
         }
     }
 }
@@ -102,6 +111,8 @@ pub fn parse(data: &[u8]) -> Result<RomImage, String> {
             timing: h[12] & 0x03,
             console: h[7] & 0x03,
             expansion: h[15] & 0x3F,
+            vs_ppu: if h[7] & 0x03 == 1 { h[13] & 0x0F } else { 0 },
+            vs_hardware: if h[7] & 0x03 == 1 { h[13] >> 4 } else { 0 },
         };
         prg_size = nes2_rom_size(h[4], h[9] & 0x0F, 0x4000);
         chr_size = nes2_rom_size(h[5], h[9] >> 4, 0x2000);

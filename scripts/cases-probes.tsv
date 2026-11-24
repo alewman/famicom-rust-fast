@@ -1,2 +1,4 @@
 # name	slices	rom	arguments (shell words); $PROBES: probes/build.sh assembles them
 probes/eval-turn-off	600	$PROBES/eval-turn-off.nes	
+# The same on an RGB PPU (the Vs. UniSystem's RP2C03B): turning rendering off arms no OAM corruption there
+probes/eval-turn-off-vs	600	$PROBES/eval-turn-off.nes	--machine vs --rgb

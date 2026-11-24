@@ -44,6 +44,7 @@ pub mod tengen;
 pub mod txc;
 pub mod unlicensed;
 pub mod vrc5;
+pub mod vs;
 pub mod waixing;
 
 pub use banked::Banked;
@@ -129,6 +130,8 @@ fn differences(winner: &BoardInfo, other: &BoardInfo, label: &str) -> Vec<String
             other.expansion, winner.expansion
         ));
     }
+    field!(vs_ppu);
+    field!(vs_hardware);
     out
 }
 
@@ -140,6 +143,7 @@ pub fn build(image: RomImage, cpu_cycle_ticks: i64) -> Result<Box<dyn Cartridge>
     use discrete::*;
     Ok(match mapper {
         0 => Box::new(nrom(image, t)),
+        99 => Box::new(vs::VsSockets::new(image, t)),
         1 => Box::new(mmc1::Mmc1::new(image, t)),
         4 => mmc3::mmc3_for(image, t),
         37 | 47 => Box::new(mmc3::Mmc3Multicart::new(image, t)),

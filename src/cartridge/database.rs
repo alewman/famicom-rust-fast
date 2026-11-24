@@ -75,6 +75,7 @@ fn board(game: &str) -> Option<BoardInfo> {
     let pcb = element(game, "pcb")?;
     let console = element(game, "console")?;
     let expansion = element(game, "expansion");
+    let vs = element(game, "vs");
     Some(BoardInfo {
         mapper: number(&pcb, "mapper", "0"),
         submapper: number(&pcb, "submapper", "0"),
@@ -90,6 +91,8 @@ fn board(game: &str) -> Option<BoardInfo> {
         timing: number(&console, "region", "0"),
         console: number(&console, "type", "0"),
         expansion: expansion.map_or(0, |e| number(&e, "type", "0")),
+        vs_ppu: vs.as_ref().map_or(0, |v| number(v, "ppu", "0")),
+        vs_hardware: vs.as_ref().map_or(0, |v| number(v, "hardware", "0")),
     })
 }
 

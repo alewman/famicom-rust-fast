@@ -5,10 +5,16 @@
 //! run elsewhere first, continues as the run that was not interrupted: every
 //! CPU-bus cycle, the picture, the audio, the registers, the master clock.
 //!
-//!     famicom-state-roundtrip ROM... [--machine KEY] [--at A] [--to B] [--input FILE] [--seed S]
+//!     famicom-state-roundtrip ROM... [--machine KEY|auto] [--at A] [--to B] [--input FILE] [--seed S]
+//!
+//! `--machine auto`: each ROM on the machine `System::machine_for` gives it (a
+//! Vs. game on its Vs. row). FILE's lines are `FRAME PAD BUTTONS` (hex, a pad or
+//! a Vs. stick) and, for a Vs. System, the lockstep tracer's `FRAME coin
+//! ACCEPTOR`, `FRAME dip HEX` and `FRAME service 0|1`, applied before the frame.
 
 use famicom_rust::joypad::StandardController;
 use famicom_rust::state::{load_snapshot, load_state, save_snapshot, save_state};
+use famicom_rust::vs::VsStick;
 use famicom_rust::{Machine, System};
 use std::collections::HashMap;
 use std::path::Path;
@@ -35,19 +41,32 @@ fn digest(system: &mut System) -> u64 {
     ((samples.len() as u64) << 32) | hasher.finalize() as u64
 }
 
-fn run(
-    system: &mut System,
-    frames: std::ops::Range<u64>,
-    inputs: &HashMap<u64, Vec<(usize, u8)>>,
-) -> Vec<u64> {
+/// One line of the input file.
+enum Input {
+    Pad(usize, u8),
+    Coin(usize),
+    Dip(u8),
+    Service(bool),
+}
+
+type Inputs = HashMap<u64, Vec<Input>>;
+
+fn run(system: &mut System, frames: std::ops::Range<u64>, inputs: &Inputs) -> Vec<u64> {
     let mut out = Vec::new();
     for frame in frames {
-        for &(pad, buttons) in inputs.get(&frame).into_iter().flatten() {
-            if let Some(pad) = system.board().pads[pad]
-                .as_any_mut()
-                .downcast_mut::<StandardController>()
-            {
-                pad.buttons = buttons;
+        for input in inputs.get(&frame).into_iter().flatten() {
+            match *input {
+                Input::Pad(pad, buttons) => {
+                    let device = system.board().pads[pad].as_any_mut();
+                    if let Some(pad) = device.downcast_mut::<StandardController>() {
+                        pad.buttons = buttons;
+                    } else if let Some(stick) = device.downcast_mut::<VsStick>() {
+                        stick.buttons = buttons;
+                    }
+                }
+                Input::Coin(acceptor) => system.insert_coin(acceptor).unwrap(),
+                Input::Dip(value) => system.board().vs.as_mut().unwrap().dip = value,
+                Input::Service(on) => system.board().vs.as_mut().unwrap().service = on,
             }
         }
         system.board().bus_log.as_mut().unwrap().clear();
@@ -77,16 +96,24 @@ fn spread(seed: u64, rom: &str) -> i64 {
 
 fn check(
     rom: &str,
-    machine: &Machine,
+    machine: Option<&Machine>,
     at: u64,
     to: u64,
-    inputs: &HashMap<u64, Vec<(usize, u8)>>,
+    inputs: &Inputs,
     seed: u64,
 ) -> Result<String, String> {
     let data = famicom_rust::cartridge::read_rom_file(
         Path::new(rom),
         famicom_rust::cartridge::ROM_SUFFIXES,
     )?;
+    let auto;
+    let machine = match machine {
+        Some(machine) => machine,
+        None => {
+            auto = System::machine_for(&data)?;
+            &auto
+        }
+    };
     let extra = spread(seed, rom);
     let mut first = fresh(&data, machine)?;
     run(&mut first, 0..at, inputs);
@@ -157,23 +184,33 @@ fn main() {
             _ => roms.push(arg),
         }
     }
-    let mut inputs: HashMap<u64, Vec<(usize, u8)>> = HashMap::new();
+    let mut inputs: Inputs = HashMap::new();
     if let Some(path) = input {
         for text in std::fs::read_to_string(path).unwrap().lines() {
             let parts: Vec<&str> = text.split_whitespace().collect();
-            if parts.len() == 3 && !text.starts_with('#') {
-                inputs.entry(parts[0].parse().unwrap()).or_default().push((
-                    parts[1].parse().unwrap(),
-                    u8::from_str_radix(parts[2], 16).unwrap(),
-                ));
+            if parts.len() != 3 || text.starts_with('#') {
+                continue;
             }
+            let line = match parts[1] {
+                "coin" => Input::Coin(parts[2].parse().unwrap()),
+                "dip" => Input::Dip(u8::from_str_radix(parts[2], 16).unwrap()),
+                "service" => Input::Service(parts[2] == "1"),
+                pad => Input::Pad(
+                    pad.parse().unwrap(),
+                    u8::from_str_radix(parts[2], 16).unwrap(),
+                ),
+            };
+            inputs
+                .entry(parts[0].parse().unwrap())
+                .or_default()
+                .push(line);
         }
     }
-    let machine = Machine::by_key(&machine).expect("machine");
+    let machine = (machine != "auto").then(|| Machine::by_key(&machine).expect("machine"));
     let mut failed = 0;
     for rom in &roms {
-        let verdict =
-            check(rom, &machine, at, to, &inputs, seed).unwrap_or_else(|e| format!("error: {e}"));
+        let verdict = check(rom, machine.as_ref(), at, to, &inputs, seed)
+            .unwrap_or_else(|e| format!("error: {e}"));
         if !verdict.starts_with("identical") {
             failed += 1;
         }

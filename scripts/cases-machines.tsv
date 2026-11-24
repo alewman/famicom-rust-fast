@@ -24,3 +24,12 @@ accuracycoin-famicom	3000	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $
 accuracycoin-nes101	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine nes-101
 accuracycoin-avfamicom	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine av-famicom
 accuracycoin-dendy	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine dendy
+# The Vs. rows (RGB PPUs: no skipped dot, no OAM corruption, the RC2C05's swapped $2000/$2001 and identifier; the letterless 2A03: no tonal noise, no frame-counter restart on reset), on home test ROMs: the mainboard's sticks answer $4016/$4017 D0 as pads do; --rgb judges each PPU's colour table
+ppu_vbl_nmi/rom_singles/10-even_odd_timing-vs	600	$NES_TEST_ROMS/nes-test-roms/ppu_vbl_nmi/rom_singles/10-even_odd_timing.nes	--machine vs --rgb
+ppu_vbl_nmi/rom_singles/05-nmi_timing-vs	600	$NES_TEST_ROMS/nes-test-roms/ppu_vbl_nmi/rom_singles/05-nmi_timing.nes	--machine vs --rgb
+oam_stress/oam_stress-vs	600	$NES_TEST_ROMS/nes-test-roms/oam_stress/oam_stress.nes	--machine vs --rgb
+apu_mixer/noise-vs	600	$NES_TEST_ROMS/nes-test-roms/apu_mixer/noise.nes	--machine vs --rgb
+sprite_hit_tests_2005.10.05/09.timing_basics-vs-rc2c05-02	600	$NES_TEST_ROMS/nes-test-roms/sprite_hit_tests_2005.10.05/09.timing_basics.nes	--machine vs-rc2c05-02 --rgb
+accuracycoin-vs	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine vs --rgb --reset 1200
+accuracycoin-vs-rp2c04-0002	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine vs-rp2c04-0002 --rgb
+accuracycoin-vs-rc2c05-03	1500	$NES_TEST_ROMS/AccuracyCoin/AccuracyCoin.nes	--input $INPUTS/accuracycoin-run-all.txt --machine vs-rc2c05-03 --rgb

@@ -1,0 +1,14 @@
+# Save states on the Vs. UniSystem (famicom-state-roundtrip --machine auto --at 300 --to 420):
+# two coins, then a third that is still closing the contact when the state is saved,
+# the panel's button 1, and A on both sticks after the load.
+240 coin 0
+270 coin 0
+298 coin 0
+299 0 04
+305 0 00
+330 0 01
+330 1 01
+340 0 00
+340 1 00
+360 dip 41
+380 coin 1

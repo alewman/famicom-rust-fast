@@ -8,7 +8,7 @@
 //!     famicom-lockstep --cases TSV --cache DIR [--jobs N] [--trace BIN] [--only TEXT]
 //!
 //! A case is `name<TAB>slices<TAB>rom<TAB>arguments`; `$NES_TEST_ROMS`,
-//! `$NES_DUMPS`, `$NES_AFTERMARKET`, `$FDS_DUMPS`, `$INPUTS`, `$PROBES` and `$NES_AUDIO_TESTS` are
+//! `$NES_DUMPS`, `$NES_AFTERMARKET`, `$FDS_DUMPS`, `$VS_IMAGES_DIR`, `$INPUTS`, `$PROBES` and `$NES_AUDIO_TESTS` are
 //! taken from the environment, with lockstep.py's defaults (the test ROMs at
 //! the reference checkout of a famicom-rust beside this one; the dumps in
 //! No-Intro's sets under `$NO_INTRO_DIR`, a case reported MISSING without it). The cached trace is `DIR/<name>.<slices>.ref`, the name with
@@ -24,8 +24,10 @@ use std::time::Instant;
 const ROOT: &str = env!("CARGO_MANIFEST_DIR");
 /// No-Intro's NES set, under `$NO_INTRO_DIR`.
 const NES: &str = "Nintendo - Nintendo Entertainment System (Headered)";
-/// The dump folders, which default to No-Intro's sets under `$NO_INTRO_DIR`.
-const DUMP_VARS: [&str; 3] = ["NES_DUMPS", "NES_AFTERMARKET", "FDS_DUMPS"];
+/// The dump folders, which default to No-Intro's sets under `$NO_INTRO_DIR`,
+/// and the Vs. System's images (no default: the reference's
+/// scripts/vs_images.py assembles them from MAME's sets, outside the repository).
+const DUMP_VARS: [&str; 4] = ["NES_DUMPS", "NES_AFTERMARKET", "FDS_DUMPS", "VS_IMAGES_DIR"];
 
 struct Case {
     name: String,
@@ -66,6 +68,7 @@ fn cases(table: &Path) -> Vec<Case> {
             set("Nintendo - Family Computer Disk System (FDS)"),
         ),
         ("INPUTS", Some(format!("{ROOT}/scripts/inputs"))),
+        ("VS_IMAGES_DIR", None),
         ("PROBES", Some(format!("{ROOT}/external/probes"))),
         // rainwarrior's nes-audio-tests, prebuilt: the reference's fetched
         // reference/src/nes-audio-tests/build, copied under FAMICOM_REFERENCE.
@@ -115,7 +118,9 @@ fn cases(table: &Path) -> Vec<Case> {
 fn one(case: &Case, trace: &Path, cache: &Path, scratch: &Path) -> Result<String, String> {
     for var in DUMP_VARS {
         if case.rom.contains(&format!("${var}")) {
-            return Err(format!("MISSING: set NO_INTRO_DIR (or {var})"));
+            return Err(format!(
+                "MISSING: set {var} (or NO_INTRO_DIR for the dumps)"
+            ));
         }
     }
     let safe = safe(&case.name);

@@ -5,16 +5,17 @@
 # since 2026-11-23; famicom-rust's scripts/fetch_famicompython.sh).
 # No Python: everything the reference ran is cached in external/ (copied
 # from famicom-rust). In order:
-#   cargo test (mapper_coverage: the reference's mappers but 99 build, 295);
+#   cargo test (mapper_coverage: the reference's 296 mappers build; tests/vs_system.rs);
 #   rung 1, nestest against nestest.log;
 #   the lockstep cases against the cached reference traces: rung 2, rung 5
 #     (every board class, the FDS, Lagrange Point's VRC7, the Sunsoft 5B's
-#     sound, mapper 559), the machine rows
-#     and the peripherals;
+#     sound, mapper 559), the machine rows (the Vs. rows' RGB PPUs among them),
+#     the peripherals, the host input, and the Vs. System's images (VS_IMAGES_DIR);
 #   rung 3, the reference's test ROM tables, outcome for outcome;
 #   rung 4, AccuracyCoin: 147 of 147 on the reference's 126,984,584 cycles
 #     and 4,264 frames;
-#   save states round-tripping on one dump of every board class.
+#   save states round-tripping on one dump of every board class, and on every
+#   Vs. UniSystem image.
 # JOBS (default 4) runs that many boards at a time, under nice.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -42,6 +43,11 @@ for pal in 2C02G_U_wiki.pal 2C07_wiki.pal; do
     [ -s "$FAMICOM_REFERENCE/reference/nesdev-wiki/images/$pal" ] || {
         echo "no $pal under $FAMICOM_REFERENCE/reference/nesdev-wiki/images"; exit 1; }
 done
+# The Vs. System's images: assembled from MAME's sets ($MAME_ROMPATH) by the
+# reference's scripts/vs_images.py, outside the repository (famicom-rust's
+# external/vs-images by default; never committed).
+export VS_IMAGES_DIR=${VS_IMAGES_DIR:-$(dirname "$ROOT")/famicom-rust/external/vs-images}
+[ -s "$VS_IMAGES_DIR/manifest.json" ] || { echo "no Vs. images at $VS_IMAGES_DIR (VS_IMAGES_DIR)"; exit 1; }
 BIN=$ROOT/target/release
 began=$SECONDS
 failed=0
@@ -89,6 +95,8 @@ step "lockstep: rung 6, peripherals"
 lockstep "$ROOT/scripts/cases-peripherals.tsv" "$EXT/refcache-devices"
 step "lockstep: rung 6, host input (frontend.py's input half)"
 lockstep "$ROOT/scripts/cases-host.tsv" "$EXT/refcache-host"
+step "lockstep: rung 6, the Vs. System (UniSystem and DualSystem images)"
+lockstep "$ROOT/scripts/cases-vs.tsv" "$EXT/refcache-vs"
 
 step "rung 3: test ROM tables"
 nice "$BIN/famicom-testrom" "$EXT/testrom-reference.jsonl" --roms "$NES_TEST_ROMS/nes-test-roms" \
@@ -133,6 +141,17 @@ echo "$extra" | grep -v ": identical" || true
 same=$(echo "$extra" | grep -c ": identical" || true)
 echo "$same of 5 round-trip"
 [ "$same" = 5 ] || failed=1
+
+step "save states: every Vs. UniSystem image"
+mapfile -t vs < <(python3 -c 'import json, os, sys; d = sys.argv[1]
+for e in json.load(open(os.path.join(d, "manifest.json"))):
+    if e["vs_hardware"] not in (5, 6): print(os.path.join(d, e["file"]))' "$VS_IMAGES_DIR")
+vsout=$(nice "$BIN/famicom-state-roundtrip" --machine auto --at 300 --to 420 \
+    --input "$ROOT/scripts/inputs/vs-state.txt" "${vs[@]}" 2>&1 || true)
+echo "$vsout" | grep -v ": identical" || true
+same=$(echo "$vsout" | grep -c ": identical" || true)
+echo "$same of ${#vs[@]} round-trip"
+[ "$same" = "${#vs[@]}" ] || failed=1
 
 step "done"
 if [ "$failed" = 0 ]; then echo "LADDER GREEN"; else echo "LADDER RED"; fi

@@ -31,6 +31,26 @@ pub struct Timing {
     pub swapped_emphasis: bool,
     /// Master ticks into a CPU cycle at which the PPU sees a register access.
     pub ppu_access_ticks: i64,
+    /// An RGB PPU (2C03, 2C04, 2C05): `palette` names a DAC table of
+    /// `video::RGB_DAC` instead of a file, and an emphasis bit drives its
+    /// channel to full brightness instead of dimming the others
+    /// (PPU_palettes.wiki "2C03 and 2C05"; Errata.wiki l.17).
+    pub rgb: bool,
+    /// Rendering switched off mid-line corrupts an OAM row when it next starts
+    /// (`ppu.oam_corrupt`): "OAM corruption added in revision E"
+    /// (PPU_variants.wiki, RC2C05-99). The arcade RGB PPUs are 2C02B, C and D
+    /// cores (the same table), and "in the 2C03, 2C04, 2C05 ... OAMADDR works as
+    /// intended" (PPU_registers.wiki "OAMADDR precautions", lidnariq on a Vs.
+    /// System, forum p=179676): specification tier, no test ROM run on one.
+    pub oam_corruption: bool,
+    /// The RC2C05's copy protection (PPU_registers.wiki "2C05 identifier",
+    /// NES_2.0.wiki "Vs. System Type", Vs._System.wiki): $2000 and $2001 change
+    /// places, and a $2002 read returns `identifier` on the bits of
+    /// `identifier_mask` instead of the I/O latch. The values are what the
+    /// games expect: "we haven't yet collected data directly from the PPUs".
+    pub swapped_control: bool,
+    pub identifier: u8,
+    pub identifier_mask: u8,
 }
 
 pub const NTSC: Timing = Timing {
@@ -47,6 +67,11 @@ pub const NTSC: Timing = Timing {
     palette: "2C02G_U_wiki.pal",
     swapped_emphasis: false,
     ppu_access_ticks: 8,
+    rgb: false,
+    oam_corruption: true,
+    swapped_control: false,
+    identifier: 0,
+    identifier_mask: 0,
 };
 
 pub const PAL: Timing = Timing {
@@ -63,6 +88,11 @@ pub const PAL: Timing = Timing {
     palette: "2C07_wiki.pal",
     swapped_emphasis: true,
     ppu_access_ticks: 9,
+    rgb: false,
+    oam_corruption: true,
+    swapped_control: false,
+    identifier: 0,
+    identifier_mask: 0,
 };
 
 pub const DENDY: Timing = Timing {
@@ -79,7 +109,57 @@ pub const DENDY: Timing = Timing {
     palette: "2C07_wiki.pal",
     swapped_emphasis: true,
     ppu_access_ticks: 8,
+    rgb: false,
+    oam_corruption: true,
+    swapped_control: false,
+    identifier: 0,
+    identifier_mask: 0,
 };
+
+/// The arcade RGB PPUs: "All official RGB PPUs are NTSC and expect a 21.477272
+/// MHz master clock" (PPU_variants.wiki "RGB"), and "never have the missing dot
+/// that the 2C02 does" (Vs._System.wiki "Synchronization"; PPU_variants.wiki:
+/// the 2C04 "keeps 2C03 timing (no skipped dot)"). Not modelled, each on the
+/// wiki's "believed" only: OAMDATA and the palette unreadable (the 2C03B as the
+/// 2C02B), and the 2C02A/B's stray sprite pixels at x = 255 (the reference's
+/// docs/undocumented-behavior.md C76).
+pub const RGB: Timing = Timing {
+    odd_frame_skip: false,
+    rgb: true,
+    oam_corruption: false,
+    palette: "RP2C03",
+    ..NTSC
+};
+
+const fn rc2c05(identifier: u8, mask: u8) -> Timing {
+    Timing {
+        swapped_control: true,
+        identifier,
+        identifier_mask: mask,
+        ..RGB
+    }
+}
+
+const fn rp2c04(palette: &'static str) -> Timing {
+    Timing { palette, ..RGB }
+}
+
+/// The Vs. System's PPUs by NES 2.0 "Vs. PPU type" (header byte 13's low
+/// nibble, nes20db's `<vs ppu=>`): the chip's name and its row. The RC2C05-01's
+/// identifier is unknown (its one game, Ninja Jajamaru-kun, never looks:
+/// NES_2.0.wiki); $1B is MAME's choice (ppu2c0x.cpp, emulator-derived). The
+/// reference's `_rc2c05`'s default mask is $1F.
+pub const VS_PPUS: [(u8, &str, Timing); 9] = [
+    (0, "RP2C03B", RGB),
+    (2, "RP2C04-0001", rp2c04("RP2C04-0001")),
+    (3, "RP2C04-0002", rp2c04("RP2C04-0002")),
+    (4, "RP2C04-0003", rp2c04("RP2C04-0003")),
+    (5, "RP2C04-0004", rp2c04("RP2C04-0004")),
+    (8, "RC2C05-01", rc2c05(0x1B, 0x1F)),
+    (9, "RC2C05-02", rc2c05(0x3D, 0x3F)),
+    (10, "RC2C05-03", rc2c05(0x1C, 0x1F)),
+    (11, "RC2C05-04", rc2c05(0x1B, 0x1F)),
+];
 
 /// What a console holds when it is switched on (`machine.PowerOn`).
 #[derive(Clone, Debug, PartialEq)]
@@ -124,6 +204,8 @@ impl Default for PowerOn {
 pub enum ApuTables {
     Ntsc,
     Pal,
+    /// The letterless RP2A03 of the first Famicoms and every Vs. System board.
+    Rp2a03,
 }
 
 /// One console model (`machine.Machine`).
@@ -150,6 +232,12 @@ pub struct Machine {
     pub dma_halts_on_opcode: bool,
     pub dmc_late_stop: bool,
     pub famicom_expansion_port: bool,
+    /// A Vs. System mainboard (Vs._System.wiki, vs.rs): $4016/$4017 carry coins,
+    /// the service button and DIP switches on D2-D7, driven, not open bus;
+    /// $4020-$5FFF is the coin counter; 2 KiB of RAM answers at $6000-$7FFF;
+    /// OUT2 reaches the ROM sockets. "primary" or "secondary" is the side of
+    /// the board the CPU sits on ($4016 D7; the reference's C75), None any other console.
+    pub vs_side: Option<&'static str>,
     pub certified: bool,
 }
 
@@ -189,6 +277,7 @@ impl Machine {
             dma_halts_on_opcode: false,
             dmc_late_stop: false,
             famicom_expansion_port: false,
+            vs_side: None,
             certified: true,
         }
     }
@@ -268,7 +357,68 @@ impl Machine {
         }
     }
 
-    /// `MACHINES[key]`.
+    /// The Vs. UniSystem (Vs._System.wiki; MAME's vsnes.cpp, BSD-3, emulator-derived).
+    ///
+    /// - "The CPUs are always the letterless revision, and the arcade board is
+    ///   incompatible with a 2A03G, so tonal noise is not supported" (apu
+    ///   [`ApuTables::Rp2a03`]; CPU_variants.wiki's row adds the frame counter
+    ///   that a reset leaves alone, and an M2 duty of 17/24, not modelled: the
+    ///   board's $2002 races are the RP2A03G's 15/24).
+    /// - Reset is the watchdog's: it "will reset both CPUs, both PPUs", and "all
+    ///   four are released from reset by the watchdog at the same time", so the
+    ///   PPU has the NES-001's power-on window.
+    /// - UNVERIFIED, taken as the NES-001's for want of a source: how
+    ///   back-to-back reads clock the mainboard's 4021s, and the audio
+    ///   amplifier's filter.
+    /// - The side: a UniSystem game's CPU is in the secondary socket ($4016 D7 =
+    ///   1), the one whose $4017 reads hold the watchdog off; MAME and Mesen2
+    ///   both answer 0 there, and the RAM and /IRQ that follow from the socket
+    ///   are the reference's C75.
+    ///
+    /// One row per PPU, since the game's ROMs name the chip they need:
+    /// [`Machine::vs_machine`] picks the row.
+    pub fn vs_unisystem() -> Machine {
+        Machine {
+            apu_tables: ApuTables::Rp2a03,
+            vs_side: Some("secondary"),
+            certified: false,
+            ..Machine::row(
+                "Vs. UniSystem (RP2C03B)",
+                RGB,
+                "RP2A03",
+                "RP2C03B",
+                true,
+                true,
+                false,
+                false,
+                false,
+            )
+        }
+    }
+
+    /// `VS_MACHINES[ppu]`: the UniSystem with the PPU of NES 2.0 "Vs. PPU type"
+    /// `ppu`, None for a reserved number.
+    pub fn vs_machines(ppu: u8) -> Option<Machine> {
+        let (_, chip, timing) = VS_PPUS.iter().find(|row| row.0 == ppu)?;
+        if ppu == 0 {
+            return Some(Machine::vs_unisystem());
+        }
+        Some(Machine {
+            name: vs_name(chip),
+            timing: timing.clone(),
+            ppu_variant: chip,
+            ..Machine::vs_unisystem()
+        })
+    }
+
+    /// The Vs. UniSystem with the PPU of NES 2.0 "Vs. PPU type" `ppu`; a
+    /// reserved number gets the RP2C03B, whose colours are the home consoles'.
+    pub fn vs_machine(ppu: u8) -> Machine {
+        Machine::vs_machines(ppu).unwrap_or_else(Machine::vs_unisystem)
+    }
+
+    /// `MACHINES[key]`: the home consoles, `vs`, and `vs-` with the PPU's name
+    /// in lower case for every Vs. row but the RP2C03B's.
     pub fn by_key(key: &str) -> Option<Machine> {
         Some(match key {
             "nes" => Machine::nes_001(),
@@ -277,7 +427,51 @@ impl Machine {
             "nes-101" => Machine::nes_101(),
             "pal" => Machine::pal_nes(),
             "dendy" => Machine::dendy(),
-            _ => return None,
+            "vs" => Machine::vs_unisystem(),
+            _ => {
+                let chip = key.strip_prefix("vs-")?;
+                let (number, _, _) = VS_PPUS
+                    .iter()
+                    .find(|row| row.0 != 0 && row.1.to_lowercase() == chip)?;
+                return Machine::vs_machines(*number);
+            }
         })
+    }
+
+    /// The keys of `MACHINES`, in the reference's order.
+    pub fn keys() -> Vec<String> {
+        let mut keys: Vec<String> = [
+            "nes",
+            "famicom",
+            "av-famicom",
+            "nes-101",
+            "pal",
+            "dendy",
+            "vs",
+        ]
+        .iter()
+        .map(|k| k.to_string())
+        .collect();
+        for (number, chip, _) in VS_PPUS {
+            if number != 0 {
+                keys.push(format!("vs-{}", chip.to_lowercase()));
+            }
+        }
+        keys
+    }
+}
+
+/// The reference's `f"Vs. UniSystem ({chip})"`, as a static name.
+fn vs_name(chip: &str) -> &'static str {
+    match chip {
+        "RP2C04-0001" => "Vs. UniSystem (RP2C04-0001)",
+        "RP2C04-0002" => "Vs. UniSystem (RP2C04-0002)",
+        "RP2C04-0003" => "Vs. UniSystem (RP2C04-0003)",
+        "RP2C04-0004" => "Vs. UniSystem (RP2C04-0004)",
+        "RC2C05-01" => "Vs. UniSystem (RC2C05-01)",
+        "RC2C05-02" => "Vs. UniSystem (RC2C05-02)",
+        "RC2C05-03" => "Vs. UniSystem (RC2C05-03)",
+        "RC2C05-04" => "Vs. UniSystem (RC2C05-04)",
+        _ => "Vs. UniSystem (RP2C03B)",
     }
 }

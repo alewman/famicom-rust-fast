@@ -94,6 +94,10 @@ pub fn live_noise_periods() -> &'static [u16; 16] {
     context(|c| c.tables.noise_periods)
 }
 
+pub fn live_tonal_noise() -> bool {
+    context(|c| c.tables.tonal_noise)
+}
+
 pub fn live_dmc_rates() -> &'static [u16; 16] {
     context(|c| c.tables.dmc_rates)
 }
@@ -321,7 +325,10 @@ fn load_body(system: &mut System, body: Body) -> Result<(), String> {
     let loaded = system.cpu.bus.load_state(&body.board);
     CONTEXT.with(|c| *c.borrow_mut() = None);
     loaded?;
-    system.cpu.restore_state(&cpu).expect("a validated CPU state restores");
+    system
+        .cpu
+        .restore_state(&cpu)
+        .expect("a validated CPU state restores");
     system.instructions = body.instructions;
     Ok(())
 }

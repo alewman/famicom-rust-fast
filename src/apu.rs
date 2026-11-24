@@ -62,6 +62,13 @@ pub const TRIANGLE: [u8; 32] = [
 pub const NOISE_PERIODS: [u16; 16] = [
     4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068,
 ];
+/// The letterless RP2A03 of the first Famicoms and every Vs. System board:
+/// "Lacks tonal noise mode. Lowest noise period is 2046 instead of 4068. APU
+/// Frame Counter not restarted on reset" (CPU_variants.wiki; APU_Noise.wiki
+/// l.94). Specification tier: no test ROM here runs on one.
+pub const RP2A03_NOISE_PERIODS: [u16; 16] = [
+    4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 2046,
+];
 pub const DMC_RATES: [u16; 16] = [
     428, 380, 340, 320, 286, 254, 226, 214, 190, 160, 142, 128, 106, 84, 72, 54,
 ];
@@ -115,6 +122,12 @@ pub struct Tables {
     pub dmc_rates: &'static [u16; 16],
     pub steps_4: &'static [(u32, u8)],
     pub steps_5: &'static [(u32, u8)],
+    /// $400E's bit 7, the 93-step "tonal" noise, exists (not on the letterless
+    /// RP2A03: its shift register always feeds back from bits 0 and 1).
+    pub tonal_noise: bool,
+    /// The reset button rewrites $4017 and so restarts the frame counter (not
+    /// on the letterless RP2A03: CPU_variants.wiki).
+    pub frame_reset: bool,
 }
 
 pub fn tables(which: ApuTables) -> Tables {
@@ -124,12 +137,25 @@ pub fn tables(which: ApuTables) -> Tables {
             dmc_rates: &DMC_RATES,
             steps_4: &STEPS_4,
             steps_5: &STEPS_5,
+            tonal_noise: true,
+            frame_reset: true,
         },
         ApuTables::Pal => Tables {
             noise_periods: &PAL_NOISE_PERIODS,
             dmc_rates: &PAL_DMC_RATES,
             steps_4: &PAL_STEPS_4,
             steps_5: &PAL_STEPS_5,
+            tonal_noise: true,
+            frame_reset: true,
+        },
+        // The letterless RP2A03 ([`RP2A03_NOISE_PERIODS`]).
+        ApuTables::Rp2a03 => Tables {
+            noise_periods: &RP2A03_NOISE_PERIODS,
+            dmc_rates: &DMC_RATES,
+            steps_4: &STEPS_4,
+            steps_5: &STEPS_5,
+            tonal_noise: false,
+            frame_reset: false,
         },
     }
 }
@@ -441,6 +467,10 @@ impl Default for Triangle {
 pub struct Noise {
     #[serde(skip, default = "crate::state::live_noise_periods")]
     pub periods: &'static [u16; 16],
+    /// $400E's tonal mode exists (configuration: taken from the live tables
+    /// when a state loads).
+    #[serde(skip, default = "crate::state::live_tonal_noise")]
+    pub tonal: bool,
     pub envelope: Envelope,
     pub length: LengthCounter,
     /// The feedback tap: 1, or 6 in periodic mode.
@@ -452,9 +482,10 @@ pub struct Noise {
 }
 
 impl Noise {
-    pub fn new(periods: &'static [u16; 16]) -> Noise {
+    pub fn new(periods: &'static [u16; 16], tonal: bool) -> Noise {
         Noise {
             periods,
+            tonal,
             envelope: Envelope::default(),
             length: LengthCounter::default(),
             mode_bit: 1,
@@ -472,7 +503,11 @@ impl Noise {
                 self.length.write_halt(value & 0x20 != 0);
             }
             2 => {
-                self.mode_bit = if value & 0x80 != 0 { 6 } else { 1 };
+                self.mode_bit = if value & 0x80 != 0 && self.tonal {
+                    6
+                } else {
+                    1
+                };
                 self.period = self.periods[(value & 0x0F) as usize] as i32 / 2 - 1;
             }
             3 => {
@@ -686,7 +721,7 @@ impl Apu {
             pulse1: Pulse::new(true),
             pulse2: Pulse::new(false),
             triangle: Triangle::new(),
-            noise: Noise::new(tables.noise_periods),
+            noise: Noise::new(tables.noise_periods, tables.tonal_noise),
             dmc: Dmc::new(tables.dmc_rates),
             frame_irq: false,
             frame_irq_clear: false,
@@ -759,8 +794,10 @@ impl Apu {
     pub fn reset(&mut self) {
         self.write(0x4015, 0);
         self.frame_irq = false;
-        let last = self.last_frame_write;
-        self.write(0x4017, last);
+        if self.tables.frame_reset {
+            let last = self.last_frame_write;
+            self.write(0x4017, last);
+        }
     }
 
     // -- the clock ---------------------------------------------------------

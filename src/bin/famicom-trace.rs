@@ -2,9 +2,14 @@
 //! The lockstep gate's Rust side: the same lines as scripts/famicom_trace.py
 //! writes for the reference (see there for the format).
 //!
-//!     famicom-trace ROM --slices N [--machine KEY] [--input FILE] [--device N]
-//!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk]
-//!                   [--host FILE [--host-device N]] --out FILE
+//!     famicom-trace ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
+//!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
+//!                   [--host FILE [--host-device N]] [--dual] --out FILE
+//!
+//! `--machine auto`, `--rgb`, `--dual` and the Vs. mainboard's input lines
+//! (`coin`, `dip`, `service`) are the reference tracer's (see there).
+//! `--png FILE` (this side only, not in the lines) writes the last slice's
+//! picture in the machine's colours, to look at what a case reached.
 //!
 //! `--host FILE`: [`famicom_rust::host`] drives the console as the reference
 //! tracer's `--host` drives it through the reference's window (FILE's format
@@ -19,10 +24,13 @@
 //! [`Plugged`]) and [`drive`] sets FIELD as the reference's `drive` does.
 
 use famicom_rust::board::Board;
+use famicom_rust::dual::VsDualSystem;
 use famicom_rust::fds_auto::AutoDisk;
 use famicom_rust::host::{self, Gamepad, HostInput};
 use famicom_rust::joypad::StandardController;
 use famicom_rust::peripherals::*;
+use famicom_rust::video::{machine_palette, to_rgb, write_png};
+use famicom_rust::vs::{VsStick, VsZapper};
 use famicom_rust::{Machine, System};
 use std::any::Any;
 use std::collections::HashMap;
@@ -162,6 +170,9 @@ fn keys(values: &[&str]) -> std::collections::HashSet<String> {
 /// `set PATH FIELD VALUE...` on the object `resolve` found, as the reference
 /// tracer's `drive` does with setattr or a method call; `time` is `ppu.time`.
 fn drive(target: &mut dyn Any, field: &str, values: &[&str], time: i64) {
+    if let Some(gun) = target.downcast_mut::<VsZapper>() {
+        return drive(&mut gun.zapper, field, values, time);
+    }
     let v = |i: usize| values[i];
     let only = |name: &str| assert_eq!(field, name, "cannot set {field}");
     if let Some(d) = target.downcast_mut::<StandardController>() {
@@ -334,6 +345,160 @@ fn host_step(input: &mut HostInput, lines: &[Vec<String>]) {
     }
 }
 
+/// The Vs. mainboard's input lines (the reference tracer's `VS_EVENTS`).
+const VS_EVENTS: [&str; 3] = ["coin", "dip", "service"];
+
+/// A mainboard line of `--input` (the reference tracer's `vs_event`).
+fn vs_event(system: &mut System, what: &str, value: &str) {
+    match what {
+        "coin" => system.insert_coin(int(value) as usize).unwrap(),
+        "dip" => system.board().vs.as_mut().unwrap().dip = u8::from_str_radix(value, 16).unwrap(),
+        _ => system.board().vs.as_mut().unwrap().service = value == "1",
+    }
+}
+
+/// A standard pad's (or a Vs. stick's) buttons.
+fn set_buttons(board: &mut Board, pad: usize, buttons: u8) {
+    let device = board.pads[pad].as_any_mut();
+    if let Some(pad) = device.downcast_mut::<StandardController>() {
+        pad.buttons = buttons;
+    } else if let Some(stick) = device.downcast_mut::<VsStick>() {
+        stick.buttons = buttons;
+    }
+}
+
+fn crc_u64(log: &[u64]) -> u32 {
+    let mut hasher = crc32fast::Hasher::new();
+    for packed in log {
+        hasher.update(&packed.to_le_bytes());
+    }
+    hasher.finalize()
+}
+
+/// One side's part of a line, from `cyc` to the sound (`--rgb`: and its
+/// colours): the reference tracer's `fields`.
+fn fields(system: &System, samples: &[f64], palette: Option<&[[u8; 3]]>) -> String {
+    let board = &system.cpu.bus;
+    let log = board.bus_log.as_ref().unwrap();
+    let bus = crc_u64(log);
+    let mut bytes = Vec::with_capacity(board.ppu.picture.len() * 2);
+    for value in &board.ppu.picture {
+        bytes.extend_from_slice(&value.to_le_bytes());
+    }
+    let pic = crc(&bytes);
+    bytes.clear();
+    for sample in samples {
+        bytes.extend_from_slice(&sample.to_le_bytes());
+    }
+    let snd = crc(&bytes);
+    let cpu = &system.cpu;
+    let ppu = &board.ppu;
+    let mut text = format!(
+        "cyc {} ins {} pc {:04X} a {:02X} x {:02X} y {:02X} s {:02X} p {:02X} \
+         bus {bus:08X} {} pic {pic:08X} v {:04X} t {:04X} st {:02X} snd {snd:08X} {}",
+        board.cycles(),
+        system.instructions,
+        cpu.pc,
+        cpu.a,
+        cpu.x,
+        cpu.y,
+        cpu.s,
+        cpu.p,
+        log.len(),
+        ppu.v,
+        ppu.t,
+        ppu.status,
+        samples.len()
+    );
+    if let Some(palette) = palette {
+        text += &format!(" rgb {:08X}", crc(&to_rgb(&ppu.picture, palette)));
+    }
+    text
+}
+
+type Events = HashMap<u64, Vec<(String, usize, String)>>;
+
+/// `--dual`: both sides of a Vs. DualSystem, a slice at a time (the reference
+/// tracer's `run_dual`).
+#[allow(clippy::too_many_arguments)]
+fn run_dual(
+    rom: &std::path::Path,
+    slices: u64,
+    inputs: &HashMap<u64, Vec<(usize, u8)>>,
+    events: &Events,
+    resets: &[u64],
+    detail: Option<u64>,
+    rgb: bool,
+    out: &str,
+    png: Option<String>,
+) {
+    let mut dual = match VsDualSystem::from_path(rom) {
+        Ok(dual) => dual,
+        Err(e) => {
+            eprintln!("{e}");
+            std::process::exit(2);
+        }
+    };
+    for side in 0..2 {
+        dual.side(side).board().bus_log = Some(Vec::with_capacity(40_000));
+    }
+    let palettes: Vec<Option<Vec<[u8; 3]>>> = (0..2)
+        .map(|side| {
+            rgb.then(|| machine_palette(&dual.side(side).cpu.bus.machine.timing, None).unwrap())
+        })
+        .collect();
+    let mut out = std::io::BufWriter::new(std::fs::File::create(out).unwrap());
+    for frame in 0..slices {
+        for &(pad, buttons) in inputs.get(&frame).into_iter().flatten() {
+            set_buttons(dual.side(pad / 2).board(), pad % 2, buttons);
+        }
+        for (what, side, value) in events.get(&frame).into_iter().flatten() {
+            vs_event(dual.side(*side), what, value);
+        }
+        if resets.contains(&frame) {
+            dual.reset();
+        }
+        for side in 0..2 {
+            dual.side(side).board().bus_log.as_mut().unwrap().clear();
+        }
+        dual.run_frames(1);
+        let mut line = format!("{frame} wd {}", dual.watchdog_resets);
+        for (side, name) in ["A", "B"].iter().enumerate() {
+            let samples = dual.side(side).take_samples();
+            let system = dual.side(side);
+            line += &format!(
+                " {name} {}",
+                fields(system, &samples, palettes[side].as_deref())
+            );
+        }
+        writeln!(out, "{line}").unwrap();
+        if detail == Some(frame) {
+            for (side, name) in ["A", "B"].iter().enumerate() {
+                for &packed in dual.side(side).cpu.bus.bus_log.as_ref().unwrap() {
+                    let t = packed >> 25;
+                    let rest = packed & 0x1FF_FFFF;
+                    let kind = if rest >> 24 != 0 { "W" } else { "R" };
+                    writeln!(
+                        out,
+                        "  {name} {t} {kind} {:04X} {:02X}",
+                        (rest >> 8) & 0xFFFF,
+                        rest & 0xFF
+                    )
+                    .unwrap();
+                }
+            }
+        }
+    }
+    if let Some(png) = png {
+        for (side, name) in ["A", "B"].iter().enumerate() {
+            let system = dual.side(side);
+            let palette = machine_palette(&system.cpu.bus.ppu.timing, None).unwrap();
+            let rgb = to_rgb(&system.cpu.bus.ppu.picture, &palette);
+            write_png(&PathBuf::from(format!("{png}.{name}.png")), &rgb, 256, 240).unwrap();
+        }
+    }
+}
+
 fn main() {
     let mut args = std::env::args().skip(1);
     let mut rom = None;
@@ -347,6 +512,9 @@ fn main() {
     let mut auto_disk = false;
     let mut host_file = None;
     let mut host_device = None;
+    let mut rgb = false;
+    let mut dual = false;
+    let mut png: Option<String> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--slices" => slices = args.next().unwrap().parse().unwrap(),
@@ -359,19 +527,30 @@ fn main() {
             "--auto-disk" => auto_disk = true,
             "--host" => host_file = args.next(),
             "--host-device" => host_device = args.next(),
+            "--rgb" => rgb = true,
+            "--dual" => dual = true,
+            "--png" => png = args.next(),
             _ => rom = Some(arg),
         }
     }
     let rom = PathBuf::from(rom.expect("ROM"));
     let mut inputs: HashMap<u64, Vec<(usize, u8)>> = HashMap::new();
     let mut sets: HashMap<u64, Vec<Vec<String>>> = HashMap::new();
+    let mut events: Events = HashMap::new();
     if let Some(path) = input {
         for text in std::fs::read_to_string(path).unwrap().lines() {
             let parts: Vec<&str> = text.split_whitespace().collect();
             if text.starts_with('#') {
                 continue;
             }
-            if parts.len() == 3 {
+            if parts.len() >= 3 && VS_EVENTS.contains(&parts[1]) {
+                let side = if dual { parts[2].parse().unwrap() } else { 0 };
+                events.entry(parts[0].parse().unwrap()).or_default().push((
+                    parts[1].to_string(),
+                    side,
+                    parts[parts.len() - 1].to_string(),
+                ));
+            } else if parts.len() == 3 {
                 inputs.entry(parts[0].parse().unwrap()).or_default().push((
                     parts[1].parse().unwrap(),
                     u8::from_str_radix(parts[2], 16).unwrap(),
@@ -383,8 +562,26 @@ fn main() {
             }
         }
     }
-    let machine = Machine::by_key(&machine).expect("machine");
-    let mut system = match System::from_path(&rom, machine) {
+    if dual {
+        let out = out.expect("--out");
+        return run_dual(
+            &rom, slices, &inputs, &events, &resets, detail, rgb, &out, png,
+        );
+    }
+    let data =
+        match famicom_rust::cartridge::read_rom_file(&rom, famicom_rust::cartridge::ROM_SUFFIXES) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("{e}");
+                std::process::exit(2);
+            }
+        };
+    let machine = if machine == "auto" {
+        System::machine_for(&data).expect("machine")
+    } else {
+        Machine::by_key(&machine).expect("machine")
+    };
+    let mut system = match System::from_rom(&data, machine, None) {
         Ok(system) => system,
         Err(e) => {
             eprintln!("{e}");
@@ -429,10 +626,7 @@ fn main() {
     for frame in 0..slices {
         if let Some(list) = inputs.get(&frame) {
             for &(pad, buttons) in list {
-                let device = system.board().pads[pad].as_any_mut();
-                if let Some(pad) = device.downcast_mut::<StandardController>() {
-                    pad.buttons = buttons;
-                }
+                set_buttons(system.board(), pad, buttons);
             }
         }
         for line in sets.get(&frame).into_iter().flatten() {
@@ -440,6 +634,9 @@ fn main() {
             let time = system.cpu.bus.ppu.time;
             let target = resolve(&mut system.cpu.bus, &mut plugged, &line[0]);
             drive(target, &line[1], &values, time);
+        }
+        for (what, _side, value) in events.get(&frame).into_iter().flatten() {
+            vs_event(&mut system, what, value);
         }
         let mut summary = None;
         if let Some(script) = &host_script {
@@ -512,6 +709,15 @@ fn main() {
         if let Some(summary) = &summary {
             write!(out, " host {summary}").unwrap();
         }
+        if rgb {
+            let palette = machine_palette(&board.ppu.timing, None).unwrap();
+            write!(
+                out,
+                " rgb {:08X}",
+                crc(&to_rgb(&board.ppu.picture, &palette))
+            )
+            .unwrap();
+        }
         writeln!(out).unwrap();
         if detail == Some(frame) {
             for &packed in log {
@@ -527,5 +733,16 @@ fn main() {
                 .unwrap();
             }
         }
+    }
+    if let Some(png) = png {
+        let board = &system.cpu.bus;
+        let palette = machine_palette(&board.ppu.timing, None).unwrap();
+        write_png(
+            &PathBuf::from(png),
+            &to_rgb(&board.ppu.picture, &palette),
+            256,
+            240,
+        )
+        .unwrap();
     }
 }
