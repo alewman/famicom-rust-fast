@@ -4,10 +4,13 @@
 //!
 //!     famicom-trace ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
 //!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
-//!                   [--host FILE [--host-device N]] [--dual] --out FILE
+//!                   [--host FILE [--host-device N]] [--dual] [--pc10 [--bios NAME]]
+//!                   --out FILE
 //!
 //! `--machine auto`, `--rgb`, `--dual` and the Vs. mainboard's input lines
-//! (`coin`, `dip`, `service`) are the reference tracer's (see there).
+//! (`coin`, `dip`, `service`) are the reference tracer's (see there), and so are
+//! `--pc10` (a PlayChoice-10 cabinet with MAME's BIOS, [`run_pc10`]) and its
+//! input lines (`coin`, `button`, `dip`, `aim`, `trigger`).
 //! `--png FILE` (this side only, not in the lines) writes the last slice's
 //! picture in the machine's colours, to look at what a case reached.
 //!
@@ -499,6 +502,213 @@ fn run_dual(
     }
 }
 
+const PC10_EVENTS: [&str; 5] = ["coin", "button", "dip", "aim", "trigger"];
+
+/// A Z80 state field as the reference tracer writes it: hex, booleans 0/1.
+fn z80_state(state: &z80_rust::CpuState) -> String {
+    let b = |v: bool| (v as u8).to_string();
+    let vector = state
+        .maskable_interrupt_vector
+        .map_or("-".to_string(), |v| format!("{v:X}"));
+    [
+        format!("{:X}", state.a),
+        format!("{:X}", state.f),
+        format!("{:X}", state.b),
+        format!("{:X}", state.c),
+        format!("{:X}", state.d),
+        format!("{:X}", state.e),
+        format!("{:X}", state.h),
+        format!("{:X}", state.l),
+        format!("{:X}", state.ix),
+        format!("{:X}", state.iy),
+        format!("{:X}", state.sp),
+        format!("{:X}", state.pc),
+        format!("{:X}", state.wz),
+        format!("{:X}", state.i),
+        format!("{:X}", state.r),
+        b(state.iff1),
+        b(state.iff2),
+        format!("{:X}", state.im),
+        format!("{:X}", state.af_alt),
+        format!("{:X}", state.bc_alt),
+        format!("{:X}", state.de_alt),
+        format!("{:X}", state.hl_alt),
+        format!("{:X}", state.q),
+        b(state.halted),
+        format!("{:X}", state.ei_delay),
+        b(state.reset_pending),
+        vector,
+        b(state.non_maskable_interrupt_pending),
+    ]
+    .join(" ")
+}
+
+/// `--pc10`: a PlayChoice-10 cabinet, a slice at a time (the reference
+/// tracer's `run_pc10`).
+#[allow(clippy::too_many_arguments)]
+fn run_pc10(
+    rom: &std::path::Path,
+    bios: &str,
+    slices: u64,
+    inputs: &HashMap<u64, Vec<(usize, u8)>>,
+    events: &HashMap<u64, Vec<Vec<String>>>,
+    detail: Option<u64>,
+    rgb: bool,
+    out: &str,
+    png: Option<String>,
+) {
+    use famicom_rust::playchoice::{PlayChoiceGun, PlayChoicePad};
+    use famicom_rust::supervisor::{self as sv, PlayChoice};
+    let data = famicom_rust::cartridge::read_rom_file(rom, famicom_rust::cartridge::ROM_SUFFIXES)
+        .unwrap_or_else(|e| {
+            eprintln!("{e}");
+            std::process::exit(2);
+        });
+    let bios = sv::load_bios(bios, None).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(2);
+    });
+    let mut cabinet = PlayChoice::from_rom(&data, Some(bios), None).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(2);
+    });
+    cabinet.supervisor.cpu.bus.bus_log = Some(Vec::with_capacity(100_000));
+    cabinet.game.board().bus_log = Some(Vec::with_capacity(40_000));
+    let palette = rgb.then(|| machine_palette(&cabinet.game.cpu.bus.machine.timing, None).unwrap());
+    let mut out = std::io::BufWriter::new(std::fs::File::create(out).unwrap());
+    for frame in 0..slices {
+        for &(pad, held) in inputs.get(&frame).into_iter().flatten() {
+            let device = cabinet.game.board().pads[pad].as_any_mut();
+            if let Some(gun) = device.downcast_mut::<PlayChoiceGun>() {
+                gun.pad.buttons = held;
+            } else if let Some(pad) = device.downcast_mut::<PlayChoicePad>() {
+                pad.buttons = held;
+            }
+        }
+        for event in events.get(&frame).into_iter().flatten() {
+            let rest = &event[1..];
+            fn gun(cabinet: &mut PlayChoice) -> &mut PlayChoiceGun {
+                cabinet
+                    .game
+                    .board()
+                    .pad_as::<PlayChoiceGun>(1)
+                    .unwrap_or_else(|| {
+                        eprintln!("--pc10: a gun event on a game without the gun");
+                        std::process::exit(2);
+                    })
+            }
+            match event[0].as_str() {
+                "coin" => cabinet.insert_coin(rest[0].parse().unwrap()),
+                "button" => {
+                    let bit = match rest[0].as_str() {
+                        "CHANNEL" => sv::CHANNEL,
+                        "ENTER" => sv::ENTER,
+                        "RESET" => sv::RESET,
+                        "SERVICE" => sv::SERVICE,
+                        other => panic!("no button {other}"),
+                    };
+                    let bus = &mut cabinet.supervisor.cpu.bus;
+                    if rest[1] == "1" {
+                        bus.buttons |= bit;
+                    } else {
+                        bus.buttons &= !bit;
+                    }
+                }
+                "dip" => {
+                    cabinet.supervisor.cpu.bus.dip = [
+                        u8::from_str_radix(&rest[0], 16).unwrap(),
+                        u8::from_str_radix(&rest[1], 16).unwrap(),
+                    ]
+                }
+                "aim" => {
+                    gun(&mut cabinet).zapper.aim = if rest[0] == "none" {
+                        None
+                    } else {
+                        Some((int(&rest[0]), int(&rest[1])))
+                    };
+                }
+                _ => {
+                    let time = cabinet.game.cpu.bus.ppu.time;
+                    gun(&mut cabinet).zapper.set_trigger(rest[0] == "1", time);
+                }
+            }
+        }
+        cabinet.supervisor.cpu.bus.bus_log.as_mut().unwrap().clear();
+        cabinet.game.board().bus_log.as_mut().unwrap().clear();
+        cabinet.run_frames(1);
+        let sup = &mut cabinet.supervisor;
+        let regs = z80_state(&sup.cpu.capture_state());
+        let zlog = sup.cpu.bus.bus_log.as_ref().unwrap();
+        let (zbus, zlen) = (crc_u64(zlog), zlog.len());
+        let bus = &sup.cpu.bus;
+        let lat: String = bus.latch.iter().map(|bit| bit.to_string()).collect();
+        let digits: String = bus.digits.iter().map(|d| format!("{d:X}")).collect();
+        let head = format!(
+            "{frame} z80 {regs} t {} ins {} zbus {zbus:08X} {zlen} lat {lat} int {} dg {digits} \
+             bl {} wd {} lines {}{}{}{}",
+            bus.t,
+            sup.instructions,
+            bus.int_detect as u8,
+            sup.blanks,
+            sup.watchdog_resets,
+            cabinet.in_reset as u8,
+            cabinet.stopped as u8,
+            cabinet.nmi as u8,
+            cabinet.monitor_on_game as u8,
+        );
+        let screen = crc(&cabinet.supervisor.picture());
+        let samples = cabinet.take_samples();
+        let game = fields(&cabinet.game, &samples, palette.as_deref());
+        let mut bytes = Vec::with_capacity(256 * 240 * 2);
+        for value in cabinet.game_picture() {
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        writeln!(
+            out,
+            "{head} scr {screen:08X} G {game} gpic {:08X}",
+            crc(&bytes)
+        )
+        .unwrap();
+        if detail == Some(frame) {
+            for &packed in cabinet.supervisor.cpu.bus.bus_log.as_ref().unwrap() {
+                let t = packed >> 26;
+                let kind = (packed >> 24) & 3;
+                writeln!(
+                    out,
+                    "  Z {t} {} {:04X} {:02X}",
+                    &"RWIO"[kind as usize..kind as usize + 1],
+                    (packed >> 8) & 0xFFFF,
+                    packed & 0xFF
+                )
+                .unwrap();
+            }
+            for &packed in cabinet.game.cpu.bus.bus_log.as_ref().unwrap() {
+                let t = packed >> 25;
+                let rest = packed & 0x1FF_FFFF;
+                let kind = if rest >> 24 != 0 { "W" } else { "R" };
+                writeln!(
+                    out,
+                    "  G {t} {kind} {:04X} {:02X}",
+                    (rest >> 8) & 0xFFFF,
+                    rest & 0xFF
+                )
+                .unwrap();
+            }
+        }
+    }
+    if let Some(png) = png {
+        write_png(
+            &PathBuf::from(format!("{png}.game.png")),
+            &cabinet.game_rgb(),
+            256,
+            240,
+        )
+        .unwrap();
+        let screen = cabinet.supervisor.picture();
+        write_png(&PathBuf::from(format!("{png}.menu.png")), &screen, 256, 240).unwrap();
+    }
+}
+
 fn main() {
     let mut args = std::env::args().skip(1);
     let mut rom = None;
@@ -514,6 +724,8 @@ fn main() {
     let mut host_device = None;
     let mut rgb = false;
     let mut dual = false;
+    let mut pc10 = false;
+    let mut bios = "dual".to_string();
     let mut png: Option<String> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -529,6 +741,8 @@ fn main() {
             "--host-device" => host_device = args.next(),
             "--rgb" => rgb = true,
             "--dual" => dual = true,
+            "--pc10" => pc10 = true,
+            "--bios" => bios = args.next().unwrap(),
             "--png" => png = args.next(),
             _ => rom = Some(arg),
         }
@@ -537,13 +751,19 @@ fn main() {
     let mut inputs: HashMap<u64, Vec<(usize, u8)>> = HashMap::new();
     let mut sets: HashMap<u64, Vec<Vec<String>>> = HashMap::new();
     let mut events: Events = HashMap::new();
+    let mut pc10_events: HashMap<u64, Vec<Vec<String>>> = HashMap::new();
     if let Some(path) = input {
         for text in std::fs::read_to_string(path).unwrap().lines() {
             let parts: Vec<&str> = text.split_whitespace().collect();
             if text.starts_with('#') {
                 continue;
             }
-            if parts.len() >= 3 && VS_EVENTS.contains(&parts[1]) {
+            if pc10 && parts.len() >= 3 && PC10_EVENTS.contains(&parts[1]) {
+                pc10_events
+                    .entry(parts[0].parse().unwrap())
+                    .or_default()
+                    .push(parts[1..].iter().map(|p| p.to_string()).collect());
+            } else if parts.len() >= 3 && VS_EVENTS.contains(&parts[1]) {
                 let side = if dual { parts[2].parse().unwrap() } else { 0 };
                 events.entry(parts[0].parse().unwrap()).or_default().push((
                     parts[1].to_string(),
@@ -561,6 +781,20 @@ fn main() {
                     .push(parts[2..].iter().map(|p| p.to_string()).collect());
             }
         }
+    }
+    if pc10 {
+        let out = out.expect("--out");
+        return run_pc10(
+            &rom,
+            &bios,
+            slices,
+            &inputs,
+            &pc10_events,
+            detail,
+            rgb,
+            &out,
+            png,
+        );
     }
     if dual {
         let out = out.expect("--out");

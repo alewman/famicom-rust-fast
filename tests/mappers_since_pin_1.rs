@@ -77,7 +77,11 @@ fn test_mapper_559_banks_and_nametables() {
     assert_eq!(banks, [5, 23, 13, 31]);
     for slot in 0..8u16 {
         // each bank has two addresses, either sets it
-        cart.cpu_write(0xB000 + slot * 0x800 + (slot & 1) * 0x400, 0x40 + slot as u8, 0);
+        cart.cpu_write(
+            0xB000 + slot * 0x800 + (slot & 1) * 0x400,
+            0x40 + slot as u8,
+            0,
+        );
     }
     let chr: Vec<usize> = cart.b.chr_offsets.iter().map(|o| o / 0x400).collect();
     assert_eq!(chr, (0..8).map(|s| 0x40 + s).collect::<Vec<usize>>());
@@ -118,7 +122,7 @@ fn test_mapper_559_counter_steps_once_a_scanline() {
 /// writes to $5800-$5802, and what it then executes at $5800.
 #[allow(clippy::type_complexity)]
 const GAME_208_JUMPS: &[(u8, &[(u16, u8)], &[(u16, u8)])] = &[
-    (0x8E, &[(0, 0x54)], &[(0, 0x4C)]),                     // the opcode: JMP
+    (0x8E, &[(0, 0x54)], &[(0, 0x4C)]), // the opcode: JMP
     (0xB3, &[(1, 0x6D), (2, 0x98)], &[(1, 0x34), (2, 0xC1)]), // JMP $C134
     (0x09, &[(1, 0x44), (2, 0xAD)], &[(1, 0x0D), (2, 0xE4)]), // JMP $E40D
     (0x62, &[(1, 0x55), (2, 0xB4)], &[(1, 0x15), (2, 0xF4)]), // JMP $F415

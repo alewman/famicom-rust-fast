@@ -2,7 +2,7 @@
 //! A Rust Famicom/NES board transcribed from
 //! [famicom-python](https://github.com/alewman/famicom-python) at `fe89099`
 //! (the old tag `famicom-rust-pin-1`) and proven equivalent, on the gate's
-//! cases, to famicom-python `b3dbf1b` by a lockstep gate (scripts/lockstep.py).
+//! cases, to famicom-python `c52a6d3` by a lockstep gate (scripts/lockstep.py).
 //!
 //! Each module is the transcription of one `famicom_python/*.py` module, with
 //! the same names and the hardware comments' sources carried over (the
@@ -23,8 +23,10 @@ pub mod host;
 pub mod joypad;
 pub mod machine;
 pub mod peripherals;
+pub mod playchoice;
 pub mod ppu;
 pub mod state;
+pub mod supervisor;
 pub mod system;
 pub mod testrom;
 pub mod video;

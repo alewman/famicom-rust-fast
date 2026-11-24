@@ -1,0 +1,21 @@
+0 dip 40 05
+720 coin 0
+780 button ENTER 1
+786 button ENTER 0
+850 0 08
+856 0 00
+900 aim 128 120
+900 trigger 1
+904 trigger 0
+960 aim 40 60
+960 trigger 1
+964 trigger 0
+1020 aim 200 180
+1020 trigger 1
+1024 trigger 0
+1060 aim 128 40
+1060 trigger 1
+1064 trigger 0
+1100 aim none
+1110 trigger 1
+1114 trigger 0

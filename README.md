@@ -3,8 +3,8 @@
 A speed fork of [famicom-rust](https://github.com/alewman/famicom-rust), the
 Rust Famicom / NES board, held in lockstep with it: every change must leave
 this board's traces identical to famicom-rust's (which are identical to
-famicom-python's at `b3dbf1b`, the reference since 2026-11-23, which replaced
-`e3e1474` and before it the tag `famicom-rust-pin-1`) on every case, and must measure
+famicom-python's at `c52a6d3`, the reference since 2026-11-23, which replaced
+`b3dbf1b`, `e3e1474` and before them the tag `famicom-rust-pin-1`) on every case, and must measure
 faster, or it is not kept. The fork point is famicom-rust `553ead2`; the
 library keeps the name `famicom_rust`, so famicom-libretro switches to it by
 one dependency line.
@@ -59,8 +59,30 @@ checked between instructions); the external /IRQ tested before the
 cartridge's call; and famicom-rust's empty `clock` call on the mainboard
 dropped. After them: x1.006 / x0.998 / x0.997 (12 rounds, 300 frames, the
 five bench games), within an A/A run's noise (1% overall; Super Mario Bros. 3
-on the 64-byte layout x0.976, the one game outside 2%). Not merged because
-famicom-rust does not have it yet: the PlayChoice-10.
+on the 64-byte layout x0.976, the one game outside 2%).
+
+**Merged from famicom-rust on 2026-11-24** (`f2e3840`, `f0e8e22`): the
+PlayChoice-10 (`playchoice.rs`, `supervisor.rs` on z80-rust `7c61e5a`, the
+PlayChoice-10 row, `Board::idle_cycle`, the cabinet's save states), MAME's BSD-3
+notice (`NOTICE.md`), rung 5's table at its cached 600 slices, and the reference at
+famicom-python `c52a6d3` (no traced code changed, so the caches stand). Its gate
+here: `scripts/cases-pc10.tsv` (the 56 images the reference's `pc10_images.py`
+assembles from `$MAME_ROMPATH`, famicom-rust's `external/pc10-images` by default,
+`PC10_IMAGES_DIR`; the BIOS from `MAME_ROMPATH`), 60 of 60 against the reference
+traces copied from famicom-rust (`external/refcache-pc10`), and cabinet save states
+on every image, 56 of 56 (`famicom-pc10-states`). The PlayChoice-10 adds nothing to
+a console's per-cycle path: its pads are the board's ordinary port devices, its
+held-2A03 cycle a function of its own. Yet the carry measured x1.002 / x0.989 /
+x0.998 on the three layouts (default, 32- and 64-byte block alignment, against
+`eefb681`, 12 rounds of 300 frames on the five bench games; `scripts/ab.sh`, new),
+and x0.985 when the 32-byte layout was run again, where an A/A run gave x1.003.
+`Apu::clock` had one caller, the board's CPU cycle, and `idle_cycle` made it two;
+with `Apu::clock` always inlined and `idle_cycle` cold and out of line: x1.006 /
+x0.995 / x0.996, within an A/A run's noise on every layout (no game below
+x0.989). That the second caller moved the inliner's choice is a hypothesis (the
+assembly was not compared); the two attributes are kept because they measure no
+worse on any layout. The cabinet itself was not made faster: it runs the Z80 and
+the game an instruction at a time, as famicom-rust does.
 
 ## Speed
 
@@ -111,10 +133,10 @@ without a cached trace.
 | rung 1 | nestest against nestest.log | 8,991 lines |
 | rung 2 | lockstep, every NROM test ROM (600 slices) and AccuracyCoin's run-all (3,000), `scripts/cases.tsv`; the probes, famicom-rust's own test ROMs (`probes/*.s`, assembled with cc65's ca65 and ld65 at `CC65_DIR`), `scripts/cases-probes.tsv` (`eval_turn_off` on the NES-001 and on the Vs. RP2C03B) | 200 + 2 cases |
 | rung 5 | lockstep, every board class on dumps (`external/cases-rung5.tsv`), the FDS on three disks (`cases-fds.tsv`), Lagrange Point's VRC7 FM (`cases-lagrange.tsv`, 3,000 slices), the Sunsoft 5B (`scripts/cases-5b.tsv`: rainwarrior's six 5B ROMs, copied under `external/reference/reference/src/nes-audio-tests/build`, and *Gimmick!*), mapper 559 (`scripts/cases-559.tsv`), AutoDisk | 581 + 6 + 1 + 9 + 2 + 3 |
-| rung 6 | lockstep, the machine rows (`scripts/cases-machines.tsv`, the Vs. rows among them), the peripherals (`scripts/cases-peripherals.tsv`), the host input (`scripts/cases-host.tsv`) and the Vs. System (`scripts/cases-vs.tsv`: 43 UniSystem and 22 DualSystem images and a reset, 900 slices with coins, DIP switches, the panel, the Vs. Zapper, `--rgb`) | 33 + 54 + 36 + 66 |
+| rung 6 | lockstep, the machine rows (`scripts/cases-machines.tsv`, the Vs. rows among them), the peripherals (`scripts/cases-peripherals.tsv`), the host input (`scripts/cases-host.tsv`), the Vs. System (`scripts/cases-vs.tsv`: 43 UniSystem and 22 DualSystem images and a reset, 900 slices with coins, DIP switches, the panel, the Vs. Zapper, `--rgb`) and the PlayChoice-10 (`scripts/cases-pc10.tsv`: 56 images in the cabinet, 1,320 slices, and four more cases; `PC10_IMAGES_DIR` and the BIOS in `MAME_ROMPATH`) | 33 + 54 + 36 + 66 + 60 |
 | rung 3 | the reference's test ROM tables, outcome for outcome (`famicom-testrom`, `famicom-testrom-compare`) | 197 |
 | rung 4 | AccuracyCoin: 147 of 147 on the reference's 126,984,584 CPU cycles and 4,264 frames | 147 |
-| save states | `famicom-state-roundtrip`, one dump of every board class (`external/state-dumps.txt`); the 5B on the Famicom (*Gimmick!*, three 5B ROMs) and 559 on the Dendy; every Vs. UniSystem image, saved with a coin's contact closed (`scripts/inputs/vs-state.txt`) | 363 + 5 + 43 |
+| save states | `famicom-state-roundtrip`, one dump of every board class (`external/state-dumps.txt`); the 5B on the Famicom (*Gimmick!*, three 5B ROMs) and 559 on the Dendy; every Vs. UniSystem image, saved with a coin's contact closed (`scripts/inputs/vs-state.txt`); `famicom-pc10-states`, every PlayChoice-10 image in the cabinet, saved mid-game | 363 + 5 + 43 + 56 |
 
 `famicom-lockstep` is `scripts/lockstep.py --reference-cache` without the
 reference: it runs `famicom-trace` on each case and compares the trace with

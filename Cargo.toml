@@ -23,6 +23,9 @@ ym2413-rust = { package = "ym2413-rust", git = "https://github.com/alewman/ym241
 # The Sunsoft 5B's sound chip (mapper 69): ay8910-rust, a line-by-line transcription of
 # ay8910-python a3bb485, whose src/ is e9420aa's (the reference's pin) plus SPDX lines.
 ay8910-rust = { package = "ay8910-rust", git = "https://github.com/alewman/ay8910-rust", rev = "9b670a73bd3858364a6fe08a25a3a52c9ca1dc19", features = ["serde"] }
+# The PlayChoice-10's supervisor (supervisor.rs): z80-rust 7c61e5a, the transcription of
+# z80-python b59c80b, which the reference pins.
+z80-rust = { git = "https://github.com/alewman/z80-rust", rev = "7c61e5ae3c03b674089c2e711244516d2f6e6471" }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 crc32fast = "1"
 sha1 = "0.10"

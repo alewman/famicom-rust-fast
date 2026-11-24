@@ -13,7 +13,8 @@ writes the same lines; ``scripts/lockstep.py`` compares them.
 
     famicom_trace.py ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
                      [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
-                     [--host FILE [--host-device N]] [--dual] --out FILE
+                     [--host FILE [--host-device N]] [--dual] [--pc10 [--bios NAME]]
+                     --out FILE
 
 ``--machine auto``: ``System.machine_for`` (a Vs. game gets its Vs. row).
 ``--rgb``: each line also ends with ``rgb`` and a CRC of the picture in the
@@ -24,6 +25,26 @@ one ``run_frames(1)``; the line is the slice, ``wd`` and the watchdog's resets, 
 ``A`` and the primary side's fields, ``B`` and the secondary's (each as a single
 system's line has them, from ``cyc`` to the sound). Input pads 0 and 1 are the
 primary side's, 2 and 3 the secondary's.
+
+``--pc10``: a PlayChoice-10 image in the cabinet (``supervisor.PlayChoice``) with
+MAME's ``playch10`` BIOS (``--bios``: ``dual``, the default, or ``single``; found
+through ``MAME_ROMPATH`` or ``FAMICOM_PC10_BIOS``), each slice one ``run_frames(1)``
+of the game's PPU. The line is the slice, then ``z80`` and the Z80's
+``capture_state`` field by field (hex; booleans 0/1, an absent vector ``-``), its
+T-states and instructions, a CRC of every access of its buses in the slice (packed
+``t << 26 | kind << 24 | address << 8 | value``, kind 0 memory read, 1 memory write,
+2 port read, 3 port write, ``t`` the T-states at the instruction's start; little-endian
+u64), the latches (``lat``, 16 bits, latch 0 first), INT DETECT, the time digits, the
+blanks and watchdog resets, the cabinet's lines (``in_reset``, ``stopped``, the NMI it
+saw, ``monitor_on_game``) and a CRC of the supervisor's screen (``picture()``, RGB);
+then ``G`` and the game's fields as a single system's line has them (the sound
+being the cabinet's ``take_samples``, silent while /SOUND MASK is low), then ``gpic``
+and a CRC of ``game_picture()`` (9-bit values). The cabinet's events in ``--input``:
+``FRAME coin SLOT``, ``FRAME button NAME 0|1`` (CHANNEL, ENTER, RESET, SERVICE, held
+until released), ``FRAME dip HEX HEX`` (SW1, SW2), ``FRAME aim X Y`` or ``FRAME aim
+none`` and ``FRAME trigger 0|1`` (the gun, plugged as the cabinet plugs it), and pads
+``FRAME PAD BUTTONS`` on the panel's registers (pad 1 of a gun game is the register
+beside the gun).
 
 ``--input``: lines ``FRAME PAD BUTTONS`` (hex), applied before that slice to a
 standard pad (a Vs. stick), and lines ``FRAME set PATH FIELD [VALUE ...]`` that drive the
@@ -51,6 +72,7 @@ the window set (``host_summary``), before the slice ran.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import struct
 import sys
 import zlib
@@ -320,6 +342,123 @@ def run_dual(args, inputs, events) -> int:
     return 0
 
 
+PC10_EVENTS = ("coin", "button", "dip", "aim", "trigger")
+
+
+def crc_u64(values) -> int:
+    packed = array("Q", values)
+    if sys.byteorder != "little":
+        packed.byteswap()
+    return zlib.crc32(packed.tobytes())
+
+
+def run_pc10(args, inputs) -> int:
+    """``--pc10``: a PlayChoice-10 cabinet, a slice at a time."""
+    from famicom_python import supervisor as S
+    from famicom_python.playchoice import PlayChoiceGun
+
+    cabinet = S.PlayChoice.from_rom(read_rom_file(args.rom), S.load_bios(args.bios))
+    sup, game = cabinet.supervisor, cabinet.game
+    board, cpu, ppu = game.board, game.cpu, game.board.ppu
+    z80 = sup.cpu
+    zlog = array("Q")
+    zappend = zlog.append
+
+    def tap(kind, call, port=False):
+        if kind & 1:
+
+            def write(address: int, value: int) -> None:
+                zappend(sup.t << 26 | kind << 24 | address << 8 | value)
+                call(address, value)
+
+            return write
+
+        def read(address: int) -> int:
+            value = call(address)
+            zappend(sup.t << 26 | kind << 24 | address << 8 | value)
+            return value
+
+        return read
+
+    z80.read_byte = tap(0, z80.read_byte)
+    z80.write_byte = tap(1, z80.write_byte)
+    z80.read_port = tap(2, z80.read_port)
+    z80.write_port = tap(3, z80.write_port)
+    log = array("Q")
+
+    def observe(kind: str, address: int, value: int, t: int, append=log.append) -> None:
+        append(t << 25 | (kind == "write") << 24 | address << 8 | value)
+
+    board.bus_observers.append(observe)
+    palette = machine_palette(game.machine.timing) if args.rgb else None
+    buttons = {"CHANNEL": S.CHANNEL, "ENTER": S.ENTER, "RESET": S.RESET, "SERVICE": S.SERVICE}
+
+    def gun():
+        pad = board.pads[1]
+        if not isinstance(pad, PlayChoiceGun):
+            raise SystemExit("--pc10: a gun event on a game without the gun")
+        return pad
+
+    def value(v) -> str:
+        if v is None:
+            return "-"
+        if isinstance(v, bool):
+            return str(int(v))
+        return f"{v:X}"
+
+    with open(args.out, "w") as out:
+        for frame in range(args.slices):
+            for pad, held in inputs.get(frame, ()):
+                target = board.pads[pad]
+                if isinstance(target, PlayChoiceGun):
+                    target = target.pad
+                target.buttons = held
+            for what, *rest in args.pc10_events.get(frame, ()):
+                if what == "coin":
+                    cabinet.insert_coin(int(rest[0]))
+                elif what == "button":
+                    bit = buttons[rest[0]]
+                    if rest[1] == "1":
+                        sup.buttons |= bit
+                    else:
+                        sup.buttons &= ~bit
+                elif what == "dip":
+                    sup.dip = [int(rest[0], 16), int(rest[1], 16)]
+                elif what == "aim":
+                    gun().aim = None if rest[0] == "none" else (int(rest[0]), int(rest[1]))
+                else:
+                    gun().trigger = rest[0] == "1"
+            del zlog[:]
+            del log[:]
+            cabinet.run_frames(1)
+            state = z80.capture_state()
+            regs = " ".join(value(getattr(state, f.name)) for f in dataclasses.fields(state))
+            lat = "".join(str(bit) for bit in sup.latch)
+            screen = zlib.crc32(sup.picture())
+            gpicture = array("H", cabinet.game_picture())
+            if sys.byteorder != "little":
+                gpicture.byteswap()
+            line = (
+                f"{frame} z80 {regs} t {sup.t} ins {sup.instructions} "
+                f"zbus {crc_u64(zlog):08X} {len(zlog)} lat {lat} int {int(sup.int_detect)} "
+                f"dg {''.join(f'{d:X}' for d in sup.digits)} bl {sup.blanks} "
+                f"wd {sup.watchdog_resets} lines {int(cabinet.in_reset)}{int(cabinet.stopped)}"
+                f"{int(cabinet._nmi)}{int(cabinet.monitor_on_game)} scr {screen:08X} "
+                f"G {fields(game, log, cabinet.take_samples(), palette)} "
+                f"gpic {zlib.crc32(gpicture.tobytes()):08X}"
+            )
+            out.write(line + "\n")
+            if frame == args.detail:
+                for packed in zlog:
+                    t, kind = packed >> 26, (packed >> 24) & 3
+                    out.write(f"  Z {t} {'RWIO'[kind]} {(packed >> 8) & 0xFFFF:04X} {packed & 0xFF:02X}\n")
+                for packed in log:
+                    t, rest = packed >> 25, packed & 0x1FFFFFF
+                    kind = "W" if rest >> 24 else "R"
+                    out.write(f"  G {t} {kind} {(rest >> 8) & 0xFFFF:04X} {rest & 0xFF:02X}\n")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("rom")
@@ -334,19 +473,24 @@ def main() -> int:
     parser.add_argument("--host-device")
     parser.add_argument("--rgb", action="store_true")
     parser.add_argument("--dual", action="store_true")
+    parser.add_argument("--pc10", action="store_true")
+    parser.add_argument("--bios", default="dual")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
     inputs: dict[int, list[tuple[int, int]]] = {}
     sets: dict[int, list[list[str]]] = {}
     events: dict[int, list[tuple[str, int, str]]] = {}
+    args.pc10_events = {}
     if args.input:
         with open(args.input) as handle:
             for text in handle:
                 parts = text.split()
                 if text.startswith("#"):
                     continue
-                if len(parts) >= 3 and parts[1] in VS_EVENTS:
+                if args.pc10 and len(parts) >= 3 and parts[1] in PC10_EVENTS:
+                    args.pc10_events.setdefault(int(parts[0]), []).append(parts[1:])
+                elif len(parts) >= 3 and parts[1] in VS_EVENTS:
                     side = int(parts[2]) if args.dual else 0
                     events.setdefault(int(parts[0]), []).append((parts[1], side, parts[-1]))
                 elif len(parts) == 3:
@@ -356,6 +500,8 @@ def main() -> int:
 
     if args.dual:
         return run_dual(args, inputs, events)
+    if args.pc10:
+        return run_pc10(args, inputs)
     frontend = host = None
     if args.host:
         from pathlib import Path

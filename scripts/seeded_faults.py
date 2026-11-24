@@ -102,6 +102,50 @@ FAULTS = {
         "let irq = self.apu.irq || self.ppu.cart.irq();",
     ),
     # The frame counter's quiet run taken from before its first cycle.
+    # The PlayChoice-10 (merged from famicom-rust 2026-11-23): the supervisor's
+    # watchdog, the stop flip-flop, the PROM's inverting buffer, the one-monitor
+    # board's screen flip, the held 2A03's idle cycle, the panel's serial input,
+    # the cabinet's latch queue and its clock interleave.
+    "pc10-watchdog-on-the-seventh-blank": (
+        "supervisor.rs",
+        "pub const WATCHDOG_BLANKS: u32 = 8;",
+        "pub const WATCHDOG_BLANKS: u32 = 7;",
+    ),
+    "pc10-stop-ignores-game-stop": (
+        "supervisor.rs",
+        "self.stopped = self.supervisor.cpu.bus.latch[GAME_STOP] == 0;",
+        "self.stopped = false;",
+    ),
+    "pc10-prom-data-not-inverted": (
+        "supervisor.rs",
+        "value |= (prom.data_out() ^ 1) << 3",
+        "value |= prom.data_out() << 3",
+    ),
+    "pc10-single-monitor-never-flips": (
+        "supervisor.rs",
+        "self.monitor_on_game = !self.monitor_on_game;",
+        "",
+    ),
+    "pc10-held-2a03-stops-the-apu": (
+        "board.rs",
+        "        self.t = t;\n        self.apu.clock();\n        self.ppu.run_to(t);",
+        "        self.t = t;\n        self.ppu.run_to(t);",
+    ),
+    "pc10-panel-shifts-in-zeros": (
+        "playchoice.rs",
+        "self.shift = (self.shift >> 1) | 0x80; // the grounded",
+        "self.shift = self.shift >> 1; // the grounded",
+    ),
+    "pc10-latch-sees-sdcs-late": (
+        "supervisor.rs",
+        "            sdcs: self.latch[SDCS],",
+        "            sdcs: 1,",
+    ),
+    "pc10-z80-steps-on-a-tie-late": (
+        "supervisor.rs",
+        "self.supervisor.cpu.bus.t * 945 <= self.game.cpu.bus.t * 176",
+        "self.supervisor.cpu.bus.t * 945 < self.game.cpu.bus.t * 176",
+    ),
     "apu-quiet-run-without-its-start": (
         "apu.rs",
         "if mode5 == self.mode5 && first <= cycle && cycle < end {",
@@ -122,10 +166,13 @@ ENV = {
     "FAMICOM_REFERENCE": str(EXT / "reference"),
     # The Vs. System's images (famicom-rust's, assembled by the reference's vs_images.py).
     "VS_IMAGES_DIR": str(ROOT.parent / "famicom-rust" / "external" / "vs-images"),
+    "PC10_IMAGES_DIR": str(ROOT.parent / "famicom-rust" / "external" / "pc10-images"),
 }
 TABLES = [
     ("rung 2", ROOT / "scripts" / "cases.tsv", EXT / "refcache"),
     ("rung 2 probes", ROOT / "scripts" / "cases-probes.tsv", EXT / "refcache-probes"),
+    # Early, being quick and the only table that runs the PlayChoice-10's code.
+    ("rung 6 PlayChoice-10", ROOT / "scripts" / "cases-pc10.tsv", EXT / "refcache-pc10"),
     ("rung 5", EXT / "cases-rung5.tsv", EXT / "refcache-mappers"),
     ("rung 5 FDS", EXT / "cases-fds.tsv", EXT / "refcache-mappers"),
     ("rung 5 VRC7", EXT / "cases-lagrange.tsv", EXT / "refcache-mappers"),

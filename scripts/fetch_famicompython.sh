@@ -9,7 +9,10 @@
 # FAMICOM_PYTHON_SOURCE (or the SOURCE argument) names another clone to fetch the pin
 # from, a local one while the pinned commit is not on GitHub yet; the default is GitHub.
 set -euo pipefail
-# b3dbf1b (2026-11-23): famicom-python's main, which repins z80-python to b59c80b by git
+# c52a6d3 (2026-11-23): famicom-python's main, b3dbf1b plus the PlayChoice-10's BIOS
+# found through MAME_ROMPATH and MAME's BSD-3 notice in NOTICE.md (no behaviour changed:
+# comments, SPDX lines and bios_path); the reference the PlayChoice-10 was transcribed
+# from. Before it, b3dbf1b (2026-11-23): famicom-python's main, which repins z80-python to b59c80b by git
 # commit (the PlayChoice-10's supervisor; was the 0.4.0 release, which no Rust Z80
 # transcribes) and ay8910-python to a3bb485 (was e9420aa, whose src/ differs only by
 # SPDX lines; ay8910-rust transcribes a3bb485). Before it, e3e1474, which pinned the
@@ -17,9 +20,9 @@ set -euo pipefail
 # famicom-rust-pin-1 (47d33c1, fe89099 before the 2026-11-21 history rewrite), which
 # pinned the archived ym2413-python 13df60c, a translation of GPL code that this
 # family's MIT work must not reach. No new tag is made while the clean-up settles, so
-# the pin is the commit. Until b3dbf1b is on GitHub, FAMICOM_PYTHON_SOURCE names a
+# the pin is the commit. Until c52a6d3 is on GitHub, FAMICOM_PYTHON_SOURCE names a
 # local clone that has it.
-COMMIT=${FAMICOM_PYTHON_COMMIT:-b3dbf1b1b681bda133b5ff5f5222c0aa193ec2b4}
+COMMIT=${FAMICOM_PYTHON_COMMIT:-c52a6d3f65c64d74528bb80dea5576f292d71d63}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 DEST=${1:-"$ROOT/external/famicom-python"}
 SOURCE=${2:-${FAMICOM_PYTHON_SOURCE:-https://github.com/alewman/famicom-python.git}}

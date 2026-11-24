@@ -1,0 +1,4 @@
+0 dip 40 3F
+1000 coin 1
+1100 button SERVICE 1
+1104 button SERVICE 0

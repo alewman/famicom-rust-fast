@@ -131,6 +131,7 @@ dependencies = [
  "sha1",
  "sixfiveohtwo",
  "ym2413-rust",
+ "z80-rust",
  "zip",
 ]
 
@@ -336,6 +337,15 @@ version = "0.1.0"
 source = "git+https://github.com/alewman/ym2413-rust?rev=94df223e3e5b32d4042f321a834f6214a5ef9692#94df223e3e5b32d4042f321a834f6214a5ef9692"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "z80-rust"
+version = "0.1.0"
+source = "git+https://github.com/alewman/z80-rust?rev=7c61e5ae3c03b674089c2e711244516d2f6e6471#7c61e5ae3c03b674089c2e711244516d2f6e6471"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

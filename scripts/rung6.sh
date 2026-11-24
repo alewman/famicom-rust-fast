@@ -10,7 +10,10 @@
 # (scripts/make_host_inputs.py); then the Vs. System, every image the reference's
 # scripts/vs_images.py assembles from MAME's sets ($VS_IMAGES_DIR, outside the
 # repository), scripts/cases-vs.tsv (scripts/make_vs_cases.py), and save states on
-# every UniSystem image.
+# every UniSystem image; then the PlayChoice-10, every image the reference's
+# scripts/pc10_images.py assembles ($PC10_IMAGES_DIR) in the cabinet with MAME's BIOS
+# (MAME_ROMPATH), scripts/cases-pc10.tsv (scripts/make_pc10_cases.py), and save
+# states on every image, saved mid-game.
 set -uo pipefail
 HERE=$(dirname "$0")
 ROOT=$(cd "$HERE/.." && pwd)
@@ -37,4 +40,19 @@ for e in json.load(open(os.path.join(d, "manifest.json"))):
 else
     echo "VS_IMAGES_DIR unset: the Vs. System's cases not run"
 fi
-exit $((machines || peripherals || host || vs || states))
+pc10=1
+pc10_states=1
+if [ -n "${PC10_IMAGES_DIR:-}" ]; then
+    python3 "$HERE/lockstep.py" --cases "$HERE/cases-pc10.tsv" --jobs "${JOBS:-12}" \
+        --reference-cache "$ROOT/external/refcache-pc10" "$@"
+    pc10=$?
+    mapfile -t roms < <(python3 -c 'import json, os, sys; d = sys.argv[1]
+for e in json.load(open(os.path.join(d, "manifest.json"))): print(os.path.join(d, e["file"]))' "$PC10_IMAGES_DIR")
+    nice "$ROOT/target/release/famicom-pc10-states" --at 900 --to 1000 \
+        --input "$HERE/inputs/pc10/play.txt" "${roms[@]}" | tee "$ROOT/external/states-pc10.log" | grep -v ": identical"
+    pc10_states=${PIPESTATUS[0]}
+    echo "$(grep -c ': identical' "$ROOT/external/states-pc10.log") of ${#roms[@]} PlayChoice-10 images round-trip"
+else
+    echo "PC10_IMAGES_DIR unset: the PlayChoice-10's cases not run"
+fi
+exit $((machines || peripherals || host || vs || states || pc10 || pc10_states))

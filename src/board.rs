@@ -24,6 +24,7 @@ use crate::fds_auto::AutoDisk;
 use crate::joypad::StandardController;
 use crate::machine::Machine;
 use crate::peripherals::{ExpansionDevice, PortDevice};
+use crate::playchoice::PlayChoicePad;
 use crate::ppu::Ppu;
 use crate::vs::{Side, VsMainboard, VsStick};
 use sixfiveohtwo::{Bus, Frame};
@@ -126,6 +127,14 @@ impl Board {
             )));
             pads = [Box::new(VsStick::default()), Box::new(VsStick::default())];
             open_lines = [0, 0];
+        }
+        if machine.playchoice {
+            // The panel's two shift registers (playchoice.rs): player 2 has no
+            // Select or Start.
+            pads = [
+                Box::new(PlayChoicePad::new(true)),
+                Box::new(PlayChoicePad::new(false)),
+            ];
         }
         Board {
             cycle_ticks: timing.cpu_divider,
@@ -245,6 +254,20 @@ impl Board {
             self.pad_oe = -1;
         }
         t
+    }
+
+    /// A cycle's worth of the clock with the 2A03 held in reset: nothing is
+    /// on the bus, the PPU and the APU's clock run on (a PlayChoice-10's game
+    /// under /GAME RES, supervisor.rs).
+    ///
+    /// (Fork: cold and out of line, off the console's per-cycle path.)
+    #[cold]
+    #[inline(never)]
+    pub fn idle_cycle(&mut self) {
+        let t = self.t + self.cycle_ticks;
+        self.t = t;
+        self.apu.clock();
+        self.ppu.run_to(t);
     }
 
     /// M2 falls: the cartridge's cycle count, then /IRQ and /NMI as the CPU samples them.

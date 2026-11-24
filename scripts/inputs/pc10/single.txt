@@ -1,0 +1,14 @@
+0 dip 40 05
+720 coin 0
+780 button ENTER 1
+786 button ENTER 0
+850 0 08
+856 0 00
+910 0 08
+916 0 00
+960 0 01
+960 1 01
+1150 button CHANNEL 1
+1154 button CHANNEL 0
+1200 button RESET 1
+1206 button RESET 0

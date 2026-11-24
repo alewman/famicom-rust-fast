@@ -7,7 +7,7 @@ and picks, for each (mapper, submapper, class) the reference builds, up to
 ``--per`` dumps (licensed ones first, then by name), each run for ``--slices``
 with scripts/inputs/start-mash.txt so games leave their title screens.
 
-    make_mapper_cases.py --mappers 21,22,23 [--per 3] [--slices 900]
+    make_mapper_cases.py --mappers 21,22,23 [--per 3] [--slices 600]
                          [--index FILE] --out FILE
     make_mapper_cases.py --all ...      every mapper in the index
 """
@@ -34,7 +34,7 @@ def main() -> None:
     parser.add_argument("--mappers", default="")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--per", type=int, default=3)
-    parser.add_argument("--slices", type=int, default=900)
+    parser.add_argument("--slices", type=int, default=600)  # rung 5's (rung5.sh)
     parser.add_argument("--index", type=Path, default=ROOT / "external" / "mapper-dumps.tsv")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()

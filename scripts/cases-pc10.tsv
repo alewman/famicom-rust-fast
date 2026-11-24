@@ -1,0 +1,61 @@
+# name	slices	rom	arguments
+pc10-1942	1320	$PC10_IMAGES_DIR/1942.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Balloon_Fight	1320	$PC10_IMAGES_DIR/Balloon Fight.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Baseball_Stars	1320	$PC10_IMAGES_DIR/Baseball Stars.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Baseball	1320	$PC10_IMAGES_DIR/Baseball.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Bases_Loaded	1320	$PC10_IMAGES_DIR/Bases Loaded.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Captain_Skyhawk	1320	$PC10_IMAGES_DIR/Captain Skyhawk.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Castlevania	1320	$PC10_IMAGES_DIR/Castlevania.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Contra	1320	$PC10_IMAGES_DIR/Contra.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Disney_s_Chip_n_Dale_Rescue_Rangers	1320	$PC10_IMAGES_DIR/Disney's Chip 'n Dale꞉ Rescue Rangers.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Double_Dragon	1320	$PC10_IMAGES_DIR/Double Dragon.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Double_Dribble	1320	$PC10_IMAGES_DIR/Double Dribble.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Dr_Mario	1320	$PC10_IMAGES_DIR/Dr. Mario.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Duck_Hunt	1320	$PC10_IMAGES_DIR/Duck Hunt.nes	--pc10 --rgb --input $INPUTS/pc10/gun.txt
+pc10-Excitebike	1320	$PC10_IMAGES_DIR/Excitebike.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Gauntlet	1320	$PC10_IMAGES_DIR/Gauntlet.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Golf	1320	$PC10_IMAGES_DIR/Golf.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Gradius_rev0	1320	$PC10_IMAGES_DIR/Gradius (rev0).nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Gradius_rev1	1320	$PC10_IMAGES_DIR/Gradius (rev1).nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Hogan_s_Alley	1320	$PC10_IMAGES_DIR/Hogan's Alley.nes	--pc10 --rgb --input $INPUTS/pc10/gun.txt
+pc10-Kung_Fu	1320	$PC10_IMAGES_DIR/Kung Fu.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Mario_Bros	1320	$PC10_IMAGES_DIR/Mario Bros..nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Mario_s_Open_Golf	1320	$PC10_IMAGES_DIR/Mario's Open Golf.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Mega_Man_III	1320	$PC10_IMAGES_DIR/Mega Man III.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Metroid	1320	$PC10_IMAGES_DIR/Metroid.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Mike_Tyson_s_Punch_Out	1320	$PC10_IMAGES_DIR/Mike Tyson's Punch-Out!!.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Ninja_Gaiden_II_The_Dark_Sword_of_Chaos	1320	$PC10_IMAGES_DIR/Ninja Gaiden II - The Dark Sword of Chaos.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Ninja_Gaiden_III_The_Ancient_Ship_of_Doom	1320	$PC10_IMAGES_DIR/Ninja Gaiden III - The Ancient Ship of Doom.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Ninja_Gaiden	1320	$PC10_IMAGES_DIR/Ninja Gaiden.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Nintendo_World_Cup	1320	$PC10_IMAGES_DIR/Nintendo World Cup.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Pin_Bot	1320	$PC10_IMAGES_DIR/Pin＊Bot.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Power_Blade	1320	$PC10_IMAGES_DIR/Power Blade.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Pro_Wrestling	1320	$PC10_IMAGES_DIR/Pro Wrestling.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-R_C_Pro_Am	1320	$PC10_IMAGES_DIR/R.C. Pro-Am.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Rad_Racer_2	1320	$PC10_IMAGES_DIR/Rad Racer 2.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Rad_Racer	1320	$PC10_IMAGES_DIR/Rad Racer.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Rockin_Kats	1320	$PC10_IMAGES_DIR/Rockin' Kats.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Rush_n_Attack	1320	$PC10_IMAGES_DIR/Rush'n Attack.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Rygar	1320	$PC10_IMAGES_DIR/Rygar.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Solar_Jetman_Hunt_for_the_Golden_Warpship	1320	$PC10_IMAGES_DIR/Solar Jetman꞉ Hunt for the Golden Warpship.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Super_C	1320	$PC10_IMAGES_DIR/Super C.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Super_Mario_Bros_2	1320	$PC10_IMAGES_DIR/Super Mario Bros. 2.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Super_Mario_Bros_3	1320	$PC10_IMAGES_DIR/Super Mario Bros. 3.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Super_Mario_Bros	1320	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Tecmo_Bowl	1320	$PC10_IMAGES_DIR/Tecmo Bowl.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Teenage_Mutant_Ninja_Turtles_II_The_Arcade_Game	1320	$PC10_IMAGES_DIR/Teenage Mutant Ninja Turtles II꞉ The Arcade Game.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Teenage_Mutant_Ninja_Turtles	1320	$PC10_IMAGES_DIR/Teenage Mutant Ninja Turtles.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Tennis	1320	$PC10_IMAGES_DIR/Tennis.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-The_Addams_Family_Fester_s_Quest	1320	$PC10_IMAGES_DIR/The Addams Family꞉ Fester's Quest.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-The_Goonies	1320	$PC10_IMAGES_DIR/The Goonies.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Tiny_Toon_Adventures	1320	$PC10_IMAGES_DIR/Tiny Toon Adventures.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Track_Field	1320	$PC10_IMAGES_DIR/Track & Field.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Trojan	1320	$PC10_IMAGES_DIR/Trojan.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Volleyball	1320	$PC10_IMAGES_DIR/Volleyball.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Wild_Gunman	1320	$PC10_IMAGES_DIR/Wild Gunman.nes	--pc10 --rgb --input $INPUTS/pc10/gun.txt
+pc10-Yo_Noid	1320	$PC10_IMAGES_DIR/Yo! Noid.nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-Virus_1990_03	1320	$PC10_IMAGES_DIR/Virus (1990-03).nes	--pc10 --rgb --input $INPUTS/pc10/play.txt
+pc10-attract-Super_Mario_Bros	900	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 --rgb --input $INPUTS/pc10/attract.txt
+pc10-single-Super_Mario_Bros	1320	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt
+pc10-single-Duck_Hunt	1320	$PC10_IMAGES_DIR/Duck Hunt.nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt
+pc10-single-Tennis	1320	$PC10_IMAGES_DIR/Tennis.nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt

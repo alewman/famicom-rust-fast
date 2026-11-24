@@ -803,6 +803,14 @@ impl Apu {
     // -- the clock ---------------------------------------------------------
 
     /// One CPU cycle.
+    ///
+    /// (Fork: always inlined. The board's CPU cycle was this function's one
+    /// caller until the PlayChoice-10's `Board::idle_cycle` became a second. The
+    /// merge cost x0.989 and, run again, x0.985 on the 32-byte layout (an A/A run
+    /// there: x1.003); with this and `idle_cycle` cold, x0.995. HYPOTHESIS: a
+    /// second caller cost this function the inliner's one-caller bonus at the hot
+    /// site; the assembly was not compared. README, the PlayChoice-10's merge.)
+    #[inline(always)]
     pub fn clock(&mut self) {
         self.put = !self.put;
         let put = self.put;

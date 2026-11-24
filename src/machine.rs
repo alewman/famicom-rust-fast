@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND BSD-3-Clause
+// The RC2C05-01's identifier ($1B) is MAME's ppu2c0x.cpp (BSD-3-Clause, Ernesto Corvi,
+// Brad Oliver, Fabio Priuli), by way of the reference: notice in NOTICE.md.
 //! The consoles, as data: one board, many machines (`machine.py`).
 //!
 //! Every console is the same board with different chips and quirks, so each
@@ -238,6 +240,10 @@ pub struct Machine {
     /// OUT2 reaches the ROM sockets. "primary" or "secondary" is the side of
     /// the board the CPU sits on ($4016 D7; the reference's C75), None any other console.
     pub vs_side: Option<&'static str>,
+    /// A PlayChoice-10's game board (playchoice.rs): the control panel's two
+    /// 74LS165 shift registers stand where the controller ports are, and a Z80
+    /// supervisor (supervisor.rs) holds the reset, stop and mask lines.
+    pub playchoice: bool,
     pub certified: bool,
 }
 
@@ -278,6 +284,7 @@ impl Machine {
             dmc_late_stop: false,
             famicom_expansion_port: false,
             vs_side: None,
+            playchoice: false,
             certified: true,
         }
     }
@@ -396,6 +403,40 @@ impl Machine {
         }
     }
 
+    /// The PlayChoice-10's game side (Nintendo's PCH1-CPU schematic, 1986, sheets 5
+    /// and 6, pinned by the reference as reference/docs/Playchoice.pdf:
+    /// manufacturer's documentation; MAME's playch10.cpp, BSD-3, emulator-derived).
+    ///
+    /// - The CPU is an RP2A03E (the schematic's 1H; CPU_variants.wiki: "pin 30 is
+    ///   /RDY", which the supervisor uses to stop the game), on the 21.47727 MHz
+    ///   crystal it shares with the PPU. Nothing pinned tells an E's APU from a G's:
+    ///   the tonal noise and the tables are taken as the G's.
+    /// - The PPU is an RP2C03B (3H), "used in ... all PlayChoice games"
+    ///   (PPU_palettes.wiki): the Vs. row's RGB timing, no skipped dot, the 2C03's
+    ///   colours (the reference's C76 for what its core is).
+    /// - /PPU RES and /GAME RES are two outputs of the supervisor's latch, so the
+    ///   PPU has a reset of its own and the NES-001's power-on window after it.
+    /// - UNVERIFIED, taken as the NES-001's: whether a run of back-to-back reads
+    ///   clocks the shift registers once (their clocks are the 2A03E's /INP0 and
+    ///   /INP1), and the audio amplifier's filter (sheet 4, not analysed).
+    pub fn playchoice() -> Machine {
+        Machine {
+            playchoice: true,
+            certified: false,
+            ..Machine::row(
+                "PlayChoice-10",
+                RGB,
+                "RP2A03E",
+                "RP2C03B",
+                true,
+                true,
+                false,
+                false,
+                false,
+            )
+        }
+    }
+
     /// `VS_MACHINES[ppu]`: the UniSystem with the PPU of NES 2.0 "Vs. PPU type"
     /// `ppu`, None for a reserved number.
     pub fn vs_machines(ppu: u8) -> Option<Machine> {
@@ -417,7 +458,7 @@ impl Machine {
         Machine::vs_machines(ppu).unwrap_or_else(Machine::vs_unisystem)
     }
 
-    /// `MACHINES[key]`: the home consoles, `vs`, and `vs-` with the PPU's name
+    /// `MACHINES[key]`: the home consoles, `vs`, `playchoice`, and `vs-` with the PPU's name
     /// in lower case for every Vs. row but the RP2C03B's.
     pub fn by_key(key: &str) -> Option<Machine> {
         Some(match key {
@@ -428,6 +469,7 @@ impl Machine {
             "pal" => Machine::pal_nes(),
             "dendy" => Machine::dendy(),
             "vs" => Machine::vs_unisystem(),
+            "playchoice" => Machine::playchoice(),
             _ => {
                 let chip = key.strip_prefix("vs-")?;
                 let (number, _, _) = VS_PPUS
@@ -448,6 +490,7 @@ impl Machine {
             "pal",
             "dendy",
             "vs",
+            "playchoice",
         ]
         .iter()
         .map(|k| k.to_string())

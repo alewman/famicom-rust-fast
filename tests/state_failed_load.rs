@@ -32,14 +32,17 @@ fn image() -> Vec<u8> {
     ];
     prg[0x6000..0x6000 + program.len()].copy_from_slice(program);
     prg[0x7FFA..].copy_from_slice(&[0x00, 0xE0, 0x00, 0xE0, 0x00, 0xE0]);
-    let mut data = vec![0x4E, 0x45, 0x53, 0x1A, 2, 1, 0x50, 0x40, 0, 0, 0, 0, 0, 0, 0, 0];
+    let mut data = vec![
+        0x4E, 0x45, 0x53, 0x1A, 2, 1, 0x50, 0x40, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
     data.extend(prg);
     data.extend((0..0x2000).map(|i| (i * 7) as u8));
     data
 }
 
 fn console(board: Option<BoardInfo>) -> System {
-    let mut system = System::from_rom(&image(), Machine::famicom(), board).expect("the image loads");
+    let mut system =
+        System::from_rom(&image(), Machine::famicom(), board).expect("the image loads");
     system.power();
     system
 }
@@ -56,7 +59,11 @@ fn a_failed_load_leaves_the_console_running_unchanged() {
 
     let error = load_state(&mut system, &wrong).expect_err("an NROM state is not an FME-7's");
     assert!(!error.is_empty());
-    assert_eq!(save_state(&system), save_state(&twin), "the failed load changed the console");
+    assert_eq!(
+        save_state(&system),
+        save_state(&twin),
+        "the failed load changed the console"
+    );
     system.run_frames(60);
     twin.run_frames(60);
     assert_eq!(system.take_samples(), twin.take_samples());

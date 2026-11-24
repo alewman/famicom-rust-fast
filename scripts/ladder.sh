@@ -10,12 +10,13 @@
 #   the lockstep cases against the cached reference traces: rung 2, rung 5
 #     (every board class, the FDS, Lagrange Point's VRC7, the Sunsoft 5B's
 #     sound, mapper 559), the machine rows (the Vs. rows' RGB PPUs among them),
-#     the peripherals, the host input, and the Vs. System's images (VS_IMAGES_DIR);
+#     the peripherals, the host input, the Vs. System's images (VS_IMAGES_DIR) and
+#     the PlayChoice-10's in the cabinet (PC10_IMAGES_DIR; the BIOS from MAME_ROMPATH);
 #   rung 3, the reference's test ROM tables, outcome for outcome;
 #   rung 4, AccuracyCoin: 147 of 147 on the reference's 126,984,584 cycles
 #     and 4,264 frames;
-#   save states round-tripping on one dump of every board class, and on every
-#   Vs. UniSystem image.
+#   save states round-tripping on one dump of every board class, on every
+#   Vs. UniSystem image, and on every PlayChoice-10 image in the cabinet.
 # JOBS (default 4) runs that many boards at a time, under nice.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -48,6 +49,11 @@ done
 # external/vs-images by default; never committed).
 export VS_IMAGES_DIR=${VS_IMAGES_DIR:-$(dirname "$ROOT")/famicom-rust/external/vs-images}
 [ -s "$VS_IMAGES_DIR/manifest.json" ] || { echo "no Vs. images at $VS_IMAGES_DIR (VS_IMAGES_DIR)"; exit 1; }
+# The PlayChoice-10's images: assembled from MAME's sets by the reference's
+# scripts/pc10_images.py, outside the repository (famicom-rust's external/pc10-images
+# by default; never committed). Its BIOS: playch10.zip in MAME_ROMPATH (or FAMICOM_PC10_BIOS).
+export PC10_IMAGES_DIR=${PC10_IMAGES_DIR:-$(dirname "$ROOT")/famicom-rust/external/pc10-images}
+[ -s "$PC10_IMAGES_DIR/manifest.json" ] || { echo "no PlayChoice-10 images at $PC10_IMAGES_DIR (PC10_IMAGES_DIR)"; exit 1; }
 BIN=$ROOT/target/release
 began=$SECONDS
 failed=0
@@ -97,6 +103,8 @@ step "lockstep: rung 6, host input (frontend.py's input half)"
 lockstep "$ROOT/scripts/cases-host.tsv" "$EXT/refcache-host"
 step "lockstep: rung 6, the Vs. System (UniSystem and DualSystem images)"
 lockstep "$ROOT/scripts/cases-vs.tsv" "$EXT/refcache-vs"
+step "lockstep: rung 6, the PlayChoice-10 (the cabinet, the BIOS from MAME_ROMPATH)"
+lockstep "$ROOT/scripts/cases-pc10.tsv" "$EXT/refcache-pc10"
 
 step "rung 3: test ROM tables"
 nice "$BIN/famicom-testrom" "$EXT/testrom-reference.jsonl" --roms "$NES_TEST_ROMS/nes-test-roms" \
@@ -152,6 +160,16 @@ echo "$vsout" | grep -v ": identical" || true
 same=$(echo "$vsout" | grep -c ": identical" || true)
 echo "$same of ${#vs[@]} round-trip"
 [ "$same" = "${#vs[@]}" ] || failed=1
+
+step "save states: every PlayChoice-10 image, saved mid-game"
+mapfile -t pc10 < <(python3 -c 'import json, os, sys; d = sys.argv[1]
+for e in json.load(open(os.path.join(d, "manifest.json"))): print(os.path.join(d, e["file"]))' "$PC10_IMAGES_DIR")
+pcout=$(nice "$BIN/famicom-pc10-states" --at 900 --to 1000 --input "$ROOT/scripts/inputs/pc10/play.txt" \
+    "${pc10[@]}" 2>&1 || true)
+echo "$pcout" | grep -v ": identical" || true
+same=$(echo "$pcout" | grep -c ": identical" || true)
+echo "$same of ${#pc10[@]} round-trip"
+[ "$same" = "${#pc10[@]}" ] || failed=1
 
 step "done"
 if [ "$failed" = 0 ]; then echo "LADDER GREEN"; else echo "LADDER RED"; fi

@@ -44,6 +44,9 @@ DEFAULTS: dict[str, str | None] = {
     # The Vs. System's images, assembled from MAME's sets ($MAME_ROMPATH) by the
     # reference's scripts/vs_images.py, outside the repository: no default.
     "VS_IMAGES_DIR": None,
+    # The PlayChoice-10's images, assembled from MAME's sets ($MAME_ROMPATH) by the
+    # reference's scripts/pc10_images.py, outside the repository: no default.
+    "PC10_IMAGES_DIR": None,
 }
 # The mappers built so far (cartridge::build).
 BUILT = {0}

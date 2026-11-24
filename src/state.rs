@@ -26,8 +26,12 @@ use crate::system::System;
 use serde::{Deserialize, Serialize};
 use sixfiveohtwo::CpuState;
 use std::cell::RefCell;
+use z80_rust::CpuState as Z80State;
 
 pub const MAGIC: &[u8; 8] = b"FCRSTATE";
+/// A PlayChoice-10 cabinet's state (`supervisor::PlayChoice`): the game's
+/// System as any other, with the supervisor and its Z80 beside it.
+pub const CABINET_MAGIC: &[u8; 8] = b"FCRPC10S";
 /// The format's version, refused up front when it differs (as the reference's
 /// `state.py` refuses another format or version before decoding). 2 since
 /// 2026-11-23: the VRC7's chip became the restarted ym2413-rust's and mapper 69
@@ -378,6 +382,9 @@ pub fn size_bound(system: &System) -> usize {
 
 /// Put `system` in the state `data` was saved from (same cartridge and machine).
 pub fn load_state(system: &mut System, data: &[u8]) -> Result<(), String> {
+    if data.len() >= CABINET_MAGIC.len() && &data[..CABINET_MAGIC.len()] == CABINET_MAGIC {
+        return Err("a cabinet's state and a console's are not each other's".into());
+    }
     if data.len() < MAGIC.len() || &data[..MAGIC.len()] != MAGIC {
         return Err("not a save state".into());
     }
@@ -402,4 +409,247 @@ pub fn load_state(system: &mut System, data: &[u8]) -> Result<(), String> {
     let body: Body = bincode::deserialize_from(flate2::read::ZlibDecoder::new(rest))
         .map_err(|e| e.to_string())?;
     load_body(system, body)
+}
+
+// -- the PlayChoice-10 cabinet ------------------------------------------------
+
+/// z80-rust's `CpuState`, field for field.
+#[derive(Serialize, Deserialize)]
+struct Z80Fields {
+    a: u8,
+    f: u8,
+    b: u8,
+    c: u8,
+    d: u8,
+    e: u8,
+    h: u8,
+    l: u8,
+    ix: u16,
+    iy: u16,
+    sp: u16,
+    pc: u16,
+    wz: u16,
+    i: u8,
+    r: u8,
+    iff1: bool,
+    iff2: bool,
+    im: u8,
+    af_alt: u16,
+    bc_alt: u16,
+    de_alt: u16,
+    hl_alt: u16,
+    q: u8,
+    halted: bool,
+    ei_delay: u8,
+    reset_pending: bool,
+    maskable_interrupt_vector: Option<u8>,
+    non_maskable_interrupt_pending: bool,
+}
+
+macro_rules! z80_fields {
+    ($from:expr, $to:ident) => {{
+        let s = $from;
+        $to {
+            a: s.a,
+            f: s.f,
+            b: s.b,
+            c: s.c,
+            d: s.d,
+            e: s.e,
+            h: s.h,
+            l: s.l,
+            ix: s.ix,
+            iy: s.iy,
+            sp: s.sp,
+            pc: s.pc,
+            wz: s.wz,
+            i: s.i,
+            r: s.r,
+            iff1: s.iff1,
+            iff2: s.iff2,
+            im: s.im,
+            af_alt: s.af_alt,
+            bc_alt: s.bc_alt,
+            de_alt: s.de_alt,
+            hl_alt: s.hl_alt,
+            q: s.q,
+            halted: s.halted,
+            ei_delay: s.ei_delay,
+            reset_pending: s.reset_pending,
+            maskable_interrupt_vector: s.maskable_interrupt_vector,
+            non_maskable_interrupt_pending: s.non_maskable_interrupt_pending,
+        }
+    }};
+}
+
+/// What the supervisor and the cabinet hold that changes as they run (the
+/// reference saves the `Supervisor` object's fields and the cabinet's four
+/// lines); the BIOS, the INST ROM and the PROM's recordings are the cabinet's
+/// configuration, as the ROM image is the console's.
+#[derive(Serialize, Deserialize)]
+struct SupervisorFields {
+    cpu: Z80Fields,
+    ram: Vec<u8>,
+    ram_8w: Vec<u8>,
+    video_ram: Vec<u8>,
+    latch: [u8; 16],
+    dip: [u8; 2],
+    buttons: u8,
+    coins: [Vec<i64>; 2],
+    int_detect: bool,
+    digits: [u8; 4],
+    t: i64,
+    nmi_released: bool,
+    /// The PROM's counter and pins.
+    prom: Option<(u8, bool, bool, bool)>,
+    next_blank: i64,
+    blanks: u64,
+    watchdog: u32,
+    watchdog_resets: u64,
+    instructions: u64,
+    /// The cabinet: in_reset, stopped, the NMI it saw, monitor_on_game.
+    lines: [bool; 4],
+}
+
+/// The state of a PlayChoice-10 cabinet as bytes (between two of its steps):
+/// the game's System as [`save_state`] writes it, with the supervisor, its Z80
+/// and the cabinet's lines beside it.
+pub fn save_cabinet_state(cabinet: &crate::supervisor::PlayChoice) -> Vec<u8> {
+    let game = &cabinet.game;
+    let header = Header {
+        version: VERSION,
+        rom_sha1: rom_sha1(game),
+        machine: game.cpu.bus.machine.name.to_string(),
+    };
+    let supervisor = &cabinet.supervisor;
+    let bus = &supervisor.cpu.bus;
+    debug_assert!(
+        bus.lines.is_empty(),
+        "a cabinet saved inside an instruction"
+    );
+    let fields = SupervisorFields {
+        cpu: z80_fields!(supervisor.cpu.capture_state(), Z80Fields),
+        ram: bus.ram.clone(),
+        ram_8w: bus.ram_8w.clone(),
+        video_ram: bus.video_ram.clone(),
+        latch: bus.latch,
+        dip: bus.dip,
+        buttons: bus.buttons,
+        coins: bus.coins.clone(),
+        int_detect: bus.int_detect,
+        digits: bus.digits,
+        t: bus.t,
+        nmi_released: bus.nmi_released,
+        prom: bus
+            .prom
+            .as_ref()
+            .map(|p| (p.counter, p.reset, p.clock, p.test)),
+        next_blank: supervisor.next_blank,
+        blanks: supervisor.blanks,
+        watchdog: supervisor.watchdog,
+        watchdog_resets: supervisor.watchdog_resets,
+        instructions: supervisor.instructions,
+        lines: [
+            cabinet.in_reset,
+            cabinet.stopped,
+            cabinet.nmi,
+            cabinet.monitor_on_game,
+        ],
+    };
+    let body = (
+        body_bytes(game),
+        bincode::serialize(&fields).expect("a state serializes"),
+    );
+    let mut out = CABINET_MAGIC.to_vec();
+    out.extend(bincode::serialize(&header).expect("a header serializes"));
+    let mut encoder = flate2::write::ZlibEncoder::new(out, flate2::Compression::new(6));
+    let raw = bincode::serialize(&body).expect("a state serializes");
+    std::io::Write::write_all(&mut encoder, &raw).expect("compression in memory");
+    encoder.finish().expect("compression in memory")
+}
+
+/// Put a PlayChoice-10 cabinet in the state `data` was saved from (same game
+/// and machine). All or nothing, as [`load_state`].
+pub fn load_cabinet_state(
+    cabinet: &mut crate::supervisor::PlayChoice,
+    data: &[u8],
+) -> Result<(), String> {
+    if data.len() >= MAGIC.len() && &data[..MAGIC.len()] == MAGIC {
+        return Err("a cabinet's state and a console's are not each other's".into());
+    }
+    if data.len() < CABINET_MAGIC.len() || &data[..CABINET_MAGIC.len()] != CABINET_MAGIC {
+        return Err("not a save state".into());
+    }
+    let mut rest = &data[CABINET_MAGIC.len()..];
+    let header: Header = bincode::deserialize_from(&mut rest).map_err(|e| e.to_string())?;
+    if header.version != VERSION {
+        return Err(format!(
+            "a state of version {}, not {VERSION}",
+            header.version
+        ));
+    }
+    if header.rom_sha1 != rom_sha1(&cabinet.game) {
+        return Err("a state of another cartridge".into());
+    }
+    let machine = &cabinet.game.cpu.bus.machine;
+    if header.machine != machine.name {
+        return Err(format!(
+            "a state of the {}, not the {}",
+            header.machine, machine.name
+        ));
+    }
+    let (game, supervisor): (Vec<u8>, Vec<u8>) =
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(rest))
+            .map_err(|e| e.to_string())?;
+    let body: Body = bincode::deserialize(&game).map_err(|e| e.to_string())?;
+    let fields: SupervisorFields = bincode::deserialize(&supervisor).map_err(|e| e.to_string())?;
+    let z80 = z80_fields!(fields.cpu, Z80State);
+    z80.validate()?;
+    let bus = &cabinet.supervisor.cpu.bus;
+    let sizes = (bus.ram.len(), bus.ram_8w.len(), bus.video_ram.len());
+    if (
+        fields.ram.len(),
+        fields.ram_8w.len(),
+        fields.video_ram.len(),
+    ) != sizes
+    {
+        return Err("a supervisor's RAM of another size".into());
+    }
+    if fields.prom.is_some() != bus.prom.is_some() {
+        return Err("a state of a game board with another PROM".into());
+    }
+    load_body(&mut cabinet.game, body)?;
+    let supervisor = &mut cabinet.supervisor;
+    supervisor.cpu.restore_state(&z80);
+    let bus = &mut supervisor.cpu.bus;
+    bus.ram = fields.ram;
+    bus.ram_8w = fields.ram_8w;
+    bus.video_ram = fields.video_ram;
+    bus.latch = fields.latch;
+    bus.dip = fields.dip;
+    bus.buttons = fields.buttons;
+    bus.coins = fields.coins;
+    bus.int_detect = fields.int_detect;
+    bus.digits = fields.digits;
+    bus.t = fields.t;
+    bus.nmi_released = fields.nmi_released;
+    bus.lines.clear();
+    if let (Some(prom), Some((counter, reset, clock, test))) = (bus.prom.as_mut(), fields.prom) {
+        prom.counter = counter;
+        prom.reset = reset;
+        prom.clock = clock;
+        prom.test = test;
+    }
+    supervisor.next_blank = fields.next_blank;
+    supervisor.blanks = fields.blanks;
+    supervisor.watchdog = fields.watchdog;
+    supervisor.watchdog_resets = fields.watchdog_resets;
+    supervisor.instructions = fields.instructions;
+    [
+        cabinet.in_reset,
+        cabinet.stopped,
+        cabinet.nmi,
+        cabinet.monitor_on_game,
+    ] = fields.lines;
+    Ok(())
 }

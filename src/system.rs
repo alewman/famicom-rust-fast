@@ -6,6 +6,7 @@ use crate::cartridge::{self, BoardInfo, Loaded, RomImage};
 use crate::joypad::START;
 use crate::machine::Machine;
 use crate::peripherals;
+use crate::playchoice::{is_playchoice, PlayChoiceGun, PlayChoicePad};
 use crate::vs::{VsStick, VsZapper, VS_DEVICES, VS_ZAPPER};
 use sixfiveohtwo::Mos6502;
 use std::path::Path;
@@ -43,12 +44,16 @@ impl System {
     /// if the NES 2.0 header or nes20db says console type 1 (and which PPU:
     /// machine::VS_PPUS); else the NES 2.0 header's or nes20db's timing (1
     /// PAL, 3 Dendy), else a Famicom (NES-only expansion devices pick the
-    /// NES). The reference's PlayChoice-10 row (console type 2) is not carried.
+    /// NES); a PlayChoice-10's game board for type 2 (the game board alone:
+    /// supervisor::PlayChoice adds the Z80).
     pub fn machine_for(data: &[u8]) -> Result<Machine, String> {
         let loaded = cartridge::load(data, 12, None, true)?;
         let board = &loaded.image.board;
         if board.console == 1 {
             return Ok(Machine::vs_machine(board.vs_ppu));
+        }
+        if is_playchoice(&loaded.image) {
+            return Ok(Machine::playchoice()); // the game board alone: supervisor::PlayChoice adds the Z80
         }
         Ok(match board.timing {
             1 => Machine::pal_nes(),
@@ -118,6 +123,23 @@ impl System {
         }
         if VS_DEVICES.contains(&device) {
             return peripherals::Plugged::None; // a Vs. game on a home console: standard pads
+        }
+        if board.machine.playchoice {
+            // The cabinet's panel is its own; a gun game's gun shares $4017
+            // with player 2's shift register (playchoice::PlayChoiceGun).
+            if board.pad_as::<PlayChoiceGun>(1).is_some() {
+                return peripherals::Plugged::Pad(1); // plugged already
+            }
+            if device == peripherals::ZAPPER {
+                let palette = peripherals::palette_of(board);
+                let pad = board
+                    .pad_as::<PlayChoicePad>(1)
+                    .expect("player 2's shift register")
+                    .clone();
+                board.pads[1] = Box::new(PlayChoiceGun::new(&board.ppu, &palette, pad));
+                return peripherals::Plugged::Pad(1);
+            }
+            return peripherals::Plugged::None;
         }
         let famicom = board.machine.famicom_expansion_port;
         peripherals::plug(board, device, famicom, None)

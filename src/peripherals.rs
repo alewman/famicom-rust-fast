@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND BSD-3-Clause
+// SUBOR_MATRIX is MAME's suborkey.cpp (BSD-3-Clause, Fabio Priuli), by way of the
+// reference: notice in NOTICE.md.
 //! Controllers besides the standard pad, on the controller ports and the
 //! Famicom expansion port (`peripherals.py`; Input_devices.wiki). A device
 //! answers one of two protocols:

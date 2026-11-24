@@ -25,9 +25,16 @@ const ROOT: &str = env!("CARGO_MANIFEST_DIR");
 /// No-Intro's NES set, under `$NO_INTRO_DIR`.
 const NES: &str = "Nintendo - Nintendo Entertainment System (Headered)";
 /// The dump folders, which default to No-Intro's sets under `$NO_INTRO_DIR`,
-/// and the Vs. System's images (no default: the reference's
-/// scripts/vs_images.py assembles them from MAME's sets, outside the repository).
-const DUMP_VARS: [&str; 4] = ["NES_DUMPS", "NES_AFTERMARKET", "FDS_DUMPS", "VS_IMAGES_DIR"];
+/// and the Vs. System's and the PlayChoice-10's images (no default: the reference's
+/// scripts/vs_images.py and pc10_images.py assemble them from MAME's sets, outside
+/// the repository).
+const DUMP_VARS: [&str; 5] = [
+    "NES_DUMPS",
+    "NES_AFTERMARKET",
+    "FDS_DUMPS",
+    "VS_IMAGES_DIR",
+    "PC10_IMAGES_DIR",
+];
 
 struct Case {
     name: String,
@@ -69,6 +76,7 @@ fn cases(table: &Path) -> Vec<Case> {
         ),
         ("INPUTS", Some(format!("{ROOT}/scripts/inputs"))),
         ("VS_IMAGES_DIR", None),
+        ("PC10_IMAGES_DIR", None),
         ("PROBES", Some(format!("{ROOT}/external/probes"))),
         // rainwarrior's nes-audio-tests, prebuilt: the reference's fetched
         // reference/src/nes-audio-tests/build, copied under FAMICOM_REFERENCE.
