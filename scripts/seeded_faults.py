@@ -244,8 +244,12 @@ def main() -> int:
         tree = args.work / name
         if tree.exists():
             shutil.rmtree(tree)
-        shutil.copytree(ROOT / "src", tree / "src")
-        shutil.copytree(ROOT / "tests", tree / "tests")
+        # Fresh timestamps (shutil.copy, not copytree's copy2): with the sources'
+        # old times, cargo found a previous fault's build fresh and reused it
+        # (methodology, the 2026-11-13 lesson; met again here 2026-11-24, when a
+        # fault reported missed was caught once its tree was built afresh).
+        shutil.copytree(ROOT / "src", tree / "src", copy_function=shutil.copy)
+        shutil.copytree(ROOT / "tests", tree / "tests", copy_function=shutil.copy)
         shutil.copy(ROOT / "Cargo.lock", tree / "Cargo.lock")
         # The VRC7's chip is a path dependency, beside this checkout.
         manifest = (ROOT / "Cargo.toml").read_text()
@@ -257,7 +261,9 @@ def main() -> int:
             print(f"{name}: the fault's text is not in {file} exactly once")
             return 2
         source.write_text(text.replace(old, new))
-        target = args.work / "target"
+        # Its own target directory too: a shared one let one fault's tree be
+        # judged with another's build (2026-11-24).
+        target = args.work / "target" / name
         build = subprocess.run(
             ["nice", "cargo", "build", "-j", "4", "--release", "-q", "--manifest-path",
              str(tree / "Cargo.toml"), "--target-dir", str(target)],

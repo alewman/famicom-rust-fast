@@ -182,6 +182,23 @@ got past the machine rows and peripherals was reported "caught by rung 6 host"
 whether the gate saw it or not. None of the six earlier faults reached that
 far; the script now sets it, and the three Vs. faults were run again with it.
 
+Since the PlayChoice-10's merge (2026-11-24) there are eight more
+(`external/faults-pc10-fresh.log`), the PlayChoice-10 table run right after
+rung 2. Six are caught by it: the stop flip-flop ignoring /GAME STOP, the PROM's
+data not inverted, the one-monitor screen never flipping, the held 2A03's cycle
+without the APU's clock, the panel shifting in zeros, and the Z80 losing a tie of
+the two clocks. Two are not caught by any lockstep table: the watchdog firing on
+the seventh blank (the real BIOS never lets it count, so no case fires it; the
+ladder's `cargo test` catches it, `tests/playchoice.rs`
+`the_watchdog_resets_on_the_eighth_blank`, checked on a fresh build), and the
+latch's /DISP MASK rule reading SDCS as high when it was low, which only a
+Z80 reset (the watchdog's, or power) can show: a recorded blind spot, owed a
+case in the reference first. A first run of these faults shared one target
+directory and copied the sources with their old timestamps, and one fault's
+tree was judged with another's build (a unit test passed on a fault it fails on
+afresh); the script now gives the copies fresh timestamps and each fault its own
+target directory, and the eight were run again that way.
+
 ## Measuring
 
 The machine is shared (load 15 to 50) and `perf` is not permitted.

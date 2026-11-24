@@ -39,4 +39,9 @@ Logs: `external/ab-pc10.log`, `ab-pc10-nf5.log`, `ab-pc10-inline.log`.
 
 ## Seeded faults (the PlayChoice-10's)
 
-See the README, "Seeded faults", for the record of each run.
+`scripts/seeded_faults.py --only pc10-...` (fresh timestamps, a target directory per
+fault), 2026-11-24 on `34ea83a`'s sources: 6 caught by the PlayChoice-10 table, 2
+missed by every lockstep table: `pc10-watchdog-on-the-seventh-blank` (caught by
+`cargo test`, `tests/playchoice.rs`) and `pc10-latch-sees-sdcs-late` (caught by
+nothing: a blind spot, owed a watchdog-reset case in the reference). The README,
+"Seeded faults", has the detail.
