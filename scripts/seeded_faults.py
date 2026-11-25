@@ -6,9 +6,9 @@ time and check that some rung of scripts/ladder.sh catches each.
 Each fault is one exact text replacement in a copy of ``src/``, built into its
 own target directory (external/faults); then the ladder's rungs run against
 it in order, cheapest first, until one fails: rung 1 (nestest), the lockstep
-tables against the cached reference traces (rung 2 and its probes, rung 5's
-board classes, the FDS, Lagrange Point, AutoDisk, the machine rows, the
-peripherals, the host input), rung 4
+tables against the cached reference traces (rung 2 and its probes, the
+PlayChoice-10, rung 5's board classes, the FDS, Lagrange Point, AutoDisk, the
+machine rows, the peripherals, the host input, the Vs. System), rung 4
 (AccuracyCoin on the reference's counts) and rung 3 (the test ROM tables).
 A fault no rung catches is reported as MISSED.
 
@@ -101,7 +101,6 @@ FAULTS = {
         "let irq = self.apu.irq || self.external_irq || self.ppu.cart.irq();",
         "let irq = self.apu.irq || self.ppu.cart.irq();",
     ),
-    # The frame counter's quiet run taken from before its first cycle.
     # The PlayChoice-10 (merged from famicom-rust 2026-11-23): the supervisor's
     # watchdog, the stop flip-flop, the PROM's inverting buffer, the one-monitor
     # board's screen flip, the held 2A03's idle cycle, the panel's serial input,
@@ -146,6 +145,7 @@ FAULTS = {
         "self.supervisor.cpu.bus.t * 945 <= self.game.cpu.bus.t * 176",
         "self.supervisor.cpu.bus.t * 945 < self.game.cpu.bus.t * 176",
     ),
+    # The frame counter's quiet run taken from before its first cycle.
     "apu-quiet-run-without-its-start": (
         "apu.rs",
         "if mode5 == self.mode5 && first <= cycle && cycle < end {",
