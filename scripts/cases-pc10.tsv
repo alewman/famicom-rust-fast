@@ -59,3 +59,4 @@ pc10-attract-Super_Mario_Bros	900	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 
 pc10-single-Super_Mario_Bros	1320	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt
 pc10-single-Duck_Hunt	1320	$PC10_IMAGES_DIR/Duck Hunt.nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt
 pc10-single-Tennis	1320	$PC10_IMAGES_DIR/Tennis.nes	--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt
+pc10-watchdog-Super_Mario_Bros	600	$PC10_IMAGES_DIR/Super Mario Bros..nes	--pc10 --bios-program $INPUTS/pc10/watchdog.hex --rgb

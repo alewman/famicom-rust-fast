@@ -9,7 +9,11 @@
 # FAMICOM_PYTHON_SOURCE (or the SOURCE argument) names another clone to fetch the pin
 # from, a local one while the pinned commit is not on GitHub yet; the default is GitHub.
 set -euo pipefail
-# c52a6d3 (2026-11-23): famicom-python's main, b3dbf1b plus the PlayChoice-10's BIOS
+# b5dbd2f (2026-11-24): famicom-python's main, c52a6d3's src/ unchanged, with
+# tests/pc10_watchdog.hex (fa30248), the supervisor program of our own that the lockstep
+# case pc10-watchdog-Super_Mario_Bros runs (scripts/make_pc10_cases.py copies it), and the
+# Mesen2 tooling through EMU_TOOLS_GPL (1d64fd9, fb3a045; scripts and documents only).
+# Before it, c52a6d3 (2026-11-23): famicom-python's main, b3dbf1b plus the PlayChoice-10's BIOS
 # found through MAME_ROMPATH and MAME's BSD-3 notice in NOTICE.md (no behaviour changed:
 # comments, SPDX lines and bios_path); the reference the PlayChoice-10 was transcribed
 # from. Before it, b3dbf1b (2026-11-23): famicom-python's main, which repins z80-python to b59c80b by git
@@ -20,9 +24,9 @@ set -euo pipefail
 # famicom-rust-pin-1 (47d33c1, fe89099 before the 2026-11-21 history rewrite), which
 # pinned the archived ym2413-python 13df60c, a translation of GPL code that this
 # family's MIT work must not reach. No new tag is made while the clean-up settles, so
-# the pin is the commit. Until c52a6d3 is on GitHub, FAMICOM_PYTHON_SOURCE names a
+# the pin is the commit. Until b5dbd2f is on GitHub, FAMICOM_PYTHON_SOURCE names a
 # local clone that has it.
-COMMIT=${FAMICOM_PYTHON_COMMIT:-c52a6d3f65c64d74528bb80dea5576f292d71d63}
+COMMIT=${FAMICOM_PYTHON_COMMIT:-b5dbd2f3b7114319f75417855c26d4b2cfb8820c}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 DEST=${1:-"$ROOT/external/famicom-python"}
 SOURCE=${2:-${FAMICOM_PYTHON_SOURCE:-https://github.com/alewman/famicom-python.git}}

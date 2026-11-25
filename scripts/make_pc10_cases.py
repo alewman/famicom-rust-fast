@@ -19,7 +19,13 @@ same, with the gun aimed and fired instead of the stick. Four more cases:
 (``attract.txt``, 300 units a coin, one a second), and *Super Mario Bros.*, *Duck
 Hunt* and *Tennis* on the one-monitor BIOS (``--bios single``: its time digits,
 its screen flipped by /DISP MASK) with the cabinet's Reset and Channel buttons
-pressed (``single.txt``). Stdlib only.
+pressed (``single.txt``). And one case of 600 slices with a supervisor program of
+our own in place of the BIOS's (``--bios-program``, ``watchdog.hex``, copied from
+the reference's ``tests/pc10_watchdog.hex``; the set's characters and colours
+kept) and *Super Mario Bros.* in channel 1: the program lets the watchdog run out
+every boot, which the real BIOS never does, so it is the one case with the Z80's
+reset (latches cleared SDCS first, the game held, the counter held by NMI EI and
+by DOG DI). Stdlib only.
 """
 
 from __future__ import annotations
@@ -31,6 +37,7 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+REFERENCE = Path(os.environ.get("FAMICOM_REFERENCE", HERE.parent / "external" / "famicom-python"))
 SLICES = 1320
 GUN = 8
 
@@ -77,6 +84,8 @@ def main() -> int:
     inputs.mkdir(parents=True, exist_ok=True)
     for name, lines in SCRIPTS.items():
         (inputs / name).write_text("\n".join(lines) + "\n")
+    watchdog = (REFERENCE / "tests" / "pc10_watchdog.hex").read_text()
+    (inputs / "watchdog.hex").write_text(watchdog)
     rows = ["# name\tslices\trom\targuments"]
     for entry in manifest:
         script = "gun.txt" if entry["expansion"] == GUN else "play.txt"
@@ -92,6 +101,8 @@ def main() -> int:
             f"pc10-single-{safe(game)}\t{SLICES}\t$PC10_IMAGES_DIR/{game}.nes\t"
             "--pc10 --bios single --rgb --input $INPUTS/pc10/single.txt"
         )
+    rows.append(f"pc10-watchdog-Super_Mario_Bros\t600\t{smb}\t--pc10 --bios-program "
+                "$INPUTS/pc10/watchdog.hex --rgb")  # fmt: skip
     (HERE / "cases-pc10.tsv").write_text("\n".join(rows) + "\n")
     print(f"{len(rows) - 1} cases")
     return 0

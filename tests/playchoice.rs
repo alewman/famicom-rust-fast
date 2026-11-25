@@ -448,6 +448,57 @@ fn game_res_resets_the_2a03_and_ppu_res_the_ppu() {
     assert!(ram10(&machine) != count && machine.game.cpu.bus.ppu.ctrl == 0x80);
 }
 
+/// A supervisor program from its listing (scripts/inputs/pc10/watchdog.hex,
+/// the reference's tests/pc10_watchdog.hex), as the reference's `read_program`.
+fn read_program(path: &std::path::Path) -> Vec<u8> {
+    let mut rom = vec![0xFF; 0x4000];
+    for line in std::fs::read_to_string(path).unwrap().lines() {
+        let fields: Vec<&str> = line.split('#').next().unwrap().split_whitespace().collect();
+        if let Some((first, bytes)) = fields.split_first() {
+            let address = usize::from_str_radix(first.trim_end_matches(':'), 16).unwrap();
+            let data = hex(&bytes.join(" "));
+            rom[address..address + data.len()].copy_from_slice(&data);
+        }
+    }
+    rom
+}
+
+#[test]
+fn our_supervisor_program_lets_the_watchdog_run_out() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("scripts/inputs/pc10/watchdog.hex");
+    let mut ours = bios(SPIN, RETN);
+    ours.program = read_program(&path);
+    let mut machine = PlayChoice::new(load(&pc10_image(&hex(COUNTING), None, 1)), ours, None);
+    let mut drops = Vec::new(); // the blanks seen when each boot's hold dropped
+    for boot in 1..=3u64 {
+        let hold = if boot % 2 == 1 { NMI_EI } else { DOG_DI };
+        while machine.supervisor.latch()[hold] == 0 {
+            machine.step();
+        }
+        // Lines up, the program's own flip done: once a boot.
+        let latch = *machine.supervisor.latch();
+        assert!(latch[SDCS] != 0 && latch[DISP_MASK] != 0 && !machine.in_reset);
+        assert_eq!(machine.monitor_on_game, boot % 2 == 1);
+        assert_eq!(latch[GAME_STOP] as u64, boot % 2);
+        let bus = &machine.supervisor.cpu.bus;
+        assert!(bus.ram_8w[0] as u64 == boot && bus.video_ram[0] as u64 == boot);
+        while machine.supervisor.latch()[hold] != 0 {
+            machine.step();
+        }
+        drops.push(machine.supervisor.blanks);
+        while machine.supervisor.watchdog_resets < boot {
+            machine.step();
+        }
+        assert_eq!(machine.supervisor.blanks, drops[drops.len() - 1] + 8);
+        assert!(*machine.supervisor.latch() == [0; 16] && machine.in_reset);
+        assert!(machine.supervisor.screen_blank());
+        assert_eq!(machine.monitor_on_game, boot % 2 == 1); // the reset flipped nothing
+    }
+    // Each boot is the hold (three or four blanks) and the eight after it.
+    assert!(drops.windows(2).all(|w| (11..=12).contains(&(w[1] - w[0]))));
+    assert!(ram10(&machine) != 0); // the game ran between resets
+}
+
 #[test]
 fn cntrl_mask_reaches_the_panel() {
     let mut machine = cabinet(SPIN, JUMP);

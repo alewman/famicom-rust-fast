@@ -4,12 +4,13 @@
 //!
 //!     famicom-trace ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
 //!                   [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
-//!                   [--host FILE [--host-device N]] [--dual] [--pc10 [--bios NAME]]
-//!                   --out FILE
+//!                   [--host FILE [--host-device N]] [--dual]
+//!                   [--pc10 [--bios NAME] [--bios-program FILE]] --out FILE
 //!
 //! `--machine auto`, `--rgb`, `--dual` and the Vs. mainboard's input lines
 //! (`coin`, `dip`, `service`) are the reference tracer's (see there), and so are
-//! `--pc10` (a PlayChoice-10 cabinet with MAME's BIOS, [`run_pc10`]) and its
+//! `--pc10` (a PlayChoice-10 cabinet with MAME's BIOS, [`run_pc10`]; `--bios-program`
+//! a program of our own in place of the BIOS's, [`read_program`]) and its
 //! input lines (`coin`, `button`, `dip`, `aim`, `trigger`).
 //! `--png FILE` (this side only, not in the lines) writes the last slice's
 //! picture in the machine's colours, to look at what a case reached.
@@ -543,12 +544,32 @@ fn z80_state(state: &z80_rust::CpuState) -> String {
     .join(" ")
 }
 
+/// `--bios-program`: a supervisor program from its listing (the reference tracer's
+/// `read_program`: `ADDRESS: BYTES`, a `#` comment after), 16 KiB, $FF where unwritten.
+fn read_program(path: &str) -> Vec<u8> {
+    let mut rom = vec![0xFF; 0x4000];
+    for line in std::fs::read_to_string(path).unwrap().lines() {
+        let fields: Vec<&str> = line.split('#').next().unwrap().split_whitespace().collect();
+        if let Some((first, bytes)) = fields.split_first() {
+            let address = usize::from_str_radix(first.trim_end_matches(':'), 16).unwrap();
+            let text = bytes.concat();
+            let data: Vec<u8> = (0..text.len())
+                .step_by(2)
+                .map(|i| u8::from_str_radix(&text[i..i + 2], 16).unwrap())
+                .collect();
+            rom[address..address + data.len()].copy_from_slice(&data);
+        }
+    }
+    rom
+}
+
 /// `--pc10`: a PlayChoice-10 cabinet, a slice at a time (the reference
 /// tracer's `run_pc10`).
 #[allow(clippy::too_many_arguments)]
 fn run_pc10(
     rom: &std::path::Path,
     bios: &str,
+    program: Option<&str>,
     slices: u64,
     inputs: &HashMap<u64, Vec<(usize, u8)>>,
     events: &HashMap<u64, Vec<Vec<String>>>,
@@ -564,10 +585,13 @@ fn run_pc10(
             eprintln!("{e}");
             std::process::exit(2);
         });
-    let bios = sv::load_bios(bios, None).unwrap_or_else(|e| {
+    let mut bios = sv::load_bios(bios, None).unwrap_or_else(|e| {
         eprintln!("{e}");
         std::process::exit(2);
     });
+    if let Some(path) = program {
+        bios.program = read_program(path);
+    }
     let mut cabinet = PlayChoice::from_rom(&data, Some(bios), None).unwrap_or_else(|e| {
         eprintln!("{e}");
         std::process::exit(2);
@@ -726,6 +750,7 @@ fn main() {
     let mut dual = false;
     let mut pc10 = false;
     let mut bios = "dual".to_string();
+    let mut bios_program: Option<String> = None;
     let mut png: Option<String> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -743,6 +768,7 @@ fn main() {
             "--dual" => dual = true,
             "--pc10" => pc10 = true,
             "--bios" => bios = args.next().unwrap(),
+            "--bios-program" => bios_program = args.next(),
             "--png" => png = args.next(),
             _ => rom = Some(arg),
         }
@@ -787,6 +813,7 @@ fn main() {
         return run_pc10(
             &rom,
             &bios,
+            bios_program.as_deref(),
             slices,
             &inputs,
             &pc10_events,

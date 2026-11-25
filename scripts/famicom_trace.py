@@ -13,8 +13,8 @@ writes the same lines; ``scripts/lockstep.py`` compares them.
 
     famicom_trace.py ROM --slices N [--machine KEY|auto] [--input FILE] [--device N]
                      [--reset FRAME ...] [--detail FRAME] [--auto-disk] [--rgb]
-                     [--host FILE [--host-device N]] [--dual] [--pc10 [--bios NAME]]
-                     --out FILE
+                     [--host FILE [--host-device N]] [--dual]
+                     [--pc10 [--bios NAME] [--bios-program FILE]] --out FILE
 
 ``--machine auto``: ``System.machine_for`` (a Vs. game gets its Vs. row).
 ``--rgb``: each line also ends with ``rgb`` and a CRC of the picture in the
@@ -28,7 +28,9 @@ primary side's, 2 and 3 the secondary's.
 
 ``--pc10``: a PlayChoice-10 image in the cabinet (``supervisor.PlayChoice``) with
 MAME's ``playch10`` BIOS (``--bios``: ``dual``, the default, or ``single``; found
-through ``MAME_ROMPATH`` or ``FAMICOM_PC10_BIOS``), each slice one ``run_frames(1)``
+through ``MAME_ROMPATH`` or ``FAMICOM_PC10_BIOS``; ``--bios-program FILE`` replaces
+its program, 8T, with a listing of our own, ``read_program``'s format, the set's
+characters and colours kept), each slice one ``run_frames(1)``
 of the game's PPU. The line is the slice, then ``z80`` and the Z80's
 ``capture_state`` field by field (hex; booleans 0/1, an absent vector ``-``), its
 T-states and instructions, a CRC of every access of its buses in the slice (packed
@@ -352,12 +354,31 @@ def crc_u64(values) -> int:
     return zlib.crc32(packed.tobytes())
 
 
+def read_program(path: str) -> bytes:
+    """``--bios-program``: a supervisor program from its listing (the reference's
+    ``tests/pc10_watchdog.hex`` format, as its ``test_playchoice.read_program``
+    reads it: ``ADDRESS: BYTES``, a ``#`` comment after), 16 KiB, $FF where
+    unwritten."""
+    rom = bytearray(b"\xff" * 0x4000)
+    with open(path) as handle:
+        for line in handle:
+            fields = line.split("#", 1)[0].split()
+            if fields:
+                address = int(fields[0].rstrip(":"), 16)
+                data = bytes.fromhex("".join(fields[1:]))
+                rom[address : address + len(data)] = data
+    return bytes(rom)
+
+
 def run_pc10(args, inputs) -> int:
     """``--pc10``: a PlayChoice-10 cabinet, a slice at a time."""
     from famicom_python import supervisor as S
     from famicom_python.playchoice import PlayChoiceGun
 
-    cabinet = S.PlayChoice.from_rom(read_rom_file(args.rom), S.load_bios(args.bios))
+    bios = S.load_bios(args.bios)
+    if args.bios_program:
+        bios = dataclasses.replace(bios, program=read_program(args.bios_program))
+    cabinet = S.PlayChoice.from_rom(read_rom_file(args.rom), bios)
     sup, game = cabinet.supervisor, cabinet.game
     board, cpu, ppu = game.board, game.cpu, game.board.ppu
     z80 = sup.cpu
@@ -475,6 +496,7 @@ def main() -> int:
     parser.add_argument("--dual", action="store_true")
     parser.add_argument("--pc10", action="store_true")
     parser.add_argument("--bios", default="dual")
+    parser.add_argument("--bios-program")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
