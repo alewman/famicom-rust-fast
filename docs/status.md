@@ -10,27 +10,28 @@ the latest counts.
 
 ## The gate: `scripts/ladder.sh`
 
-Measured on 2026-11-24 on the tree committed as `ced0fab` (the merge of famicom-rust
-`ef89507`, the PlayChoice-10's watchdog case), `JOBS=6`, 6,184 s on a shared machine
-at load 100 with two fault runs beside it (`external/ladder-watchdog.log`; run in a
-worktree of the same commit that shared `external/`).
+Measured on 2026-11-27 on the tree committed as the merge of famicom-rust `cef790d`
+(branch `pc10-watchdog-states`: PlayChoice-10 save states taken while the watchdog
+counts), `JOBS=6`, 1,436 s on a shared machine at load about 40
+(`external/ladder-wd-states.log`). The tree under `src/` differs from `ced0fab`'s only
+in the binary `famicom-pc10-states`.
 
 | Step | Count |
 | --- | --- |
-| `cargo test --release` | all pass; `tests/playchoice.rs` 27, `tests/vs_system.rs` 32 |
+| `cargo test --release` | all pass; `tests/playchoice.rs` 28, `tests/vs_system.rs` 32 |
 | Rung 1, nestest | 8,991 lines, 0 differ |
 | Rung 2, lockstep | 200 of 200; the probes 2 of 2 |
 | Rung 5, lockstep | 581 of 581; the FDS 6; Lagrange Point 1; the 5B 9; 559 2; AutoDisk 3 |
 | Rung 6, lockstep | machine rows 33; peripherals 54; host input 36; the Vs. System 66; the PlayChoice-10 61 (of as many; the watchdog case among them) |
 | Rung 3, test ROM tables | 197 of 197 agree |
 | Rung 4, AccuracyCoin | 147 of 147 on the reference's 126,984,584 CPU cycles and 4,264 frames |
-| Save states | 363 of 363; the 5B and 559, 5 of 5; Vs. UniSystem 43 of 43; PlayChoice-10 cabinets 56 of 56 |
+| Save states | 363 of 363; the 5B and 559, 5 of 5; Vs. UniSystem 43 of 43; PlayChoice-10 cabinets 56 of 56; saved while the watchdog counts (our supervisor program, *Super Mario Bros.*, `--at` 40, 43, 49, 52) 4 of 4 |
 | CI's checks | `cargo clippy --release --all-targets -- -D warnings` and `cargo fmt --check` clean with the stable toolchain (rustc 1.99.1) |
 
 ## Speed
 
-`ced0fab` changes nothing on the cycle path (the tracer's `--bios-program` and a
-unit test), so no A/B was run; the last one is the PlayChoice-10's merge:
+`ced0fab` and the merge of `cef790d` change nothing on the cycle path (the tracers'
+`--bios-program`, a unit test and the gate's scripts), so no A/B was run; the last one is the PlayChoice-10's merge:
 `scripts/ab.sh eefb681` against `34ea83a`, 12 rounds of 300 frames on the five bench
 games, best of each side, one pinned core:
 

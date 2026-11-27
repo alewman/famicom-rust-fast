@@ -5,7 +5,8 @@
 //! was not interrupted: every bus access of both processors, both pictures, the
 //! audio, the registers and both clocks.
 //!
-//!     famicom-pc10-states IMAGE... [--bios NAME] [--at A] [--to B] [--input FILE] [--seed S]
+//!     famicom-pc10-states IMAGE... [--bios NAME] [--bios-program FILE] [--at A] [--to B]
+//!                         [--input FILE] [--seed S]
 //!
 //! FILE is a `--pc10` input script of the lockstep tracer (`FRAME coin SLOT`,
 //! `FRAME button NAME 0|1`, `FRAME dip HEX HEX`, `FRAME PAD BUTTONS`); the gun's
@@ -13,6 +14,12 @@
 //! steps that depends on the seed and the image. The reference saves cabinets
 //! too (`state.save_state` of a `supervisor.PlayChoice`); its test
 //! `test_a_save_state_keeps_both_processors` is transcribed in tests/playchoice.rs.
+//!
+//! `--bios-program FILE` puts a supervisor program of our own in the BIOS
+//! program's place (the set's characters and colours kept), as famicom-trace's
+//! flag does: scripts/inputs/pc10/watchdog.hex lets the watchdog run out every
+//! boot, which the real BIOS never does, so a save can land while it counts. The
+//! verdict names the watchdog's count and resets at the save point.
 
 use famicom_rust::playchoice::{PlayChoiceGun, PlayChoicePad};
 use famicom_rust::state::{load_cabinet_state, save_cabinet_state};
@@ -114,6 +121,25 @@ fn fresh(data: &[u8], bios: &Bios) -> Result<PlayChoice, String> {
     Ok(cabinet)
 }
 
+/// `--bios-program`: a supervisor program from its listing (`ADDRESS: BYTES`, a
+/// `#` comment after), 16 KiB, $FF where unwritten: famicom-trace's `read_program`.
+fn read_program(path: &str) -> Vec<u8> {
+    let mut rom = vec![0xFF; 0x4000];
+    for line in std::fs::read_to_string(path).unwrap().lines() {
+        let fields: Vec<&str> = line.split('#').next().unwrap().split_whitespace().collect();
+        if let Some((first, bytes)) = fields.split_first() {
+            let address = usize::from_str_radix(first.trim_end_matches(':'), 16).unwrap();
+            let text = bytes.concat();
+            let data: Vec<u8> = (0..text.len())
+                .step_by(2)
+                .map(|i| u8::from_str_radix(&text[i..i + 2], 16).unwrap())
+                .collect();
+            rom[address..address + data.len()].copy_from_slice(&data);
+        }
+    }
+    rom
+}
+
 /// A small deterministic generator for the save point.
 fn spread(seed: u64, rom: &str) -> u64 {
     let mut x = seed
@@ -145,6 +171,7 @@ fn check(
         first.step();
     }
     let state = save_cabinet_state(&first);
+    let watchdog = (first.supervisor.watchdog, first.supervisor.watchdog_resets);
     let expected = run(&mut first, at + 1..to, inputs);
 
     let mut second = fresh(&data, bios)?;
@@ -170,10 +197,15 @@ fn check(
         }
     }
     Ok(format!(
-        "identical: frames {}-{} after a save at frame {at} + {extra} steps ({} bytes)",
+        "identical: frames {}-{} after a save at frame {at} + {extra} steps ({} bytes; \
+         watchdog {} counted, {} resets at the save, {} by frame {})",
         at + 1,
         to - 1,
-        state.len()
+        state.len(),
+        watchdog.0,
+        watchdog.1,
+        first.supervisor.watchdog_resets,
+        to - 1
     ))
 }
 
@@ -181,9 +213,11 @@ fn main() {
     let mut args = std::env::args().skip(1);
     let (mut roms, mut bios, mut at, mut to, mut input, mut seed) =
         (Vec::new(), "dual".to_string(), 900u64, 1000u64, None, 1u64);
+    let mut program: Option<String> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--bios" => bios = args.next().unwrap(),
+            "--bios-program" => program = args.next(),
             "--at" => at = args.next().unwrap().parse().unwrap(),
             "--to" => to = args.next().unwrap().parse().unwrap(),
             "--input" => input = args.next(),
@@ -207,10 +241,13 @@ fn main() {
                 .push(parts[1..].to_vec());
         }
     }
-    let bios = sv::load_bios(&bios, None).unwrap_or_else(|e| {
+    let mut bios = sv::load_bios(&bios, None).unwrap_or_else(|e| {
         eprintln!("{e}");
         std::process::exit(2);
     });
+    if let Some(path) = program {
+        bios.program = read_program(&path);
+    }
     let mut failed = 0;
     for rom in &roms {
         let verdict =

@@ -499,6 +499,69 @@ fn our_supervisor_program_lets_the_watchdog_run_out() {
     assert!(ram10(&machine) != 0); // the game ran between resets
 }
 
+/// The reference's `test_a_save_state_taken_while_the_watchdog_counts`
+/// (famicom-python, 2026-11-25): tests/pc10_watchdog.hex saved while the
+/// counter runs (its hold dropped, `counted` blanks of the eight seen; odd
+/// boots with the game running, even with it stopped) and loaded into a fresh
+/// cabinet: both reset on the same blank and continue identically into the
+/// next boot's hold.
+#[test]
+fn a_save_state_taken_while_the_watchdog_counts() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("scripts/inputs/pc10/watchdog.hex");
+    let program = read_program(&path);
+    let fresh = || {
+        let mut ours = bios(SPIN, RETN);
+        ours.program = program.clone();
+        PlayChoice::new(load(&pc10_image(&hex(COUNTING), None, 1)), ours, None)
+    };
+    for counted in [0u32, 4, 7] {
+        for boot in [1u64, 2] {
+            let mut first = fresh();
+            let hold = if boot % 2 == 1 { NMI_EI } else { DOG_DI };
+            while first.supervisor.watchdog_resets < boot - 1 {
+                first.step();
+            }
+            while first.supervisor.latch()[hold] == 0 {
+                first.step();
+            }
+            while first.supervisor.latch()[hold] != 0 {
+                first.step();
+            }
+            let dropped = first.supervisor.blanks;
+            while first.supervisor.blanks < dropped + counted as u64 {
+                first.step();
+            }
+            for _ in 0..37 {
+                first.step(); // off the blank's own step
+            }
+            assert!(first.supervisor.watchdog_resets == boot - 1);
+            assert_eq!(first.supervisor.latch()[hold], 0);
+            assert_eq!(first.supervisor.watchdog, counted);
+            let mut second = fresh();
+            load_cabinet_state(&mut second, &save_cabinet_state(&first)).unwrap();
+            assert_eq!(save_cabinet_state(&second), save_cabinet_state(&first));
+            for machine in [&mut first, &mut second] {
+                while machine.supervisor.watchdog_resets < boot {
+                    machine.step();
+                }
+            }
+            assert_eq!(first.supervisor.blanks, dropped + 8);
+            assert_eq!(second.supervisor.blanks, dropped + 8);
+            assert_eq!(first.supervisor.t(), second.supervisor.t());
+            let next = if (boot + 1) % 2 == 1 { NMI_EI } else { DOG_DI };
+            for machine in [&mut first, &mut second] {
+                while machine.supervisor.latch()[next] == 0 {
+                    machine.step();
+                }
+                machine.run_frames(2);
+            }
+            assert_eq!(save_cabinet_state(&second), save_cabinet_state(&first));
+            assert_eq!(first.supervisor.picture(), second.supervisor.picture());
+            assert_eq!(first.game_picture(), second.game_picture());
+        }
+    }
+}
+
 #[test]
 fn cntrl_mask_reaches_the_panel() {
     let mut machine = cabinet(SPIN, JUMP);

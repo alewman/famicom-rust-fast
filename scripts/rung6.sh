@@ -13,7 +13,8 @@
 # every UniSystem image; then the PlayChoice-10, every image the reference's
 # scripts/pc10_images.py assembles ($PC10_IMAGES_DIR) in the cabinet with MAME's BIOS
 # (MAME_ROMPATH), scripts/cases-pc10.tsv (scripts/make_pc10_cases.py), and save
-# states on every image, saved mid-game.
+# states on every image, saved mid-game, and on one saved while the watchdog counts
+# (--bios-program).
 set -uo pipefail
 HERE=$(dirname "$0")
 ROOT=$(cd "$HERE/.." && pwd)
@@ -52,6 +53,12 @@ for e in json.load(open(os.path.join(d, "manifest.json"))): print(os.path.join(d
         --input "$HERE/inputs/pc10/play.txt" "${roms[@]}" | tee "$ROOT/external/states-pc10.log" | grep -v ": identical"
     pc10_states=${PIPESTATUS[0]}
     echo "$(grep -c ': identical' "$ROOT/external/states-pc10.log") of ${#roms[@]} PlayChoice-10 images round-trip"
+    # Saved while the watchdog counts: our own supervisor program (the real BIOS never
+    # lets it count), four save points, both parities of boot.
+    for at in 40 43 49 52; do
+        nice "$ROOT/target/release/famicom-pc10-states" --bios-program "$HERE/inputs/pc10/watchdog.hex" \
+            --at $at --to $((at + 40)) "$PC10_IMAGES_DIR/Super Mario Bros..nes" || pc10_states=1
+    done
 else
     echo "PC10_IMAGES_DIR unset: the PlayChoice-10's cases not run"
 fi
