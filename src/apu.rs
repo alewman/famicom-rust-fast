@@ -39,6 +39,40 @@ pub fn lowpass_taps(cutoff: f64, rate: f64, count: usize) -> Vec<f64> {
     taps.iter().map(|t| t / total).collect()
 }
 
+/// The 44,100 Hz rate's taps, `lowpass_taps(19_845.0, 176_400.0, TAPS)`, as
+/// bits: the reference's own (famicom-python's `lowpass_taps` on PyPy 3.11,
+/// glibc 2.39), which this board's formula gives to the bit on Linux and
+/// Windows. A table because the taps come from `sin` and `cos`, and libms
+/// differ in the last bit: devkitARM's newlib (the Nintendo 3DS) changed four
+/// of these, and so every audio sample, while the pictures and the cycles
+/// stayed exact. In the reference's order; `set_sample_rate` reverses them.
+pub const TAPS_44100: [u64; TAPS] = [
+    0xBBF6D2A29F5C508F, 0x3EC67C6A4C665EF0, 0x3EDF904EFD3229BD, 0x3EB0EDF6BC26F023,
+    0xBEFEAB1C1D45608F, 0xBF13AF735F303D7B, 0xBF1A3BFFA62F44DA, 0xBF0D8DEC9F0F4FAD,
+    0x3F142F40B076F3F1, 0x3F30DF9552D0A0B9, 0x3F3896F44427D22E, 0x3F33C0FD29E45884,
+    0xBEF91F544DAFE33B, 0xBF40CBFBD3DA3B5C, 0xBF4E133870059BED, 0xBF4E8672039A81D2,
+    0xBF37F505FA3A8139, 0x3F460AA767D9E64D, 0x3F5C54183A5E5AE3, 0x3F61AE10B1449260,
+    0x3F57E80ED3911713, 0xBF379343E4A83461, 0xBF655B00E5A2574F, 0xBF70C84B4DDDDF06,
+    0xBF6E5A28CCE7A391, 0xBF514A8C74E04834, 0x3F68C03C32BBCECE, 0x3F7B15F78AEA36A5,
+    0x3F7ECD167E511380, 0x3F7234A23F40B0AE, 0xBF6079106BC006C8, 0xBF82C35A2C06B0FC,
+    0xBF8B014A9A5B8A80, 0xBF8672AAA1BE9F3F, 0xBF604476EB9D0F08, 0x3F85CA2EA0B2BC1E,
+    0x3F95725A8629FF26, 0x3F97146851562D62, 0x3F8865CFAB1014E8, 0xBF82450D9EFB4CF6,
+    0xBFA053086F167909, 0xBFA7131E96A07EBC, 0xBFA30C809689C645, 0xBF65EFD8CF95121A,
+    0x3FAC3364949BA8DD, 0x3FBF9CCBED824FB8, 0x3FC79A9EB127C63C, 0x3FCC31204697AB1D,
+    0x3FCC31204697AB1D, 0x3FC79A9EB127C63C, 0x3FBF9CCBED824FB8, 0x3FAC3364949BA8DD,
+    0xBF65EFD8CF95121A, 0xBFA30C809689C645, 0xBFA7131E96A07EBE, 0xBFA053086F16790B,
+    0xBF82450D9EFB4CF8, 0x3F8865CFAB1014EB, 0x3F97146851562D62, 0x3F95725A8629FF26,
+    0x3F85CA2EA0B2BC21, 0xBF604476EB9D0F0A, 0xBF8672AAA1BE9F41, 0xBF8B014A9A5B8A80,
+    0xBF82C35A2C06B0FB, 0xBF6079106BC006CC, 0x3F7234A23F40B0AF, 0x3F7ECD167E511382,
+    0x3F7B15F78AEA36A5, 0x3F68C03C32BBCECA, 0xBF514A8C74E04837, 0xBF6E5A28CCE7A394,
+    0xBF70C84B4DDDDF07, 0xBF655B00E5A25758, 0xBF379343E4A8345C, 0x3F57E80ED3911718,
+    0x3F61AE10B1449263, 0x3F5C54183A5E5AE3, 0x3F460AA767D9E656, 0xBF37F505FA3A8133,
+    0xBF4E8672039A81DE, 0xBF4E133870059BF3, 0xBF40CBFBD3DA3B67, 0xBEF91F544DAFE333,
+    0x3F33C0FD29E4587D, 0x3F3896F44427D237, 0x3F30DF9552D0A0BD, 0x3F142F40B076F3FD,
+    0xBF0D8DEC9F0F4FCC, 0xBF1A3BFFA62F44DA, 0xBF13AF735F303D6C, 0xBEFEAB1C1D45608F,
+    0x3EB0EDF6BC26F036, 0x3EDF904EFD322922, 0x3EC67C6A4C665B75, 0xBBF6D2A29F5C508F,
+];
+
 /// APU_Length_Counter.wiki.
 pub const LENGTHS: [u8; 32] = [
     10, 254, 20, 2, 40, 4, 80, 6, 160, 8, 60, 10, 14, 12, 26, 14, 12, 16, 24, 18, 48, 20, 96, 22,
@@ -771,11 +805,11 @@ impl Apu {
     pub fn set_sample_rate(&mut self, rate: i64) {
         self.sample_rate = rate;
         self.box_rate = rate * OVERSAMPLE as i64;
-        let mut taps = lowpass_taps(
-            20_000.0f64.min(0.45 * rate as f64),
-            self.box_rate as f64,
-            TAPS,
-        );
+        let mut taps = if rate == 44_100 {
+            TAPS_44100.iter().map(|&b| f64::from_bits(b)).collect()
+        } else {
+            lowpass_taps(20_000.0f64.min(0.45 * rate as f64), self.box_rate as f64, TAPS)
+        };
         taps.reverse();
         self.taps = taps;
     }
@@ -1202,5 +1236,22 @@ impl AnalogueStage {
             out.push(x);
         }
         out
+    }
+}
+
+#[cfg(test)]
+mod taps_table_tests {
+    use super::*;
+
+    /// The table is what `lowpass_taps` computes where the libm agrees with
+    /// the reference's (glibc; Windows' too). Where it does not, this fails,
+    /// and the table is why the board's audio still matches there.
+    #[test]
+    fn taps_44100_table_is_the_computed_taps() {
+        let computed: Vec<u64> = lowpass_taps(19_845.0, 176_400.0, TAPS)
+            .iter()
+            .map(|t| t.to_bits())
+            .collect();
+        assert_eq!(computed, TAPS_44100.to_vec());
     }
 }
